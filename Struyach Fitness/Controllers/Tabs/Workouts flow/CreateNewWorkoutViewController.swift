@@ -14,7 +14,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     
     var onWorkoutSave: ((String) -> Void)?
     
-     private let workoutDescriptionTextView: UITextView = {
+    private let workoutDescriptionTextView: UITextView = {
         let textView = UITextView()
         textView.font = UIFont.systemFont(ofSize: 15, weight: .regular)
         textView.textColor = .black
@@ -65,6 +65,14 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor(named: "lightGreen")
+        navigationItem.hidesBackButton = true
+        navigationController?.navigationBar.prefersLargeTitles = false
+        
+        setupTextView()
+        setupSubviews()
+    }
+    
+    private func setupTextView() {
         #if Admin
         if text != "" {
             workoutDescriptionTextView.text = text
@@ -85,62 +93,53 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
             cancelButton.isHidden = true
         }
         #endif
-        setupSubviews()
-
     }
     
-    
-//    @objc func editWorkout() {
-//        if let text = workoutDescriptionTextView.text {
-//            self.onWorkoutSave?(text)
-//            navigationController?.popViewController(animated: true)
-//        }
-//    }
-    
-   func setupSubviews() {
-       workoutDescriptionTextView.delegate = self
-       workoutDescriptionTextView.becomeFirstResponder()
-       
+    private func setupSubviews() {
+        
+        workoutDescriptionTextView.delegate = self
+        workoutDescriptionTextView.becomeFirstResponder()
+        
         view.addSubviews(workoutDescriptionTextView, addButton, cancelButton)
-       
-       let buttonWidth = view.frame.width/2 - 30
-       
-       var textViewHeight: CGFloat {
-           if text != "" {
-               #if Admin
-               return view.frame.height/3
-               #else
-               return view.frame.height * 0.9
-               #endif
-           } else {
-               return view.frame.height/4
-           }
-       }
-       
-       var baseInset: CGFloat { return 15 }
-       
-       let constraints = [
-        workoutDescriptionTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: baseInset),
-        workoutDescriptionTextView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
-        workoutDescriptionTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
-        workoutDescriptionTextView.heightAnchor.constraint(equalToConstant: textViewHeight),
         
-        addButton.topAnchor.constraint(equalTo: workoutDescriptionTextView.bottomAnchor, constant: baseInset),
-        addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
-        addButton.heightAnchor.constraint(equalToConstant: 44),
-        addButton.widthAnchor.constraint(equalToConstant: buttonWidth),
-//        addButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
-       
+        let buttonWidth = view.frame.width/2 - 30
         
-        cancelButton.topAnchor.constraint(equalTo: workoutDescriptionTextView.bottomAnchor, constant: baseInset),
-        cancelButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
-        cancelButton.heightAnchor.constraint(equalTo: addButton.heightAnchor),
-        cancelButton.widthAnchor.constraint(equalToConstant: buttonWidth)
+        var textViewHeight: CGFloat {
+            if text != "" {
+                #if Admin
+                return view.frame.height/3
+                #else
+                return view.frame.height * 0.9
+                #endif
+            } else {
+                return view.frame.height/3
+            }
+        }
         
-       ]
-       
-       NSLayoutConstraint.activate(constraints)
-   }
+        var baseInset: CGFloat { return 15 }
+        
+        let constraints = [
+            workoutDescriptionTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: baseInset),
+            workoutDescriptionTextView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
+            workoutDescriptionTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
+            workoutDescriptionTextView.heightAnchor.constraint(equalToConstant: textViewHeight),
+            
+            addButton.topAnchor.constraint(equalTo: workoutDescriptionTextView.bottomAnchor, constant: baseInset),
+            addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
+            addButton.heightAnchor.constraint(equalToConstant: 44),
+            addButton.widthAnchor.constraint(equalToConstant: buttonWidth),
+            //        addButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
+            
+            
+            cancelButton.topAnchor.constraint(equalTo: workoutDescriptionTextView.bottomAnchor, constant: baseInset),
+            cancelButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
+            cancelButton.heightAnchor.constraint(equalTo: addButton.heightAnchor),
+            cancelButton.widthAnchor.constraint(equalToConstant: buttonWidth)
+            
+        ]
+        
+        NSLayoutConstraint.activate(constraints)
+    }
     
 
     /*
