@@ -9,7 +9,7 @@ import UIKit
 
 class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     
-    var onSendCommentPush: ((String) -> Void)?
+    var onSendCommentPush: ((String, String) -> Void)?
     
     var onTextChanged: (() -> Void)?
     
@@ -86,7 +86,10 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     
     @objc func commentSent() {
         guard let text = commentTextView.text else {return}
-        self.onSendCommentPush?(text)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMM yyyy HH:mm"
+        let date = formatter.string(from: Date())
+        self.onSendCommentPush?(text, date)
     }
 
     required init?(coder: NSCoder) {

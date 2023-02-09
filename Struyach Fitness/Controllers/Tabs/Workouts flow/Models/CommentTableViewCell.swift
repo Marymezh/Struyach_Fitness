@@ -9,6 +9,14 @@ import UIKit
 
 class CommentTableViewCell: UITableViewCell {
     
+    var comment:Comment? {
+        didSet
+        {
+            self.commentTextLabel.text = comment?.text
+            self.dateLabel.text = comment?.date
+        }
+    }
+    
     private let userImage: UIImageView = {
        let image = UIImageView(image: UIImage(named: "general"))
         image.clipsToBounds = true
@@ -40,7 +48,7 @@ class CommentTableViewCell: UITableViewCell {
         return label
     }()
     
-    let commentTextLabel: UILabel = {
+    private let commentTextLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
         label.textColor = .black

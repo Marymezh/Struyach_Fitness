@@ -9,7 +9,9 @@ import UIKit
 
 class SelectedWorkoutTableViewController: UITableViewController {
 
-    private var commentsArray = ["Great workout, finished in 10:35 min", "It was too hard for me, only 3 rounds completed"]
+    private var commentsArray: [Comment] = [
+        Comment(date: "04 февр. 2023", text: "Great workout, finished in 10:35 min"),
+        Comment(date: "05 февр. 2023", text: "It was too hard for me, only 3 rounds completed")]
     
   let headerView = SelectedWorkoutHeaderView()
     
@@ -25,8 +27,9 @@ class SelectedWorkoutTableViewController: UITableViewController {
         tableView.sectionHeaderHeight = UITableView.automaticDimension
         tableView.register(CommentTableViewCell.self, forCellReuseIdentifier: String(describing: CommentTableViewCell.self))
         
-        headerView.onSendCommentPush = { text in
-            self.commentsArray.insert(text, at: 0)
+        headerView.onSendCommentPush = { text, date in
+            self.commentsArray.insert(Comment(date: date, text: text), at: 0)
+            
             self.headerView.commentTextView.text = ""
             self.tableView.reloadData()
         }
@@ -60,8 +63,10 @@ class SelectedWorkoutTableViewController: UITableViewController {
         
         let cell: CommentTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: CommentTableViewCell.self), for: indexPath) as! CommentTableViewCell
         
+        cell.comment = commentsArray[indexPath.row]
         cell.backgroundColor = UIColor(named: "darkGreen")
-        cell.commentTextLabel.text = commentsArray[indexPath.row]
+ //       cell.commentTextLabel.text = commentsArray[indexPath.row].text
+        
         
         return cell
     }

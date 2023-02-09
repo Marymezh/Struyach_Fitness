@@ -15,11 +15,12 @@ class ProgramsViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
+        setupNavbar()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        setupNavbar()
+       
     }
     
     private func setupTableView () {
@@ -40,7 +41,6 @@ class ProgramsViewController: UITableViewController {
         
         cell.program = programsArray[indexPath.section]
         cell.backgroundView?.alpha = 0.3
-        
         
         return cell
     }

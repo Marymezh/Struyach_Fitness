@@ -7,6 +7,9 @@
 
 import UIKit
 import IQKeyboardManagerSwift
+import FirebaseCore
+
+
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -25,6 +28,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         IQKeyboardManager.shared.enable = true
         IQKeyboardManager.shared.toolbarTintColor = .darkGray
+        
+                FirebaseApp.configure()
 
     }
     func sceneDidDisconnect(_ scene: UIScene) {

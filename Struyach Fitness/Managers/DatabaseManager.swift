@@ -6,3 +6,40 @@
 //
 
 import Foundation
+//import FirebaseFirestore
+
+final class DatabaseManager {
+    static let shared = DatabaseManager()
+    
+ //   private let database = Firestore.firestore()
+    
+    private init() {}
+    
+//    public func postComment( with comment: String,
+//                             user: String,
+//                             completion: @escaping(Bool) ->()
+//    ){
+//
+//    }
+//
+//    public func getAllComments( completion: @escaping([String]) ->()
+//       ){
+//
+//       }
+    
+    public func postWorkout( with postText: WorkoutDescription,
+                             user: User,
+                             completion: @escaping(Bool) ->()
+    ){
+        
+    }
+    public func getAllWorkouts( completion: @escaping([WorkoutDescription])->()){
+        
+    }
+    
+    public func insertUser(user: User,
+                           completion: @escaping(Bool) ->()
+    ){
+        
+    }
+}
