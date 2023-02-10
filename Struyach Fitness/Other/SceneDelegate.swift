@@ -7,7 +7,7 @@
 
 import UIKit
 import IQKeyboardManagerSwift
-import FirebaseCore
+
 
 
 
@@ -21,15 +21,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
      
         // TODO: Update VC to sign in VC if not signed it
-        let tabBarVC = TabBarController()
-        window.rootViewController = tabBarVC
+        let vc: UIViewController
+        if AuthManager.shared.isSignedIn {
+            vc = TabBarController()
+        } else {
+            let signInVC = SignInViewController()
+            signInVC.navigationItem.largeTitleDisplayMode = .always
+            let navVC = UINavigationController(rootViewController: signInVC)
+            navVC.navigationBar.prefersLargeTitles = true
+            vc = navVC
+        }
+            
+        window.rootViewController = vc
         window.makeKeyAndVisible()
         self.window = window
         
         IQKeyboardManager.shared.enable = true
         IQKeyboardManager.shared.toolbarTintColor = .darkGray
-        
-                FirebaseApp.configure()
 
     }
     func sceneDidDisconnect(_ scene: UIScene) {
