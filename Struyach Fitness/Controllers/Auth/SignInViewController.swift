@@ -8,23 +8,36 @@
 import UIKit
 
 class SignInViewController: UIViewController {
+    
+    let loginView = LoginView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+  
+        title = "Log In"
 
-        title = "Sign in"
-        view.backgroundColor = .systemBackground
+        #if Admin
+        view.backgroundColor = .black
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        #else
+        view.backgroundColor = .white
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+        #endif
+        
+        setupSubviews()
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    private func setupSubviews() {
+        view.addSubview(loginView)
+        loginView.toAutoLayout()
+        
+        let constraints = [
+            loginView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            loginView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            loginView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loginView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
+        ]
+        
+        NSLayoutConstraint.activate(constraints)
     }
-    */
-
 }

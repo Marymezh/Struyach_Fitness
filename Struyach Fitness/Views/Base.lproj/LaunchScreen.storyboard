@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
-    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <device id="retina6_0" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -13,41 +12,49 @@
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="TRAINING PLANS " textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OgK-4i-6oJ">
-                                <rect key="frame" x="5" y="381" width="365" height="40"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="uDc-NP-EWO"/>
-                                </constraints>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="STRUYACH FITNESS" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OgK-4i-6oJ">
+                                <rect key="frame" x="29" y="460" width="332" height="39.666666666666686"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="33"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="detka logo" translatesAutoresizingMaskIntoConstraints="NO" id="W6V-uY-6Cs">
-                                <rect key="frame" x="55" y="90" width="265" height="238"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ADMIN " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VQi-fN-fwv">
+                                <rect key="frame" x="100" y="532.66666666666663" width="190" height="43"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="36"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="struyach-eng-black" translatesAutoresizingMaskIntoConstraints="NO" id="W6V-uY-6Cs">
+                                <rect key="frame" x="58" y="144" width="274" height="261"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="274" id="35h-6M-C3y"/>
+                                    <constraint firstAttribute="height" constant="261" id="Ksw-zm-W2t"/>
+                                </constraints>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
-                        <color key="backgroundColor" red="0.079755611719999994" green="0.085748501120000001" blue="0.082430385049999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="W6V-uY-6Cs" firstAttribute="centerX" secondItem="OgK-4i-6oJ" secondAttribute="centerX" id="2wa-5D-AiO"/>
-                            <constraint firstItem="W6V-uY-6Cs" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="90" id="58i-5x-jP6"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="OgK-4i-6oJ" secondAttribute="bottom" constant="246" id="PUI-Pe-ccm"/>
-                            <constraint firstItem="OgK-4i-6oJ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="5" id="WC4-Dn-Mfe"/>
-                            <constraint firstItem="OgK-4i-6oJ" firstAttribute="top" secondItem="W6V-uY-6Cs" secondAttribute="bottom" constant="53" id="XPD-D2-NTL"/>
-                            <constraint firstItem="OgK-4i-6oJ" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="gmM-Ki-w8o"/>
-                            <constraint firstItem="W6V-uY-6Cs" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="55" id="n85-Kk-Czm"/>
+                            <constraint firstItem="W6V-uY-6Cs" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="7Oa-M1-o8b"/>
+                            <constraint firstItem="VQi-fN-fwv" firstAttribute="top" secondItem="OgK-4i-6oJ" secondAttribute="bottom" constant="33" id="GjN-hX-Ku0"/>
+                            <constraint firstItem="W6V-uY-6Cs" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="100" id="TzN-TD-JAY"/>
+                            <constraint firstItem="OgK-4i-6oJ" firstAttribute="top" secondItem="W6V-uY-6Cs" secondAttribute="bottom" constant="55" id="h4J-oX-Pcl"/>
+                            <constraint firstItem="VQi-fN-fwv" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="100" id="hfh-cJ-2wY"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="VQi-fN-fwv" secondAttribute="trailing" constant="100" id="phE-GU-gNg"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="OgK-4i-6oJ" secondAttribute="trailing" constant="29" id="qZp-yY-zzz"/>
+                            <constraint firstItem="OgK-4i-6oJ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="29" id="tmC-K8-vKO"/>
                         </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="52" y="374.66266866566718"/>
+            <point key="canvasLocation" x="50.769230769230766" y="374.64454976303318"/>
         </scene>
     </scenes>
     <resources>
-        <image name="detka logo" width="794" height="717"/>
+        <image name="struyach-eng-black" width="1280" height="1181"/>
     </resources>
 </document>
