@@ -15,6 +15,17 @@ class ProfileTableViewController: UITableViewController {
     
     private let headerView = ProfileHeaderView()
     
+    let currentEmail: String
+
+    init(currentEmail: String) {
+        self.currentEmail = currentEmail
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         updateWeights()
@@ -32,6 +43,7 @@ class ProfileTableViewController: UITableViewController {
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: ProfileTableViewCell.self))
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
         tableView.sectionHeaderHeight = UITableView.automaticDimension
+        headerView.isUserInteractionEnabled = true
     }
     
    private func setupNavigationBar () {
@@ -55,6 +67,7 @@ class ProfileTableViewController: UITableViewController {
                         UserDefaults.standard.set(nil, forKey: "userName")
                         UserDefaults.standard.set(nil, forKey: "email")
                         UserDefaults.standard.set(nil, forKey: "savedWeights")
+                        UserDefaults.standard.set(nil, forKey: "userImage")
                         let signInVC = LoginViewController()
                         signInVC.navigationItem.largeTitleDisplayMode = .always
                         let navVC = UINavigationController(rootViewController: signInVC)
@@ -87,7 +100,7 @@ class ProfileTableViewController: UITableViewController {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
             cell.backgroundColor = UIColor(named: "tealLight")
-            cell.textLabel?.text = "YOUR PERSONAL RECORDS"
+            cell.textLabel?.text = "PERSONAL RECORDS"
             cell.textLabel?.textAlignment = .center
             cell.textLabel?.font = UIFont.systemFont(ofSize: 22, weight: .bold)
             return cell
@@ -113,10 +126,10 @@ class ProfileTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        
-        headerView.onNameChanged = {
-            tableView.performBatchUpdates(nil, completion: nil)
-        }
+//        
+//        headerView.onNameChanged = {
+//            tableView.performBatchUpdates(nil, completion: nil)
+//        }
         return headerView
     }
 }

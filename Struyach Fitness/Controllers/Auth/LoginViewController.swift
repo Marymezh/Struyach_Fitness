@@ -116,8 +116,6 @@ class LoginViewController: UIViewController {
             
             DispatchQueue.main.async {
                 UserDefaults.standard.set(email, forKey: "email")
-                let userName = AuthManager.shared.getUserName()
-                UserDefaults.standard.set(userName, forKey: "userName")
                 let vc = TabBarController()
                 vc.modalPresentationStyle = .fullScreen
                 self?.present(vc, animated: true)

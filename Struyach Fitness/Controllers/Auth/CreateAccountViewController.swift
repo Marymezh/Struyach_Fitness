@@ -139,7 +139,7 @@ class CreateAccountViewController: UIViewController {
         //create User
         AuthManager.shared.signUp(email: email, password: password) { [weak self] success in
             if success {
-                let newUser = User(name: name, email: email, profilePictureUrl: nil)
+                let newUser = User(name: name, email: email, profilePictureRef: nil, personalRecords: nil)
                 DatabaseManager.shared.insertUser(user: newUser) { inserted in
                     guard inserted else {return}
                     

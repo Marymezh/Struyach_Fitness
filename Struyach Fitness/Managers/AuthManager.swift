@@ -67,9 +67,4 @@ final class AuthManager {
                 completion(false)
             }
     }
-    //to fix - this method returns unknown user %(
-    public func getUserName() -> String {
-        guard let name = auth.currentUser?.displayName else {return "Unknown user"}
-        return name
-    }
 }
