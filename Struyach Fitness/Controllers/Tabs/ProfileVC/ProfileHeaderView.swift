@@ -7,39 +7,15 @@
 
 import UIKit
 
-enum Mode {
-    case unkonwnUser
-    case currentUser
-}
 
 class ProfileHeaderView: UIView {
     
     private var baseInset: CGFloat { return 15 }
     
     var onNameChanged:(()-> Void)?
-    
-    var mode: Mode?
-    
+
     private var userName: String {
-        switch mode {
-        case .unkonwnUser:
-            return "Unknown User"
-        case .currentUser:
             return UserDefaults.standard.object(forKey: "userName") as? String ?? ""
-        default:
-            return ""
-        }
-    }
-    
-    private var buttonTitle: String {
-        switch mode {
-        case .unkonwnUser:
-            return "Set user name"
-        case.currentUser:
-            return "Change user name"
-        default:
-            return ""
-        }
     }
     
     private let userPhotoImage: UIImageView = {
@@ -61,7 +37,6 @@ class ProfileHeaderView: UIView {
         label.textAlignment = .left
         label.numberOfLines = 0
         label.sizeToFit()
-        label.text = "Unknown User"
         label.toAutoLayout()
         return label
     }()
@@ -79,13 +54,9 @@ class ProfileHeaderView: UIView {
         return button
     }()
     
-    @objc func changePhoto() {
-        showImagePickerController()
-    }
-    
     private lazy var changeUserNameButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Set user name", for: .normal)
+        button.setTitle("Change user name", for: .normal)
         button.backgroundColor = .darkGray
         button.setTitleColor(.white, for: .normal)
         button.layer.borderWidth = 0.5
@@ -96,7 +67,22 @@ class ProfileHeaderView: UIView {
         return button
     }()
     
-    @objc func changeName () {
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        setNewUserNameMode()
+        setupUI()
+    }
+    
+    @objc private func changePhoto() {
+        showImagePickerController()
+    }
+    
+    @objc private func changeName () {
         let alertController = UIAlertController(title: "Change user name", message: nil, preferredStyle: .alert)
         alertController.addTextField { textfield in
             textfield.placeholder = "Enter new name here"
@@ -106,41 +92,24 @@ class ProfileHeaderView: UIView {
             if let text = alertController.textFields?[0].text,
                text != "" {
                 UserDefaults.standard.set(text, forKey: "userName")
-                self.mode = .currentUser
                 self.userNameLabel.text = self.userName
-                self.changeUserNameButton.setTitle(self.buttonTitle, for: .normal)
                 self.onNameChanged?()
             } else {
                 self.showErrorAlert(text: "User name can not be blank!")
             }
         }
-        
         alertController.addAction(changeAction)
         alertController.addAction(cancelAction)
-
         alertController.view.tintColor = .darkGray
         self.window?.rootViewController?.present(alertController, animated: true)
         
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-
-        setNewUserNameMode()
-        setupUI()
     }
     
     private func setNewUserNameMode() {
         if let text = UserDefaults.standard.object(forKey: "userName") as? String {
             if text != "" {
-                mode = .currentUser
-                changeUserNameButton.setTitle(buttonTitle, for: .normal)
                 userNameLabel.text = userName
-                loadImage() 
+                loadImage()
             }
         }
     }
@@ -150,12 +119,11 @@ class ProfileHeaderView: UIView {
         self.addSubviews(userPhotoImage, userNameLabel, changeUserNameButton, changeImageButton)
         
         let constraints = [
-        
             userPhotoImage.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
             userPhotoImage.heightAnchor.constraint(equalToConstant: 120),
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),
             userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2),
-
+            
             userNameLabel.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor),
             userNameLabel.leadingAnchor.constraint(equalTo: userPhotoImage.trailingAnchor, constant: baseInset),
             userNameLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -baseInset),
@@ -170,7 +138,6 @@ class ProfileHeaderView: UIView {
             changeUserNameButton.trailingAnchor.constraint(equalTo: changeImageButton.trailingAnchor),
             changeUserNameButton.heightAnchor.constraint(equalTo: changeImageButton.heightAnchor),
             changeUserNameButton.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2)
-
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -190,27 +157,25 @@ class ProfileHeaderView: UIView {
         alert.addAction(cancelAction)
         self.window?.rootViewController?.present(alert, animated: true)
     }
-    
-    
 }
 
 extension ProfileHeaderView: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    private func showImagePickerController() {
+        let picker = UIImagePickerController()
+        picker.allowsEditing = true
+        picker.delegate = self
+        picker.sourceType = .photoLibrary
+        self.window?.rootViewController?.present(picker, animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        self.window?.rootViewController?.dismiss(animated: true)
         
-        func showImagePickerController() {
-            let picker = UIImagePickerController()
-            picker.allowsEditing = true
-            picker.delegate = self
-            picker.sourceType = .photoLibrary
-            self.window?.rootViewController?.present(picker, animated: true)
-        }
-        
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            self.window?.rootViewController?.dismiss(animated: true)
-            
-            guard let image = info[.editedImage] as? UIImage else { return }
-            self.userPhotoImage.image = image
-            guard let data = image.jpegData(compressionQuality: 0.5) else {return}
-            let encoded = try! PropertyListEncoder().encode(data)
-            UserDefaults.standard.set(encoded, forKey: "userImage")
-        }
+        guard let image = info[.editedImage] as? UIImage else { return }
+        self.userPhotoImage.image = image
+        guard let data = image.jpegData(compressionQuality: 0.5) else {return}
+        let encoded = try! PropertyListEncoder().encode(data)
+        UserDefaults.standard.set(encoded, forKey: "userImage")
+    }
 }

@@ -9,8 +9,6 @@ import UIKit
 import IQKeyboardManagerSwift
 
 
-
-
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -25,7 +23,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if AuthManager.shared.isSignedIn {
             vc = TabBarController()
         } else {
-            let signInVC = SignInViewController()
+            let signInVC = LoginViewController()
             signInVC.navigationItem.largeTitleDisplayMode = .always
             let navVC = UINavigationController(rootViewController: signInVC)
             navVC.navigationBar.prefersLargeTitles = true

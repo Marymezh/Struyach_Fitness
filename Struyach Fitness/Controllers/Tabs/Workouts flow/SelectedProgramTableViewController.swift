@@ -102,15 +102,15 @@ class SelectedProgramTableViewController: UITableViewController {
     
     // MARK: - Adding new workout
     
-    @objc func addNewWorkout() {
+    @objc private func addNewWorkout() {
         let newWorkoutVC = CreateNewWorkoutViewController()
         newWorkoutVC.title = "Add new workout"
         navigationController?.pushViewController(newWorkoutVC, animated: true)
-        newWorkoutVC.onWorkoutSave = { text in
+        newWorkoutVC.onWorkoutSave = {[weak self] text in
             let formatter = DateFormatter()
             formatter.dateFormat = "dd MMM yyyy"
             let date = formatter.string(from: Date())
-            switch self.title {
+            switch self?.title {
             case "ECD/BEFIT TRAINING PLAN": WorkoutDescriptionStorage.ecd.insert(WorkoutDescription(description: text, date: date), at: 0)
             case "BODYWEIGHT PLAN": WorkoutDescriptionStorage.bodyweight.insert(WorkoutDescription(description: text, date: date), at: 0)
             case " 'STRUYACH' PLAN": WorkoutDescriptionStorage.struyach.insert(WorkoutDescription(description: text, date: date), at: 0)

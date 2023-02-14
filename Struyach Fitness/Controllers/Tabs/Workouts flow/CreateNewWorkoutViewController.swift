@@ -39,13 +39,6 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         return button
     }()
     
-    @objc func addNewWorkout() {
-        if let text = workoutDescriptionTextView.text {
-            self.onWorkoutSave?(text)
-            navigationController?.popViewController(animated: true)
-        }
-    }
-    
     private lazy var cancelButton: UIButton = {
         let button = UIButton()
         button.setTitle("Cancel", for: .normal)
@@ -57,10 +50,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         button.toAutoLayout()
         return button
     }()
-    
-    @objc func cancel() {
-        navigationController?.popViewController(animated: true)
-    }
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -70,6 +60,17 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         
         setupTextView()
         setupSubviews()
+    }
+    
+    @objc private func addNewWorkout() {
+        if let text = workoutDescriptionTextView.text {
+            self.onWorkoutSave?(text)
+            navigationController?.popViewController(animated: true)
+        }
+    }
+    
+    @objc private func cancel() {
+        navigationController?.popViewController(animated: true)
     }
     
     private func setupTextView() {
@@ -128,14 +129,11 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
             addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
             addButton.heightAnchor.constraint(equalToConstant: 44),
             addButton.widthAnchor.constraint(equalToConstant: buttonWidth),
-            //        addButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
-            
             
             cancelButton.topAnchor.constraint(equalTo: workoutDescriptionTextView.bottomAnchor, constant: baseInset),
             cancelButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
             cancelButton.heightAnchor.constraint(equalTo: addButton.heightAnchor),
             cancelButton.widthAnchor.constraint(equalToConstant: buttonWidth)
-            
         ]
         
         NSLayoutConstraint.activate(constraints)

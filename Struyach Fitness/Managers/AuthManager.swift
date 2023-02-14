@@ -20,11 +20,11 @@ final class AuthManager {
     }
     
     public func signUp(
-
+        
         email: String,
         password: String,
         completion: @escaping (Bool) -> ()) {
-        
+            
             guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
                   !password.trimmingCharacters(in: .whitespaces).isEmpty,
                   password.count >= 6 else {return}
@@ -36,10 +36,10 @@ final class AuthManager {
                 }
                 completion(true)
             }
-    }
+        }
     
     public func signIn(
-
+        
         email: String,
         password: String,
         completion: @escaping (Bool) -> ()) {
@@ -55,8 +55,7 @@ final class AuthManager {
                 }
                 completion(true)
             }
-        
-    }
+        }
     
     public func signOut(
         completion: (Bool) -> ()) {
@@ -67,5 +66,10 @@ final class AuthManager {
                 print(error)
                 completion(false)
             }
+    }
+    //to fix - this method returns unknown user %(
+    public func getUserName() -> String {
+        guard let name = auth.currentUser?.displayName else {return "Unknown user"}
+        return name
     }
 }

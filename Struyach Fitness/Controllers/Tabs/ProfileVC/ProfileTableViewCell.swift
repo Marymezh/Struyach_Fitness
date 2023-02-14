@@ -11,8 +11,6 @@ class ProfileTableViewCell: UITableViewCell {
     
     private var baseInset: CGFloat { return 16 }
     
-//    var weights = ["","00", "00", "00", "00", "00", "00", "00"]
-    
     var weightIsSet: ((String) -> Void)?
     
     let movementLabel: UILabel = {
@@ -27,7 +25,6 @@ class ProfileTableViewCell: UITableViewCell {
         let label = UILabel()
         label.toAutoLayout()
         label.textAlignment = .right
-//        label.text = "00 kg"
         return label
     }()
     
@@ -53,20 +50,6 @@ class ProfileTableViewCell: UITableViewCell {
         return button
     }()
     
-    @objc func saveTapped () {
-        if let text = weightTextField.text {
-            if text != "" {
- //               weightLabel.text = "\(text) kg"
-                self.weightIsSet?(text)
-//                UserDefaults.standard.set(text, forKey: "weight")
-                weightTextField.text = ""
-            } else {
-                weightLabel.text = "00 kg"
-                weightTextField.text = ""
-            }
-        }
-    }
-    
     let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.distribution = .equalSpacing
@@ -75,7 +58,7 @@ class ProfileTableViewCell: UITableViewCell {
         stackView.toAutoLayout()
         return stackView
     }()
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -83,8 +66,22 @@ class ProfileTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-     //   setWeightValue()
-        
+        setupSubviews()
+    }
+    
+    @objc private func saveTapped () {
+        if let text = weightTextField.text {
+            if text != "" {
+                self.weightIsSet?(text)
+                weightTextField.text = ""
+            } else {
+                weightLabel.text = "00 kg"
+                weightTextField.text = ""
+            }
+        }
+    }
+    
+    private func setupSubviews() {
         contentView.addSubview(stackView)
         stackView.addArrangedSubview(movementLabel)
         stackView.addArrangedSubview(weightLabel)
@@ -102,33 +99,8 @@ class ProfileTableViewCell: UITableViewCell {
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
-//
-//            weightLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
-//            weightLabel.leadingAnchor.constraint(equalTo: movementLabel.trailingAnchor, constant: baseInset),
-//            weightLabel.widthAnchor.constraint(equalToConstant: 20),
-//
-//            weightTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
-//            weightTextField.leadingAnchor.constraint(equalTo: weightLabel.trailingAnchor, constant: baseInset),
-//            weightTextField.widthAnchor.constraint(equalToConstant: 15),
-//
-//            saveButton.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
-//            saveButton.leadingAnchor.constraint(equalTo: weightTextField.trailingAnchor, constant: baseInset),
-//            saveButton.heightAnchor.constraint(equalToConstant: 20),
-//            saveButton.widthAnchor.constraint(equalToConstant: 20)
-//
         ]
         
         NSLayoutConstraint.activate(constraints)
-}
-    
-//    private func setWeightValue() {
-//        
-//        if let text = UserDefaults.standard.object(forKey: "weight") as? String {
-//            if text != "" {
-//                weightLabel.text = "\(text) kg"
-//            } else {
-//                weightLabel.text = "00 kg"
-//            }
-//        }
-//    }
+    }
 }

@@ -65,9 +65,7 @@ class SelectedWorkoutTableViewController: UITableViewController {
         
         cell.comment = commentsArray[indexPath.row]
         cell.backgroundColor = UIColor(named: "darkGreen")
- //       cell.commentTextLabel.text = commentsArray[indexPath.row].text
-        
-        
+    
         return cell
     }
     

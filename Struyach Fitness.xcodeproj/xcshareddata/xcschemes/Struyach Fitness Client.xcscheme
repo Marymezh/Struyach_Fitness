@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1AB69ABE2993768700155648"
-               BuildableName = "Struyach Fitness Admin.app"
+               BuildableName = "Struyach Fitness Client.app"
                BlueprintName = "Struyach Fitness Client"
                ReferencedContainer = "container:Struyach Fitness.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1AB69ABE2993768700155648"
-            BuildableName = "Struyach Fitness Admin.app"
+            BuildableName = "Struyach Fitness Client.app"
             BlueprintName = "Struyach Fitness Client"
             ReferencedContainer = "container:Struyach Fitness.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1AB69ABE2993768700155648"
-            BuildableName = "Struyach Fitness Admin.app"
+            BuildableName = "Struyach Fitness Client.app"
             BlueprintName = "Struyach Fitness Client"
             ReferencedContainer = "container:Struyach Fitness.xcodeproj">
          </BuildableReference>
