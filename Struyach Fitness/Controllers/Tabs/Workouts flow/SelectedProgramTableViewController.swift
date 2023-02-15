@@ -35,7 +35,7 @@ class SelectedProgramTableViewController: UITableViewController {
         self.navigationController?.navigationBar.tintColor = .black
         // Admin's app functionality allows to add new workouts, when the clients' - doesn't
         #if Admin
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addNewWorkout))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .done, target: self, action: #selector(addNewWorkout))
         #else
         #endif
         navigationItem.backBarButtonItem = UIBarButtonItem(title: self.title, style: .plain, target: nil, action: nil)

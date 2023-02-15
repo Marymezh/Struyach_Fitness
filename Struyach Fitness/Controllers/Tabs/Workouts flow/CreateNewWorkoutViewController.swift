@@ -26,37 +26,14 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         textView.toAutoLayout()
         return textView
     }()
-    
-    private lazy var addButton: UIButton = {
-        let button = UIButton()
-        button.setTitle("Add", for: .normal)
-        button.backgroundColor = UIColor(named: "darkGreen")
-        button.layer.cornerRadius = 5
-        button.layer.borderWidth = 0.5
-        button.layer.borderColor = UIColor.black.cgColor
-        button.addTarget(self, action: #selector(addNewWorkout), for: .touchUpInside)
-        button.toAutoLayout()
-        return button
-    }()
-    
-    private lazy var cancelButton: UIButton = {
-        let button = UIButton()
-        button.setTitle("Cancel", for: .normal)
-        button.backgroundColor = UIColor(named: "darkGreen")
-        button.layer.cornerRadius = 5
-        button.layer.borderWidth = 0.5
-        button.layer.borderColor = UIColor.black.cgColor
-        button.addTarget(self, action: #selector(cancel), for: .touchUpInside)
-        button.toAutoLayout()
-        return button
-    }()
 
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor(named: "lightGreen")
-        navigationItem.hidesBackButton = true
+    
         navigationController?.navigationBar.prefersLargeTitles = false
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "SAVE", style: .done, target: self, action: #selector(addNewWorkout))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(cancel))
         
         setupTextView()
         setupSubviews()
@@ -80,7 +57,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
             workoutDescriptionTextView.isEditable = true
             let beginning = workoutDescriptionTextView.beginningOfDocument
             workoutDescriptionTextView.selectedTextRange = workoutDescriptionTextView.textRange(from: beginning, to: beginning)
-            addButton.setTitle("Save", for: .normal)
+            
         }
         #else
         if text != "" {
@@ -90,8 +67,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
             workoutDescriptionTextView.isEditable = false
             workoutDescriptionTextView.isUserInteractionEnabled = true
             workoutDescriptionTextView.dataDetectorTypes = .link
-            addButton.isHidden = true
-            cancelButton.isHidden = true
+
         }
         #endif
     }
@@ -101,41 +77,16 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         workoutDescriptionTextView.delegate = self
         workoutDescriptionTextView.becomeFirstResponder()
         
-        view.addSubviews(workoutDescriptionTextView, addButton, cancelButton)
-        
-        let buttonWidth = view.frame.width/2 - 30
-        
-        var textViewHeight: CGFloat {
-            if text != "" {
-                #if Admin
-                return view.frame.height/3
-                #else
-                return view.frame.height * 0.9
-                #endif
-            } else {
-                return view.frame.height/3
-            }
-        }
-        
+        view.addSubviews(workoutDescriptionTextView)
+
         var baseInset: CGFloat { return 15 }
         
         let constraints = [
             workoutDescriptionTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: baseInset),
             workoutDescriptionTextView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
             workoutDescriptionTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
-            workoutDescriptionTextView.heightAnchor.constraint(equalToConstant: textViewHeight),
-            
-            addButton.topAnchor.constraint(equalTo: workoutDescriptionTextView.bottomAnchor, constant: baseInset),
-            addButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
-            addButton.heightAnchor.constraint(equalToConstant: 44),
-            addButton.widthAnchor.constraint(equalToConstant: buttonWidth),
-            
-            cancelButton.topAnchor.constraint(equalTo: workoutDescriptionTextView.bottomAnchor, constant: baseInset),
-            cancelButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
-            cancelButton.heightAnchor.constraint(equalTo: addButton.heightAnchor),
-            cancelButton.widthAnchor.constraint(equalToConstant: buttonWidth)
+            workoutDescriptionTextView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset)
         ]
-        
         NSLayoutConstraint.activate(constraints)
     }
 }

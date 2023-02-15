@@ -16,8 +16,7 @@ final class StorageManager {
     private init() {}
     
     
-    public func uploadUserProfilePicture( email: String, image: UIImage?, completion: @escaping (Bool)->()) {
-        
+    public func uploadUserProfilePicture(email: String, image: UIImage?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
@@ -32,7 +31,6 @@ final class StorageManager {
                 }
                 completion(true)
             }
-        
     }
     
     public func downloadUrlForProfilePicture(path: String, completion: @escaping (URL?)->()){
@@ -41,4 +39,15 @@ final class StorageManager {
                 completion(url)
             }
     }
+    //TODO: - make a func to upload personal records connected to a particular user
+//    public func uploadUserPersonalRecords(email: String, weights: [String]?, completion: @escaping (Bool)->()) {
+//        let path = email
+//            .replacingOccurrences(of: ".", with: "_")
+//            .replacingOccurrences(of: "@", with: "_")
+//
+//        container
+//            .reference(withPath: "personal_records/\(path)/")
+//            .putData(<#T##uploadData: Data##Data#>, metadata: <#T##StorageMetadata?#>, completion: <#T##((StorageMetadata?, Error?) -> Void)?##((StorageMetadata?, Error?) -> Void)?##(StorageMetadata?, Error?) -> Void#>)
+//
+//    }
 }

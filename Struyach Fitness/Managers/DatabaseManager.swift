@@ -74,6 +74,7 @@ final class DatabaseManager {
                       error == nil else {return}
                 
                 let ref = data["profile_photo"]
+ //               let records = data["personal_records"]
                 let user = User(name: name, email: email, profilePictureRef: ref, personalRecords: nil)
                 completion(user)
             }

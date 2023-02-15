@@ -146,6 +146,7 @@ class ProfileTableViewController: UITableViewController {
                 self.weights.remove(at: indexPath.row)
                 self.weights.insert(text, at: indexPath.row)
                 tableView.reloadData()
+                // upload saved weights array to Firebase 
                 UserDefaults.standard.set(self.weights, forKey: "savedWeights")
             }
             cell.weightLabel.text = "\(weights[indexPath.row]) kg"
@@ -163,7 +164,7 @@ class ProfileTableViewController: UITableViewController {
         return headerView
     }
 }
-
+//MARK: - UIImagePickerControllerDelegate methods
 extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     private func showImagePickerController() {
         let picker = UIImagePickerController()
@@ -191,7 +192,6 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
                 }
             }
         }
-        
         guard let data = image.jpegData(compressionQuality: 0.5) else {return}
         let encoded = try! PropertyListEncoder().encode(data)
         UserDefaults.standard.set(encoded, forKey: "userImage")
