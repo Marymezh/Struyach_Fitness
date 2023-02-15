@@ -31,11 +31,7 @@ class ProfileTableViewController: UITableViewController {
         updateWeights()
         setupNavigationBar()
         setupTableView()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-       
+        setupHeaderView()
     }
     
     private func setupTableView() {
@@ -43,7 +39,45 @@ class ProfileTableViewController: UITableViewController {
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: ProfileTableViewCell.self))
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
         tableView.sectionHeaderHeight = UITableView.automaticDimension
+    }
+    
+    private func setupHeaderView() {
         headerView.isUserInteractionEnabled = true
+        headerView.userPhotoImage.isUserInteractionEnabled = true
+        setupGuestureRecognizer()
+        fetchProfileData()
+    }
+    
+    private func setupGuestureRecognizer() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(userPhotoImageTapped))
+        headerView.userPhotoImage.addGestureRecognizer(tap)
+    }
+    
+    @objc private func userPhotoImageTapped() {
+       guard let myEmail = UserDefaults.standard.string(forKey: "email"),
+             myEmail == currentEmail else {return}
+        showImagePickerController()
+    }
+    
+    private func fetchProfileData() {
+        DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
+            guard let user = user else {return}
+            DispatchQueue.main.async {
+                self?.headerView.userNameLabel.text = user.name
+                self?.headerView.userEmailLabel.text = user.email
+                guard let ref = user.profilePictureRef else {return}
+                StorageManager.shared.downloadUrlForProfilePicture(path: ref) { url in
+                    guard let url = url else {return}
+                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+                        guard let data = data else {return}
+                        DispatchQueue.main.async {
+                            self?.headerView.userPhotoImage.image = UIImage(data: data)
+                        }
+                    }
+                    task.resume()
+                }
+            }
+        }
     }
     
    private func setupNavigationBar () {
@@ -63,7 +97,6 @@ class ProfileTableViewController: UITableViewController {
             AuthManager.shared.signOut { [weak self] success in
                 if success {
                     DispatchQueue.main.async {
-                        //to fix when login after logout - userName becomes blank 
                         UserDefaults.standard.set(nil, forKey: "userName")
                         UserDefaults.standard.set(nil, forKey: "email")
                         UserDefaults.standard.set(nil, forKey: "savedWeights")
@@ -126,10 +159,41 @@ class ProfileTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//        
-//        headerView.onNameChanged = {
-//            tableView.performBatchUpdates(nil, completion: nil)
-//        }
+
         return headerView
+    }
+}
+
+extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    private func showImagePickerController() {
+        let picker = UIImagePickerController()
+        picker.allowsEditing = true
+        picker.delegate = self
+        picker.sourceType = .photoLibrary
+        navigationController?.present(picker, animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        navigationController?.dismiss(animated: true)
+        
+        guard let image = info[.editedImage] as? UIImage else { return }
+ //       let email = currentEmail
+        self.headerView.userPhotoImage.image = image
+        
+        StorageManager.shared.uploadUserProfilePicture(email: currentEmail, image: image) { [weak self] success in
+            guard let self = self else {return}
+            if success {
+                DatabaseManager.shared.updateProfilePhoto(email: self.currentEmail) { success in
+                    guard success else {return}
+                    DispatchQueue.main.async {
+                        self.fetchProfileData()
+                    }
+                }
+            }
+        }
+        
+        guard let data = image.jpegData(compressionQuality: 0.5) else {return}
+        let encoded = try! PropertyListEncoder().encode(data)
+        UserDefaults.standard.set(encoded, forKey: "userImage")
     }
 }

@@ -50,7 +50,7 @@ class ProfileTableViewCell: UITableViewCell {
         return button
     }()
     
-    let stackView: UIStackView = {
+    private let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.distribution = .equalSpacing
         stackView.axis = .horizontal
