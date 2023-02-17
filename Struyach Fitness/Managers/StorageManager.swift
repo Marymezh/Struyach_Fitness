@@ -40,14 +40,28 @@ final class StorageManager {
             }
     }
     //TODO: - make a func to upload personal records connected to a particular user
-//    public func uploadUserPersonalRecords(email: String, weights: [String]?, completion: @escaping (Bool)->()) {
-//        let path = email
-//            .replacingOccurrences(of: ".", with: "_")
-//            .replacingOccurrences(of: "@", with: "_")
-//
-//        container
-//            .reference(withPath: "personal_records/\(path)/")
-//            .putData(<#T##uploadData: Data##Data#>, metadata: <#T##StorageMetadata?#>, completion: <#T##((StorageMetadata?, Error?) -> Void)?##((StorageMetadata?, Error?) -> Void)?##(StorageMetadata?, Error?) -> Void#>)
-//
-//    }
+    public func uploadUserPersonalRecords(email: String, weights: [String]?, completion: @escaping (Bool)->()) {
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let data = try! JSONEncoder().encode(weights)
+        
+        container
+            .reference(withPath: "personal_records/\(path)/records.json")
+            .putData(data, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(false)
+                    return
+                }
+                completion(true)
+            }
+    }
+    
+    public func downloadUrlForUserRecords(path: String, completion: @escaping (URL?)->()){
+        container.reference(withPath: path)
+            .downloadURL { url, _ in
+                completion(url)
+            }
+    }
 }

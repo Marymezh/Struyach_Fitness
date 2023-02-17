@@ -75,6 +75,7 @@ class ProfileTableViewCell: UITableViewCell {
                 self.weightIsSet?(text)
                 weightTextField.text = ""
             } else {
+                self.weightIsSet?("00")
                 weightLabel.text = "00 kg"
                 weightTextField.text = ""
             }

@@ -130,7 +130,7 @@ class LoginViewController: UIViewController {
         let createAccountVC = CreateAccountViewController()
         createAccountVC.title = "Create Account"
         createAccountVC.navigationItem.largeTitleDisplayMode = .never
-        createAccountVC.navigationItem.hidesBackButton = true
+//        createAccountVC.navigationItem.hidesBackButton = true
         navigationController?.pushViewController(createAccountVC, animated: true)
     }
     

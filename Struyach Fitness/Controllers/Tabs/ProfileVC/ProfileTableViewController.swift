@@ -12,7 +12,6 @@ class ProfileTableViewController: UITableViewController {
     private let movements = ["", "Back Squat", "Front Squat", "Squat Clean", "Power Clean", "Clean and Jerk", "Snatch", "Deadlift"]
     
     private var weights = ["", "00", "00", "00", "00", "00", "00", "00"]
-    
     private let headerView = ProfileHeaderView()
     
     let currentEmail: String
@@ -28,17 +27,16 @@ class ProfileTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        updateWeights()
         setupNavigationBar()
         setupTableView()
         setupHeaderView()
+        fetchUserRecords()
     }
     
     private func setupTableView() {
         tableView.backgroundColor = .systemTeal
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: ProfileTableViewCell.self))
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
-        tableView.sectionHeaderHeight = UITableView.automaticDimension
     }
     
     private func setupHeaderView() {
@@ -80,6 +78,25 @@ class ProfileTableViewController: UITableViewController {
         }
     }
     
+    private func fetchUserRecords() {
+        DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
+            guard let user = user, let self = self else {return}
+            guard let ref = user.personalRecords else {return}
+            StorageManager.shared.downloadUrlForUserRecords(path: ref) { url in
+                guard let url = url else {return}
+                let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+                    guard let data = data else {return}
+                    self.weights = try! JSONDecoder().decode([String].self, from: data)
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                    print(self.weights)
+                }
+                task.resume()
+            }
+        }
+    }
+
    private func setupNavigationBar () {
         navigationController?.navigationBar.tintColor = .darkGray
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -99,7 +116,6 @@ class ProfileTableViewController: UITableViewController {
                     DispatchQueue.main.async {
                         UserDefaults.standard.set(nil, forKey: "userName")
                         UserDefaults.standard.set(nil, forKey: "email")
-                        UserDefaults.standard.set(nil, forKey: "savedWeights")
                         UserDefaults.standard.set(nil, forKey: "userImage")
                         let signInVC = LoginViewController()
                         signInVC.navigationItem.largeTitleDisplayMode = .always
@@ -112,14 +128,6 @@ class ProfileTableViewController: UITableViewController {
             }
         }))
         present(alert, animated: true)
-    }
-    
-    private func updateWeights() {
-        if let savedWeights = UserDefaults.standard.object(forKey: "savedWeights")  as? [String] {
-            if savedWeights != [""] {
-                weights = savedWeights
-            }
-        }
     }
 
     // MARK: - Table view data source
@@ -142,15 +150,26 @@ class ProfileTableViewController: UITableViewController {
             
             cell.backgroundColor = UIColor(named: "tealLight")
             cell.movementLabel.text = movements[indexPath.row]
-            cell.weightIsSet = { text in
+            cell.weightLabel.text = "\(weights[indexPath.row]) kg"
+            cell.weightIsSet = { [weak self] text in
+                guard let self = self else {return}
                 self.weights.remove(at: indexPath.row)
                 self.weights.insert(text, at: indexPath.row)
-                tableView.reloadData()
-                // upload saved weights array to Firebase 
-                UserDefaults.standard.set(self.weights, forKey: "savedWeights")
+                self.tableView.reloadData()
+                // upload saved weights array to Firebase
+                StorageManager.shared.uploadUserPersonalRecords(email: self.currentEmail, weights: self.weights) { [weak self] success in
+                    guard let self = self else {return}
+                    if success {
+                        DatabaseManager.shared.updateUserPersonalRecords(email: self.currentEmail) { success in
+                            guard success else {return}
+                            DispatchQueue.main.async {
+                                self.fetchUserRecords()
+                            }
+                            print ("Records are updated")
+                        }
+                    }
+                }
             }
-            cell.weightLabel.text = "\(weights[indexPath.row]) kg"
-
             return cell
         }
     }
@@ -162,6 +181,11 @@ class ProfileTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
 
         return headerView
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        
+        return UITableView.automaticDimension
     }
 }
 //MARK: - UIImagePickerControllerDelegate methods
@@ -178,7 +202,6 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
         navigationController?.dismiss(animated: true)
         
         guard let image = info[.editedImage] as? UIImage else { return }
- //       let email = currentEmail
         self.headerView.userPhotoImage.image = image
         
         StorageManager.shared.uploadUserProfilePicture(email: currentEmail, image: image) { [weak self] success in

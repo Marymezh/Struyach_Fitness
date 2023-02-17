@@ -73,9 +73,9 @@ final class DatabaseManager {
                       let name = data["name"],
                       error == nil else {return}
                 
-                let ref = data["profile_photo"]
- //               let records = data["personal_records"]
-                let user = User(name: name, email: email, profilePictureRef: ref, personalRecords: nil)
+                let imageRef = data["profile_photo"]
+                let records = data["user_records"]
+                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: records)
                 completion(user)
             }
     }
@@ -100,5 +100,25 @@ final class DatabaseManager {
             }
         }
     }
-
+    public func updateUserPersonalRecords(email: String, completion: @escaping (Bool) ->()){
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let recordsReference = "personal_records/\(path)/records.json"
+        
+        let dbRef = database
+            .collection("users")
+            .document(path)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["user_records"] = recordsReference
+            dbRef.setData(data) { error in
+                completion(error == nil)
+            }
+        }
+    }
+    
 }
