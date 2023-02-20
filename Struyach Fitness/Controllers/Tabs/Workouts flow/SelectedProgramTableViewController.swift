@@ -47,15 +47,15 @@ class SelectedProgramTableViewController: UITableViewController {
     
     private func loadWorkoutsList() {
         switch self.title {
-        case "ECD/BEFIT TRAINING PLAN":
+        case K.ecd:
             listOfWorkouts = WorkoutDescriptionStorage.ecd
-        case "BODYWEIGHT PLAN":
+        case K.bodyweight:
             listOfWorkouts = WorkoutDescriptionStorage.bodyweight
-        case " 'STRUYACH' PLAN":
+        case K.struyach:
             listOfWorkouts = WorkoutDescriptionStorage.struyach
-        case "BADASS":
+        case K.badass:
             listOfWorkouts = WorkoutDescriptionStorage.badass
-        case "HARD PRESS":
+        case K.hardpress:
             listOfWorkouts = WorkoutDescriptionStorage.hardpress
         default: fatalError("Unable to load workout description")
         }
@@ -82,11 +82,11 @@ class SelectedProgramTableViewController: UITableViewController {
                     navigationController?.pushViewController(workoutVC, animated: true)
                     workoutVC.onWorkoutSave = { text in
                         switch self.title {
-                        case "ECD/BEFIT TRAINING PLAN": WorkoutDescriptionStorage.ecd[indexPath.row].description = text
-                        case "BODYWEIGHT PLAN": WorkoutDescriptionStorage.bodyweight[indexPath.row].description = text
-                        case " 'STRUYACH' PLAN": WorkoutDescriptionStorage.struyach[indexPath.row].description = text
-                        case "BADASS": WorkoutDescriptionStorage.badass[indexPath.row].description = text
-                        case "HARD PRESS": WorkoutDescriptionStorage.hardpress[indexPath.row].description = text
+                        case K.ecd: WorkoutDescriptionStorage.ecd[indexPath.row].description = text
+                        case K.bodyweight: WorkoutDescriptionStorage.bodyweight[indexPath.row].description = text
+                        case K.struyach: WorkoutDescriptionStorage.struyach[indexPath.row].description = text
+                        case K.badass: WorkoutDescriptionStorage.badass[indexPath.row].description = text
+                        case K.hardpress: WorkoutDescriptionStorage.hardpress[indexPath.row].description = text
                         default: fatalError("Unable to edit workout")
                         }
                     }
@@ -108,14 +108,14 @@ class SelectedProgramTableViewController: UITableViewController {
         navigationController?.pushViewController(newWorkoutVC, animated: true)
         newWorkoutVC.onWorkoutSave = {[weak self] text in
             let formatter = DateFormatter()
-            formatter.dateFormat = "dd MMM yyyy"
+            formatter.dateFormat = "dd MM yyyy"
             let date = formatter.string(from: Date())
             switch self?.title {
-            case "ECD/BEFIT TRAINING PLAN": WorkoutDescriptionStorage.ecd.insert(WorkoutDescription(description: text, date: date), at: 0)
-            case "BODYWEIGHT PLAN": WorkoutDescriptionStorage.bodyweight.insert(WorkoutDescription(description: text, date: date), at: 0)
-            case " 'STRUYACH' PLAN": WorkoutDescriptionStorage.struyach.insert(WorkoutDescription(description: text, date: date), at: 0)
-            case "BADASS": WorkoutDescriptionStorage.badass.insert(WorkoutDescription(description: text, date: date), at: 0)
-            case "HARD PRESS": WorkoutDescriptionStorage.hardpress.insert(WorkoutDescription(description: text, date: date), at: 0)
+            case K.ecd: WorkoutDescriptionStorage.ecd.insert(WorkoutDescription(description: text, date: date), at: 0)
+            case K.bodyweight: WorkoutDescriptionStorage.bodyweight.insert(WorkoutDescription(description: text, date: date), at: 0)
+            case K.struyach: WorkoutDescriptionStorage.struyach.insert(WorkoutDescription(description: text, date: date), at: 0)
+            case K.badass: WorkoutDescriptionStorage.badass.insert(WorkoutDescription(description: text, date: date), at: 0)
+            case K.hardpress: WorkoutDescriptionStorage.hardpress.insert(WorkoutDescription(description: text, date: date), at: 0)
             default: fatalError("Unable to identify category of workout")
             }
         }
@@ -151,11 +151,11 @@ class SelectedProgramTableViewController: UITableViewController {
             tableView.beginUpdates()
             listOfWorkouts.remove(at: indexPath.row)
             switch self.title {
-            case "ECD/BEFIT TRAINING PLAN": WorkoutDescriptionStorage.ecd.remove(at: indexPath.row)
-            case "BODYWEIGHT PLAN": WorkoutDescriptionStorage.bodyweight.remove(at: indexPath.row)
-            case " 'STRUYACH' PLAN": WorkoutDescriptionStorage.struyach.remove(at: indexPath.row)
-            case "BADASS": WorkoutDescriptionStorage.badass.remove(at: indexPath.row)
-            case "HARD PRESS": WorkoutDescriptionStorage.hardpress.remove(at: indexPath.row)
+            case K.ecd: WorkoutDescriptionStorage.ecd.remove(at: indexPath.row)
+            case K.bodyweight: WorkoutDescriptionStorage.bodyweight.remove(at: indexPath.row)
+            case K.struyach: WorkoutDescriptionStorage.struyach.remove(at: indexPath.row)
+            case K.badass: WorkoutDescriptionStorage.badass.remove(at: indexPath.row)
+            case K.hardpress: WorkoutDescriptionStorage.hardpress.remove(at: indexPath.row)
             default: fatalError("Unable to delete workout")
             }
             tableView.deleteRows(at: [indexPath], with: .fade)
@@ -170,10 +170,10 @@ class SelectedProgramTableViewController: UITableViewController {
         selectedWorkoutVC.title = "Workout for \(listOfWorkouts[indexPath.row].date)"
         
         selectedWorkoutVC.headerView.workoutDescriptionTextView.text = listOfWorkouts[indexPath.row].description
-        
         selectedWorkoutVC.onCompletion = {
             self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
         }
+        navigationController?.navigationBar.prefersLargeTitles = true
         navigationController?.pushViewController(selectedWorkoutVC, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
         self.tableView.reloadData()

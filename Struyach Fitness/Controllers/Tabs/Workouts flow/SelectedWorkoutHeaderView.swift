@@ -87,12 +87,15 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     
     
     @objc func commentSent() {
-        guard let text = commentTextView.text,
-        text != "" else {return}
+        if let text = commentTextView.text,
+        text != "" {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd MMM yyyy HH:mm"
+        formatter.dateFormat = "dd MM yyyy HH:mm"
         let date = formatter.string(from: Date())
         self.onSendCommentPush?(text, date)
+        } else {
+            showAlert(error: "Please enter your comment first!")
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -149,6 +152,14 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     
     func textViewDidChange(_ textView: UITextView) {
         onTextChanged?()
+    }
+    
+    private func showAlert (error: String) {
+        let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        alert.addAction(cancelAction)
+        
+        self.window?.rootViewController?.present(alert, animated: true)
     }
 
 }

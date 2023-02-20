@@ -30,19 +30,25 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor(named: "lightGreen")
-    
         navigationController?.navigationBar.prefersLargeTitles = false
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "SAVE", style: .done, target: self, action: #selector(addNewWorkout))
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(cancel))
         
+        configureButtons()
         setupTextView()
         setupSubviews()
     }
     
+    private func configureButtons() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "SAVE", style: .done, target: self, action: #selector(addNewWorkout))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(cancel))
+    }
+    
     @objc private func addNewWorkout() {
-        if let text = workoutDescriptionTextView.text {
+        if let text = workoutDescriptionTextView.text,
+              text != "" {
             self.onWorkoutSave?(text)
             navigationController?.popViewController(animated: true)
+        } else {
+            self.showAlert(error: "Enter workout description!")
         }
     }
     
@@ -89,4 +95,13 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         ]
         NSLayoutConstraint.activate(constraints)
     }
+    
+    private func showAlert (error: String) {
+        let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        alert.addAction(cancelAction)
+        
+        self.present(alert, animated: true, completion: nil)
+    }
+    
 }

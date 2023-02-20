@@ -10,8 +10,8 @@ import UIKit
 class SelectedWorkoutTableViewController: UITableViewController {
 
     private var commentsArray: [Comment] = [
-        Comment(date: "04 февр. 2023", text: "Great workout, finished in 10:35 min"),
-        Comment(date: "05 февр. 2023", text: "It was too hard for me, only 3 rounds completed")]
+        Comment(date: "04 02 2023", text: "Great workout, finished in 10:35 min"),
+        Comment(date: "05 02 2023", text: "It was too hard for me, only 3 rounds completed")]
     
   let headerView = SelectedWorkoutHeaderView()
     
