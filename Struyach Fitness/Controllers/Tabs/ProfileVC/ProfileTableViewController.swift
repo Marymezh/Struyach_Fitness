@@ -30,7 +30,6 @@ class ProfileTableViewController: UITableViewController {
         setupNavigationBar()
         setupTableView()
         setupHeaderView()
-        fetchUserRecords()
     }
     
     private func setupTableView() {
@@ -43,7 +42,6 @@ class ProfileTableViewController: UITableViewController {
         headerView.isUserInteractionEnabled = true
         headerView.userPhotoImage.isUserInteractionEnabled = true
         setupGuestureRecognizer()
-        fetchProfileData()
     }
     
     private func setupGuestureRecognizer() {
@@ -57,7 +55,7 @@ class ProfileTableViewController: UITableViewController {
         showImagePickerController()
     }
     
-    private func fetchProfileData() {
+    func fetchProfileData() {
         DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
             guard let user = user else {return}
             DispatchQueue.main.async {
@@ -78,7 +76,7 @@ class ProfileTableViewController: UITableViewController {
         }
     }
     
-    private func fetchUserRecords() {
+    func fetchUserRecords() {
         DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
             guard let user = user, let self = self else {return}
             guard let ref = user.personalRecords else {return}

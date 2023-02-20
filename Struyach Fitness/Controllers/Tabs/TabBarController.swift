@@ -31,6 +31,8 @@ class TabBarController: UITabBarController {
         let profileVC = ProfileTableViewController(currentEmail: currentUserEmail)
 //        let profileVC = ProfileTableViewController()
         profileVC.title = "Profile"
+        profileVC.fetchUserRecords()
+        profileVC.fetchProfileData()
         
         programsVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always
@@ -43,6 +45,7 @@ class TabBarController: UITabBarController {
         
         nav1.tabBarItem = UITabBarItem(title: "Programs", image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
         nav2.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 2)
+        
         
         setViewControllers([nav1, nav2], animated: true)
     }
