@@ -45,8 +45,10 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     
     private lazy var fullScreenButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage(systemName: "arrow.up.left.and.arrow.down.right"), for: .normal)
-        button.tintColor = .black
+        button.setImage(UIImage(systemName: "arrow.up.left.and.arrow.down.right", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+        button.tintColor = .systemGray
+        button.layer.borderColor = UIColor.black.cgColor
+        button.layer.borderWidth = 0.5
         button.addTarget(self, action: #selector(fullScreenPressed), for: .touchUpInside)
         button.toAutoLayout()
         return button
@@ -78,14 +80,15 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         let button = UIButton()
         button.toAutoLayout()
         button.tintColor = .white
-        button.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
+        button.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
         button.addTarget(self, action: #selector(commentSent), for: .touchUpInside)
         return button
     }()
     
     
     @objc func commentSent() {
-        guard let text = commentTextView.text else {return}
+        guard let text = commentTextView.text,
+        text != "" else {return}
         let formatter = DateFormatter()
         formatter.dateFormat = "dd MMM yyyy HH:mm"
         let date = formatter.string(from: Date())
@@ -104,9 +107,9 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         }
         commentTextView.delegate = self
         
-        #if Admin
-        fullScreenButton.isHidden = true
-        #endif
+//        #if Admin
+//        fullScreenButton.isHidden = true
+//        #endif
         
         self.addSubviews (workoutView, fullScreenButton, commentTextView, addCommentButton)
         workoutView.addSubview(workoutDescriptionTextView)

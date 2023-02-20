@@ -32,6 +32,7 @@ class CommentTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         label.textColor = .black
+        label.text = "Current User"
         label.textAlignment = .left
         label.numberOfLines = 1
         label.toAutoLayout()
@@ -67,7 +68,7 @@ class CommentTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         setupUI()
-        loadUserData()
+ //       loadUserData()
     }
     
     private func setupUI() {

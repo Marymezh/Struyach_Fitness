@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import IQKeyboardManagerSwift
 
 class ProfileTableViewController: UITableViewController {
     
@@ -30,6 +31,11 @@ class ProfileTableViewController: UITableViewController {
         setupNavigationBar()
         setupTableView()
         setupHeaderView()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        uploadUserRecords()
     }
     
     private func setupTableView() {
@@ -94,6 +100,22 @@ class ProfileTableViewController: UITableViewController {
             }
         }
     }
+    
+    private func uploadUserRecords() {
+        // upload saved weights array to Firebase
+        StorageManager.shared.uploadUserPersonalRecords(email: self.currentEmail, weights: self.weights) { [weak self] success in
+            guard let self = self else {return}
+            if success {
+                DatabaseManager.shared.updateUserPersonalRecords(email: self.currentEmail) { success in
+                    guard success else {return}
+//                    DispatchQueue.main.async {
+//                        self.fetchUserRecords()
+//                    }
+                    print ("Records are updated")
+                }
+            }
+        }
+    }
 
    private func setupNavigationBar () {
         navigationController?.navigationBar.tintColor = .darkGray
@@ -154,19 +176,7 @@ class ProfileTableViewController: UITableViewController {
                 self.weights.remove(at: indexPath.row)
                 self.weights.insert(text, at: indexPath.row)
                 self.tableView.reloadData()
-                // upload saved weights array to Firebase
-                StorageManager.shared.uploadUserPersonalRecords(email: self.currentEmail, weights: self.weights) { [weak self] success in
-                    guard let self = self else {return}
-                    if success {
-                        DatabaseManager.shared.updateUserPersonalRecords(email: self.currentEmail) { success in
-                            guard success else {return}
-                            DispatchQueue.main.async {
-                                self.fetchUserRecords()
-                            }
-                            print ("Records are updated")
-                        }
-                    }
-                }
+
             }
             return cell
         }

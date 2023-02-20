@@ -35,7 +35,7 @@ class SelectedProgramTableViewController: UITableViewController {
         self.navigationController?.navigationBar.tintColor = .black
         // Admin's app functionality allows to add new workouts, when the clients' - doesn't
         #if Admin
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .done, target: self, action: #selector(addNewWorkout))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewWorkout))
         #else
         #endif
         navigationItem.backBarButtonItem = UIBarButtonItem(title: self.title, style: .plain, target: nil, action: nil)
@@ -150,6 +150,14 @@ class SelectedProgramTableViewController: UITableViewController {
         if editingStyle == .delete {
             tableView.beginUpdates()
             listOfWorkouts.remove(at: indexPath.row)
+            switch self.title {
+            case "ECD/BEFIT TRAINING PLAN": WorkoutDescriptionStorage.ecd.remove(at: indexPath.row)
+            case "BODYWEIGHT PLAN": WorkoutDescriptionStorage.bodyweight.remove(at: indexPath.row)
+            case " 'STRUYACH' PLAN": WorkoutDescriptionStorage.struyach.remove(at: indexPath.row)
+            case "BADASS": WorkoutDescriptionStorage.badass.remove(at: indexPath.row)
+            case "HARD PRESS": WorkoutDescriptionStorage.hardpress.remove(at: indexPath.row)
+            default: fatalError("Unable to delete workout")
+            }
             tableView.deleteRows(at: [indexPath], with: .fade)
             numberOfWorkouts = listOfWorkouts.count
             tableView.endUpdates()
