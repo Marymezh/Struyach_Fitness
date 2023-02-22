@@ -11,7 +11,7 @@ import UIKit
 class SelectedProgramTableViewController: UITableViewController {
     
     private var numberOfWorkouts: Int = 0
-    private var listOfWorkouts: [WorkoutDescription] = []
+    private var listOfWorkouts: [Workout] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -107,15 +107,23 @@ class SelectedProgramTableViewController: UITableViewController {
         newWorkoutVC.title = "Add new workout"
         navigationController?.pushViewController(newWorkoutVC, animated: true)
         newWorkoutVC.onWorkoutSave = {[weak self] text in
+            guard let title = self?.title else {return}
             let formatter = DateFormatter()
             formatter.dateFormat = "dd MM yyyy"
             let date = formatter.string(from: Date())
-            switch self?.title {
-            case K.ecd: WorkoutDescriptionStorage.ecd.insert(WorkoutDescription(description: text, date: date), at: 0)
-            case K.bodyweight: WorkoutDescriptionStorage.bodyweight.insert(WorkoutDescription(description: text, date: date), at: 0)
-            case K.struyach: WorkoutDescriptionStorage.struyach.insert(WorkoutDescription(description: text, date: date), at: 0)
-            case K.badass: WorkoutDescriptionStorage.badass.insert(WorkoutDescription(description: text, date: date), at: 0)
-            case K.hardpress: WorkoutDescriptionStorage.hardpress.insert(WorkoutDescription(description: text, date: date), at: 0)
+            let workoutID = UUID().uuidString
+            let newWorkout = Workout(identifier: workoutID, program: title, description: text, date: date)
+            DatabaseManager.shared.postWorkout(with: newWorkout, program: title) { success in
+                if success {
+                    print ("workout for the \(newWorkout.date) is saved into \(title) collection ")
+                }
+            }
+            switch title {
+            case K.ecd: WorkoutDescriptionStorage.ecd.insert(newWorkout, at: 0)
+            case K.bodyweight: WorkoutDescriptionStorage.bodyweight.insert(newWorkout, at: 0)
+            case K.struyach: WorkoutDescriptionStorage.struyach.insert(newWorkout, at: 0)
+            case K.badass: WorkoutDescriptionStorage.badass.insert(newWorkout, at: 0)
+            case K.hardpress: WorkoutDescriptionStorage.hardpress.insert(newWorkout, at: 0)
             default: fatalError("Unable to identify category of workout")
             }
         }

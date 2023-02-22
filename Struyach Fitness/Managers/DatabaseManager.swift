@@ -27,13 +27,66 @@ final class DatabaseManager {
 //
 //       }
     
-    public func postWorkout( with postText: WorkoutDescription,
-                             user: User,
+    public func postWorkout( with workout: Workout,
+                             program: String,
                              completion: @escaping(Bool) ->()
     ){
+//        let documentID = email
+//            .replacingOccurrences(of: ".", with: "_")
+//            .replacingOccurrences(of: "@", with: "_")
         
+        let data: [String : Any] = [
+            "program": workout.program,
+            "text": workout.description,
+            "date": workout.date,
+            "id": workout.identifier
+        ]
+        
+        let ecdCollection = database.collection("ecd plan")
+        let bodyweightCollection = database.collection("bodyweight plan")
+        let struyachCollection = database.collection("struyach plan")
+        let hardpressCollection = database.collection("hardpress")
+        let badassCollection = database.collection("badass")
+        
+        switch program {
+        case K.ecd:
+            ecdCollection.document(workout.date).setData(data) { error in
+                completion (error == nil)
+            }
+        case K.bodyweight:
+            bodyweightCollection.document(workout.date).setData(data) { error in
+                completion (error == nil)
+            }
+        case K.struyach:
+            struyachCollection.document(workout.date).setData(data) { error in
+                completion (error == nil)
+            }
+        case K.hardpress:
+            hardpressCollection.document(workout.date).setData(data) { error in
+                completion (error == nil)
+            }
+        case K.badass:
+            badassCollection.document(workout.date).setData(data) { error in
+                completion (error == nil)
+            }
+        default: break
+        }
     }
-    public func getAllWorkouts( completion: @escaping([WorkoutDescription])->()){
+        
+//        database
+//            .collection("workouts")
+//            .addDocument(data: data) { error in
+//                completion (error == nil)
+//            }
+//            .document(workout.program)
+//            .collection("\(program)")
+//            .document(workout.date)
+//            .setData(data) { error in
+//                completion(error == nil)
+//            }
+//    }
+    
+    public func getAllWorkouts( completion: @escaping([Workout])->()){
         
     }
     

@@ -66,6 +66,7 @@ class ProfileTableViewController: UITableViewController {
             guard let user = user else {return}
             DispatchQueue.main.async {
                 self?.headerView.userNameLabel.text = user.name
+                UserDefaults.standard.set(user.name, forKey: "userName")
                 self?.headerView.userEmailLabel.text = user.email
                 guard let ref = user.profilePictureRef else {return}
                 StorageManager.shared.downloadUrlForProfilePicture(path: ref) { url in
@@ -108,9 +109,6 @@ class ProfileTableViewController: UITableViewController {
             if success {
                 DatabaseManager.shared.updateUserPersonalRecords(email: self.currentEmail) { success in
                     guard success else {return}
-//                    DispatchQueue.main.async {
-//                        self.fetchUserRecords()
-//                    }
                     print ("Records are updated")
                 }
             }

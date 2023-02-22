@@ -68,7 +68,7 @@ class CommentTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         setupUI()
- //       loadUserData()
+        loadUserData()
     }
     
     private func setupUI() {
