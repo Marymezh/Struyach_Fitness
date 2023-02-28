@@ -12,8 +12,14 @@ class CommentTableViewCell: UITableViewCell {
     var comment:Comment? {
         didSet
         {
+            guard let data = comment?.userImage else {return}
+            let decoded = try! PropertyListDecoder().decode(Data.self, from: data)
+            let image = UIImage(data: decoded)
+            self.userImage.image = image
             self.commentTextLabel.text = comment?.text
             self.dateLabel.text = comment?.date
+            self.userNameLabel.text = comment?.userName
+
         }
     }
     
@@ -68,7 +74,7 @@ class CommentTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         setupUI()
-        loadUserData()
+    //    loadUserData()
     }
     
     private func setupUI() {

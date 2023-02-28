@@ -73,8 +73,11 @@ class ProfileTableViewController: UITableViewController {
                     guard let url = url else {return}
                     let task = URLSession.shared.dataTask(with: url) { data, _, _ in
                         guard let data = data else {return}
+                        let encoded = try! PropertyListEncoder().encode(data)
+                        UserDefaults.standard.set(encoded, forKey: "userImage")
                         DispatchQueue.main.async {
                             self?.headerView.userPhotoImage.image = UIImage(data: data)
+                            
                         }
                     }
                     task.resume()
@@ -221,8 +224,5 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
                 }
             }
         }
-        guard let data = image.jpegData(compressionQuality: 0.5) else {return}
-        let encoded = try! PropertyListEncoder().encode(data)
-        UserDefaults.standard.set(encoded, forKey: "userImage")
     }
 }

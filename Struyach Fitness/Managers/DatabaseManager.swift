@@ -28,66 +28,79 @@ final class DatabaseManager {
 //       }
     
     public func postWorkout( with workout: Workout,
-                             program: String,
+                             programID: String,
                              completion: @escaping(Bool) ->()
     ){
-//        let documentID = email
-//            .replacingOccurrences(of: ".", with: "_")
-//            .replacingOccurrences(of: "@", with: "_")
         
-        let data: [String : Any] = [
-            "program": workout.program,
-            "text": workout.description,
+        let program = programID
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "", with: "_")
+        
+        let workoutData: [String: Any] = [
+            "description": workout.description,
+            "programID": workout.programID,
             "date": workout.date,
-            "id": workout.identifier
+            "id": workout.id]
+        
+        database
+            .collection("programs")
+            .document(program)
+            .collection("workouts")
+            .document(workout.id)
+            .setData(workoutData) { error in
+                completion (error == nil)
+            }
+    }
+    
+    public func addComment(comment: Comment, completion: @escaping (Bool) ->()) {
+
+        
+        let commentData: [String: Any] = [
+            "workoutID": comment.workoutID,
+            "text": comment.text,
+            "date": comment.date,
+            "userName": comment.userName,
+            "userImage": comment.userImage,
+            "id": comment.id
         ]
         
-        let ecdCollection = database.collection("ecd plan")
-        let bodyweightCollection = database.collection("bodyweight plan")
-        let struyachCollection = database.collection("struyach plan")
-        let hardpressCollection = database.collection("hardpress")
-        let badassCollection = database.collection("badass")
-        
-        switch program {
-        case K.ecd:
-            ecdCollection.document(workout.date).setData(data) { error in
-                completion (error == nil)
-            }
-        case K.bodyweight:
-            bodyweightCollection.document(workout.date).setData(data) { error in
-                completion (error == nil)
-            }
-        case K.struyach:
-            struyachCollection.document(workout.date).setData(data) { error in
-                completion (error == nil)
-            }
-        case K.hardpress:
-            hardpressCollection.document(workout.date).setData(data) { error in
-                completion (error == nil)
-            }
-        case K.badass:
-            badassCollection.document(workout.date).setData(data) { error in
-                completion (error == nil)
-            }
-        default: break
+        database
+            .collection("programs")
+            .document("ecd plan")
+            .collection("workouts")
+            .document(comment.workoutID)
+            .collection("comments")
+            .document(comment.id)
+            .setData(commentData) { error in
+            completion (error == nil)
         }
     }
         
-//        database
-//            .collection("workouts")
-//            .addDocument(data: data) { error in
-//                completion (error == nil)
-//            }
-//            .document(workout.program)
-//            .collection("\(program)")
-//            .document(workout.date)
-//            .setData(data) { error in
-//                completion(error == nil)
-//            }
-//    }
     
-    public func getAllWorkouts( completion: @escaping([Workout])->()){
+    public func getAllWorkouts(collection: String, workoutID: String, completion: @escaping([Workout])->()){
+      
+        let documentID = collection
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "", with: "_")
         
+        let workoutID = workoutID
+        
+        database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workoutID)
+            .getDocument { snapshot, error in
+                guard let data = snapshot?.data() as? [String: String],
+                      let text = data["description"],
+                      let id = data["id"],
+                      let date = data["date"],
+                      let programID = data["programID"],
+                      error == nil else {return}
+                
+                let workout = Workout(id: id, programID: programID, description: text, date: date)
+                completion([workout])
+            }
     }
     
     public func insertUser(user: User,

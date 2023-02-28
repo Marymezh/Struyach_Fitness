@@ -12,6 +12,7 @@ class SelectedProgramTableViewController: UITableViewController {
     
     private var numberOfWorkouts: Int = 0
     private var listOfWorkouts: [Workout] = []
+    var workoutID: String = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,12 +113,17 @@ class SelectedProgramTableViewController: UITableViewController {
             formatter.dateFormat = "dd MM yyyy"
             let date = formatter.string(from: Date())
             let workoutID = UUID().uuidString
-            let newWorkout = Workout(identifier: workoutID, program: title, description: text, date: date)
-            DatabaseManager.shared.postWorkout(with: newWorkout, program: title) { success in
+            let newWorkout = Workout(id: workoutID, programID: title, description: text, date: date)
+            print(newWorkout)
+            DatabaseManager.shared.postWorkout(with: newWorkout, programID: title) { success in
                 if success {
                     print ("workout for the \(newWorkout.date) is saved into \(title) collection ")
-                }
+                    }
+//                DatabaseManager.shared.getAllWorkouts(collection: title, workoutID: newWorkout.id) { workouts in
+//                    <#code#>
+//                }
             }
+
             switch title {
             case K.ecd: WorkoutDescriptionStorage.ecd.insert(newWorkout, at: 0)
             case K.bodyweight: WorkoutDescriptionStorage.bodyweight.insert(newWorkout, at: 0)
@@ -176,7 +182,7 @@ class SelectedProgramTableViewController: UITableViewController {
         let selectedWorkoutVC = SelectedWorkoutTableViewController(frame: .zero, style: .grouped)
         
         selectedWorkoutVC.title = "Workout for \(listOfWorkouts[indexPath.row].date)"
-        
+        selectedWorkoutVC.workoutID = workoutID
         selectedWorkoutVC.headerView.workoutDescriptionTextView.text = listOfWorkouts[indexPath.row].description
         selectedWorkoutVC.onCompletion = {
             self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark

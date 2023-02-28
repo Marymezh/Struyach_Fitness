@@ -9,7 +9,7 @@ import UIKit
 
 class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     
-    var onSendCommentPush: ((String, String) -> Void)?
+    var onSendCommentPush: ((String, Data, String, String) -> Void)?
     
     var onTextChanged: (() -> Void)?
     
@@ -92,7 +92,9 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd MM yyyy HH:mm"
         let date = formatter.string(from: Date())
-        self.onSendCommentPush?(text, date)
+        guard let userName = UserDefaults.standard.object(forKey: "userName") as? String else {return}
+        guard let userImage = UserDefaults.standard.data(forKey: "userImage") else {return}
+        self.onSendCommentPush?(userName, userImage, text, date)
         } else {
             showAlert(error: "Please enter your comment first!")
         }

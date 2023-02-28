@@ -8,7 +8,10 @@
 import Foundation
 
 struct Comment {
-//    let user: User
+    var userName: String
+    var userImage: Data
+    var id: String
+    var workoutID: String
     let date: String
     let text: String
 }

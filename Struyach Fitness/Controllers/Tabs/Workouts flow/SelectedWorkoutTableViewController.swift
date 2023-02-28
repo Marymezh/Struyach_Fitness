@@ -9,12 +9,11 @@ import UIKit
 
 class SelectedWorkoutTableViewController: UITableViewController {
 
-    private var commentsArray: [Comment] = [
-        Comment(date: "04 02 2023", text: "Great workout, finished in 10:35 min"),
-        Comment(date: "05 02 2023", text: "It was too hard for me, only 3 rounds completed")]
+    private var commentsArray: [Comment] = []
     
   let headerView = SelectedWorkoutHeaderView()
-    
+
+    var workoutID: String = ""
     var onCompletion: (() -> Void)?
     
     init(frame: CGRect , style: UITableView.Style) {
@@ -27,9 +26,18 @@ class SelectedWorkoutTableViewController: UITableViewController {
         tableView.sectionHeaderHeight = UITableView.automaticDimension
         tableView.register(CommentTableViewCell.self, forCellReuseIdentifier: String(describing: CommentTableViewCell.self))
         
-        headerView.onSendCommentPush = { text, date in
-            self.commentsArray.insert(Comment(date: date, text: text), at: 0)
-            
+        headerView.onSendCommentPush = {userName, userImage, text, date in
+            let commentID = UUID().uuidString
+           
+            let newComment = Comment(userName: userName, userImage: userImage, id: commentID , workoutID: self.workoutID, date: date, text: text)
+            self.commentsArray.insert(newComment, at: 0)
+            DatabaseManager.shared.addComment(comment: newComment) { success in
+                if success {
+                    print ("comment is saved")
+                } else {
+                    print ("cant save comment")
+                }
+            }
             self.headerView.commentTextView.text = ""
             self.tableView.reloadData()
         }

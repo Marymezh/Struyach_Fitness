@@ -8,8 +8,8 @@
 import Foundation
 
 struct Workout {
-    let identifier: String
-    let program: String
+    var id: String
+    let programID: String
     var description: String
     let date: String
 }
