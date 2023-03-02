@@ -80,7 +80,7 @@ class CommentTableViewCell: UITableViewCell {
         contentView.layer.borderWidth = 0.5
         contentView.layer.borderColor = UIColor.black.cgColor
         contentView.backgroundColor = UIColor(named: "lightGreen")
-        contentView.addSubviews(userImage,userNameLabel, dateLabel, commentTextLabel)
+        contentView.addSubviews(userImage, userNameLabel, dateLabel, commentTextLabel)
         
         let constraints = [
             
@@ -97,8 +97,8 @@ class CommentTableViewCell: UITableViewCell {
             dateLabel.leadingAnchor.constraint(equalTo: userNameLabel.leadingAnchor),
             dateLabel.trailingAnchor.constraint(equalTo: userNameLabel.trailingAnchor),
             
-            commentTextLabel.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: baseInset),
-            commentTextLabel.leadingAnchor.constraint(equalTo: userImage.trailingAnchor, constant: baseInset),
+            commentTextLabel.topAnchor.constraint(equalTo: userImage.bottomAnchor, constant: baseInset),
+            commentTextLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             commentTextLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
             commentTextLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
         ]

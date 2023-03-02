@@ -8,10 +8,9 @@
 import Foundation
 
 struct Program {
-    
-    var id: String?
-    var name: String
-    var description: String
-    var image: String
+    let id: String?
+    let name: String
+    let description: String
+    let image: String
     
 }

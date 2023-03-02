@@ -16,7 +16,6 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     private var baseInset: CGFloat { return 15 }
     private var innerInset: CGFloat { return 10 }
     
-    
     private let workoutView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -36,6 +35,8 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         textView.isEditable = false
         textView.linkTextAttributes = [.foregroundColor: UIColor.systemBlue]
         textView.isSelectable = true
+//        textView.isScrollEnabled = false
+//        textView.sizeToFit()
         textView.isUserInteractionEnabled = true
         textView.dataDetectorTypes = .link
         textView.layer.borderColor = UIColor.white.cgColor
@@ -112,25 +113,21 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         }
         commentTextView.delegate = self
         
-//        #if Admin
-//        fullScreenButton.isHidden = true
-//        #endif
-        
         self.addSubviews (workoutView, fullScreenButton, commentTextView, addCommentButton)
         workoutView.addSubview(workoutDescriptionTextView)
         
-        let textViewHeight: CGFloat = 300
+        let textViewHeight: CGFloat = 320
         
         let constraints = [
             
             workoutView.topAnchor.constraint(equalTo: self.topAnchor, constant: baseInset),
             workoutView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
             workoutView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -baseInset),
-            
+            workoutView.heightAnchor.constraint(equalToConstant: textViewHeight),
+
             workoutDescriptionTextView.topAnchor.constraint(equalTo: workoutView.topAnchor, constant: innerInset),
             workoutDescriptionTextView.leadingAnchor.constraint(equalTo: workoutView.leadingAnchor, constant: innerInset),
             workoutDescriptionTextView.trailingAnchor.constraint(equalTo: workoutView.trailingAnchor, constant: -innerInset),
-            workoutDescriptionTextView.heightAnchor.constraint(equalToConstant: textViewHeight),
             workoutDescriptionTextView.bottomAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: -innerInset),
             
             fullScreenButton.trailingAnchor.constraint(equalTo: workoutView.trailingAnchor, constant: -innerInset),
