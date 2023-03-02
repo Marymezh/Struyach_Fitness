@@ -8,8 +8,9 @@
 import Foundation
 
 struct Workout {
-    var id: String
+    let id: String
     let programID: String
     var description: String
     let date: String
+    let timestamp: TimeInterval
 }

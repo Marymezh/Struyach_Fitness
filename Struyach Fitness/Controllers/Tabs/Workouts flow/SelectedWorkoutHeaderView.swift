@@ -90,7 +90,7 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         if let text = commentTextView.text,
         text != "" {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd MM yyyy HH:mm"
+        formatter.dateFormat = "EEEE, d MMMM, yyyy HH:mm"
         let date = formatter.string(from: Date())
         guard let userName = UserDefaults.standard.object(forKey: "userName") as? String else {return}
         guard let userImage = UserDefaults.standard.data(forKey: "userImage") else {return}

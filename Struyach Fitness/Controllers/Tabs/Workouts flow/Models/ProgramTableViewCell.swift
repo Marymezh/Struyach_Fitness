@@ -45,7 +45,7 @@ class ProgramTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-       
+        
         contentView.addSubviews(programNameLabel, descriptionLabel)
         
         let constraints = [
@@ -53,7 +53,6 @@ class ProgramTableViewCell: UITableViewCell {
             programNameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             programNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
             
-//            descriptionLabel.topAnchor.constraint(equalTo: programNameLabel.bottomAnchor, constant: 8),
             descriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
             descriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
@@ -61,13 +60,4 @@ class ProgramTableViewCell: UITableViewCell {
         
         NSLayoutConstraint.activate(constraints)
     }
-    
-//    override func layoutSubviews() {
-//        super.layoutSubviews()
-//        
-//        contentView.frame = self.contentView.frame.inset(by: UIEdgeInsets(top: 5, left: 0, bottom: 5, right: 0))
-//    }
-    
- 
-    
 }

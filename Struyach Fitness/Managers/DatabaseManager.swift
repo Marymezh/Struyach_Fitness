@@ -12,35 +12,24 @@ final class DatabaseManager {
     static let shared = DatabaseManager()
     
     private let database = Firestore.firestore()
+    private var listener: ListenerRegistration?
     
     private init() {}
-    
-//    public func postComment( with comment: String,
-//                             user: String,
-//                             completion: @escaping(Bool) ->()
-//    ){
-//
-//    }
-//
-//    public func getAllComments( completion: @escaping([String]) ->()
-//       ){
-//
-//       }
-    
+
     public func postWorkout( with workout: Workout,
                              programID: String,
-                             completion: @escaping(Bool) ->()
-    ){
+                             completion: @escaping(Bool) ->()){
         
         let program = programID
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "", with: "_")
         
         let workoutData: [String: Any] = [
+            "date": workout.date,
             "description": workout.description,
             "programID": workout.programID,
-            "date": workout.date,
-            "id": workout.id]
+            "id": workout.id,
+            "timestamp": workout.timestamp]
         
         database
             .collection("programs")
@@ -52,54 +41,146 @@ final class DatabaseManager {
             }
     }
     
-    public func addComment(comment: Comment, completion: @escaping (Bool) ->()) {
-
+    public func getAllWorkouts(for program: String,
+                               completion: @escaping([Workout])->()){
         
-        let commentData: [String: Any] = [
-            "workoutID": comment.workoutID,
-            "text": comment.text,
-            "date": comment.date,
-            "userName": comment.userName,
-            "userImage": comment.userImage,
-            "id": comment.id
-        ]
-        
-        database
-            .collection("programs")
-            .document("ecd plan")
-            .collection("workouts")
-            .document(comment.workoutID)
-            .collection("comments")
-            .document(comment.id)
-            .setData(commentData) { error in
-            completion (error == nil)
-        }
-    }
-        
-    
-    public func getAllWorkouts(collection: String, workoutID: String, completion: @escaping([Workout])->()){
-      
-        let documentID = collection
+        let documentID = program
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "", with: "_")
         
-        let workoutID = workoutID
+        database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .order(by: "timestamp", descending: true)
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+                let workouts: [Workout] = documents.compactMap { dictionary in
+                    guard let id = dictionary["id"] as? String,
+                          let date = dictionary["date"] as? String,
+                          let timestamp = dictionary["timestamp"] as? TimeInterval,
+                          let programID = dictionary["programID"] as? String,
+                          let text = dictionary["description"] as? String else {return nil}
+                    
+                    let workout = Workout(id: id, programID: programID, description: text, date: date, timestamp: timestamp)
+                    return workout
+                }
+                completion(workouts)
+            }
+    }
+    
+    public func updateWorkout(program: String, workoutID: String, newDescription: String, completion: @escaping (Bool)->()){
+        let documentID = program
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "", with: "_")
+    
+    let dbRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workoutID)
+// TODO: - Map with Codable, read here https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping
+    dbRef.getDocument { snapshot, error in
+        guard var data = snapshot?.data(), error == nil else {return}
+        
+        data["description"] = newDescription
+        dbRef.setData(data) { error in
+            completion(error == nil)
+        }
+    }
+}
+    
+    public func deleteWorkout(program: String, workoutID: String, completion: @escaping (Bool)->()){
+      
+        let documentID = program
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "", with: "_")
         
         database
             .collection("programs")
             .document(documentID)
             .collection("workouts")
             .document(workoutID)
-            .getDocument { snapshot, error in
-                guard let data = snapshot?.data() as? [String: String],
-                      let text = data["description"],
-                      let id = data["id"],
-                      let date = data["date"],
-                      let programID = data["programID"],
-                      error == nil else {return}
-                
-                let workout = Workout(id: id, programID: programID, description: text, date: date)
-                completion([workout])
+            .collection("comments")
+            .document()
+            .delete() { error in
+                completion (error == nil)
+            }
+        
+        
+        database
+                .collection("programs")
+                .document(documentID)
+                .collection("workouts")
+                .document(workoutID)
+                .delete() { error in
+                    completion (error == nil)
+                }
+        
+    }
+    // TODO: - Map with Codable, read here https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping
+    public func addComment(comment: Comment,
+                           programID: String,
+                           completion: @escaping (Bool) ->()){
+        
+        let documentID = comment.programID
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "", with: "_")
+        
+        let commentData: [String: Any] = [
+            "userName": comment.userName,
+            "userImage": comment.userImage,
+            "date": comment.date,
+            "text": comment.text,
+            "programID": comment.programID,
+            "workoutID": comment.workoutID,
+            "commentID": comment.id,
+            "timestamp": comment.timeStamp
+        ]
+        
+        database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(comment.workoutID)
+            .collection("comments")
+            .document(comment.id)
+            .setData(commentData) { error in
+                completion (error == nil)
+            }
+    }
+    // TODO: - Map with Codable, read here https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping
+    public func getAllComments(for workout: String,
+                               program: String,
+                               completion: @escaping([Comment])->()){
+        
+        let documentID = program
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "", with: "_")
+        
+        database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workout)
+            .collection("comments")
+            .order(by: "timestamp", descending: true)
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+                let comments: [Comment] = documents.compactMap { dictionary in
+                    guard let userName = dictionary["userName"] as? String,
+                          let userImage = dictionary["userImage"] as? Data,
+                          let id = dictionary["commentID"] as? String,
+                          let workoutID = dictionary["workoutID"] as? String,
+                          let date = dictionary["date"] as? String,
+                          let text = dictionary["text"] as? String,
+                          let timestamp = dictionary["timestamp"] as? TimeInterval,
+                          let programID = dictionary["programID"] as? String else {return nil}
+                    
+                    let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, id: id, workoutID: workoutID, programID: programID)
+                    return comment
+                }
+                completion(comments)
             }
     }
     
@@ -166,6 +247,7 @@ final class DatabaseManager {
             }
         }
     }
+    
     public func updateUserPersonalRecords(email: String, completion: @escaping (Bool) ->()){
         let path = email
             .replacingOccurrences(of: ".", with: "_")

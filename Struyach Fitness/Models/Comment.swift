@@ -8,10 +8,12 @@
 import Foundation
 
 struct Comment {
+    let timeStamp: TimeInterval
     var userName: String
     var userImage: Data
-    var id: String
-    var workoutID: String
     let date: String
     let text: String
+    var id: String
+    var workoutID: String
+    let programID: String
 }
