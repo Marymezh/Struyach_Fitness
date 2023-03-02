@@ -14,11 +14,12 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     
     var onWorkoutSave: ((String) -> Void)?
     
-    private let workoutDescriptionTextView: UITextView = {
+    let workoutDescriptionTextView: UITextView = {
         let textView = UITextView()
         textView.font = UIFont.systemFont(ofSize: 15, weight: .regular)
         textView.textColor = .black
         textView.tintColor = .black
+        textView.isScrollEnabled = true 
         textView.backgroundColor = .white
         textView.layer.borderWidth = 0.5
         textView.layer.borderColor = UIColor.black.cgColor
@@ -31,7 +32,6 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor(named: "lightGreen")
         navigationController?.navigationBar.prefersLargeTitles = false
-        
         configureButtons()
         setupTextView()
         setupSubviews()

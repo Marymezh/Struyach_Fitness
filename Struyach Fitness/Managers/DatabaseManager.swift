@@ -91,11 +91,11 @@ final class DatabaseManager {
 }
     
     public func deleteWorkout(program: String, workoutID: String, completion: @escaping (Bool)->()){
-      
+        
         let documentID = program
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "", with: "_")
-        
+        //TODO: - comments of the deleted workout are still in console! how to delete them?
         database
             .collection("programs")
             .document(documentID)
@@ -107,17 +107,50 @@ final class DatabaseManager {
                 completion (error == nil)
             }
         
-        
         database
-                .collection("programs")
-                .document(documentID)
-                .collection("workouts")
-                .document(workoutID)
-                .delete() { error in
-                    completion (error == nil)
-                }
-        
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workoutID)
+            .delete() { error in
+                completion (error == nil)
+            }
     }
+    
+    public func addSnapshotListener(for program: String, completion: @escaping ([Workout]) -> ()) {
+        let documentID = program
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "", with: "_")
+        
+        listener = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .order(by: "timestamp", descending: true)
+            .addSnapshotListener { snapshot, error in
+                guard let documents = snapshot?.documents.compactMap({ $0.data() }), error == nil else {
+                    print("Error retrieving snapshot: \(error!)")
+                    return
+                }
+                let workouts: [Workout] = documents.compactMap { dictionary in
+                    guard let id = dictionary["id"] as? String,
+                        let date = dictionary["date"] as? String,
+                        let timestamp = dictionary["timestamp"] as? TimeInterval,
+                        let programID = dictionary["programID"] as? String,
+                        let text = dictionary["description"] as? String else { return nil }
+                    
+                    let workout = Workout(id: id, programID: programID, description: text, date: date, timestamp: timestamp)
+                    return workout
+                }
+                completion(workouts)
+            }
+    }
+    
+    public func deleteListener() {
+        listener?.remove()
+    }
+
+    
     // TODO: - Map with Codable, read here https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping
     public func addComment(comment: Comment,
                            programID: String,
@@ -167,6 +200,40 @@ final class DatabaseManager {
             .order(by: "timestamp", descending: true)
             .getDocuments { snapshot, error in
                 guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+                let comments: [Comment] = documents.compactMap { dictionary in
+                    guard let userName = dictionary["userName"] as? String,
+                          let userImage = dictionary["userImage"] as? Data,
+                          let id = dictionary["commentID"] as? String,
+                          let workoutID = dictionary["workoutID"] as? String,
+                          let date = dictionary["date"] as? String,
+                          let text = dictionary["text"] as? String,
+                          let timestamp = dictionary["timestamp"] as? TimeInterval,
+                          let programID = dictionary["programID"] as? String else {return nil}
+                    
+                    let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, id: id, workoutID: workoutID, programID: programID)
+                    return comment
+                }
+                completion(comments)
+            }
+    }
+    
+    public func addNewCommentsListener(for workout: String, program: String, completion: @escaping ([Comment]) -> ()) {
+        let documentID = program
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "", with: "_")
+        
+        listener = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workout)
+            .collection("comments")
+            .order(by: "timestamp", descending: true)
+            .addSnapshotListener { snapshot, error in
+                guard let documents = snapshot?.documents.compactMap({ $0.data() }), error == nil else {
+                    print("Error retrieving snapshot: \(error!)")
+                    return
+                }
                 let comments: [Comment] = documents.compactMap { dictionary in
                     guard let userName = dictionary["userName"] as? String,
                           let userImage = dictionary["userImage"] as? Data,

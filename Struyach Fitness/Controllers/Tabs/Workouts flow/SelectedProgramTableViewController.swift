@@ -11,15 +11,14 @@ import UIKit
 class SelectedProgramTableViewController: UITableViewController {
     
     private var listOfWorkouts: [Workout] = []
-    var workoutID: String = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "darkGreen")
         setupNavbar()
         setupTableView()
-        guard let programTitle = self.title else {return}
-        loadListOfWorkouts(for: programTitle)
+        guard let title = self.title else {return}
+        loadListOfWorkouts(for: title)
         #if Admin
         setupAdminFunctionality()
         #endif
@@ -30,7 +29,17 @@ class SelectedProgramTableViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        tableView.reloadData()
+        guard let title = self.title else {return}
+        DatabaseManager.shared.addSnapshotListener(for: title) {[weak self] workouts in
+            guard let self = self else {return}
+            self.listOfWorkouts = workouts
+            self.tableView.reloadData()
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        DatabaseManager.shared.deleteListener()
     }
     
     private func setupNavbar() {

@@ -54,10 +54,13 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         button.toAutoLayout()
         return button
     }()
+    //TODO: - may be delete this button
     
     @objc func fullScreenPressed () {
         let text = workoutDescriptionTextView.text
         let fullWorkoutDescriptionVC = CreateNewWorkoutViewController()
+        fullWorkoutDescriptionVC.workoutDescriptionTextView.isEditable = false
+        fullWorkoutDescriptionVC.workoutDescriptionTextView.isUserInteractionEnabled = false 
         fullWorkoutDescriptionVC.text = text ?? "workout description"
         self.window?.rootViewController?.present(fullWorkoutDescriptionVC, animated: true)
     }

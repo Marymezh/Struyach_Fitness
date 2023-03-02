@@ -67,6 +67,8 @@ class CommentTableViewCell: UITableViewCell {
     
     private var baseInset: CGFloat { return 16 }
     
+    //TODO: - Add functionality to load short videos into comment and "likes" button and counter
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

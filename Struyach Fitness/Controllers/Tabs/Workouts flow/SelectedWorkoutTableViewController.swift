@@ -9,7 +9,7 @@ import UIKit
 
 class SelectedWorkoutTableViewController: UITableViewController {
     
-    private var workout: Workout
+    private let workout: Workout
     private var commentsArray: [Comment] = []
     private let headerView = SelectedWorkoutHeaderView()
     
@@ -32,8 +32,23 @@ class SelectedWorkoutTableViewController: UITableViewController {
         setupWorkoutData()
         saveComments()
         loadComments(for: workout.id)
-        
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        DatabaseManager.shared.addNewCommentsListener(for: workout.id, program: workout.programID) {[weak self] comments in
+            guard let self = self else {return}
+            self.commentsArray = comments
+            self.tableView.reloadData()
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        DatabaseManager.shared.deleteListener()
+    }
+    
+    //MARK: - Methods to setup Navigation Bar, TableView and load workout data
     
     private func setupNavigationBar() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "checkmark"), style: .plain, target: self, action: #selector(workoutDone))
@@ -47,10 +62,10 @@ class SelectedWorkoutTableViewController: UITableViewController {
     }
     
     private func setupWorkoutData() {
-        title = "Workout for \(workout.date)"
+        title = workout.date
         headerView.workoutDescriptionTextView.text = workout.description
-        
     }
+    //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
     private func saveComments() {
         headerView.onSendCommentPush = {[weak self] userName, userImage, text, date in
@@ -84,13 +99,15 @@ class SelectedWorkoutTableViewController: UITableViewController {
         }
     }
     
+    //TODO: - checkmark for the completed workout - now it is not associated with the particular workout and not stored anywhere
+    
     @objc func workoutDone() {
         
         self.onCompletion?()
         navigationController?.popViewController(animated: true)
     }
     
-    // MARK: - Table view data source
+    // MARK: - Table view data source methods
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
@@ -107,7 +124,6 @@ class SelectedWorkoutTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell: CommentTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: CommentTableViewCell.self), for: indexPath) as! CommentTableViewCell
-        
         cell.comment = commentsArray[indexPath.row]
         cell.backgroundColor = UIColor(named: "darkGreen")
         
