@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class SelectedWorkoutTableViewController: UITableViewController {
     
@@ -29,6 +30,8 @@ class SelectedWorkoutTableViewController: UITableViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    //TODO: - Access data offline - when is not connected to the WEB, first give a notification, cache all the data to a copy of Firestore database and sincronize when the device is online again. read here https://firebase.google.com/docs/firestore/manage-data/enable-offline
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -82,7 +85,7 @@ class SelectedWorkoutTableViewController: UITableViewController {
     }
     
     private func setupAdminFunctionality (){
-//        setupGuestureRecognizer()
+        setupGuestureRecognizer()
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewWorkout))
     }
     
@@ -117,7 +120,7 @@ class SelectedWorkoutTableViewController: UITableViewController {
             guard let self = self else {return}
             self.listOfWorkouts = workouts
             DispatchQueue.main.async {
-                if self.listOfWorkouts == [] {
+                if self.listOfWorkouts.isEmpty {
                     self.headerView.workoutDescriptionTextView.text = "NO WORKOUTS ADDED YET"
                 } else {
                     self.headerView.workoutDescriptionTextView.text = self.listOfWorkouts[0].description
@@ -126,6 +129,55 @@ class SelectedWorkoutTableViewController: UITableViewController {
                 self.tableView.reloadData()
                 self.workoutsCollection.reloadData()
             }
+        }
+    }
+    
+    private func setupGuestureRecognizer() {
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
+        workoutsCollection.addGestureRecognizer(longPress)
+    }
+    
+    @objc func handleLongPress(sender: UISwipeGestureRecognizer) {
+        let location = sender.location(in: workoutsCollection)
+        if let indexPath = workoutsCollection.indexPathForItem(at: location) {
+            let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .alert)
+            
+            let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
+                guard let self = self else {return}
+                let workout = self.listOfWorkouts[indexPath.item]
+                DatabaseManager.shared.deleteWorkout(program: workout.programID, workoutID: workout.id) { [weak self] success in
+                    guard let self = self else {return}
+                    if success {
+                        self.loadListOfWorkouts(for: workout.programID)
+                    }
+                }
+            }
+            let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
+                guard let self = self else {return}
+                let workoutVC = CreateNewWorkoutViewController()
+                workoutVC.title = "Edit workout"
+                let selectedWorkout = self.listOfWorkouts[indexPath.item]
+                workoutVC.text = selectedWorkout.description
+                self.navigationController?.pushViewController(workoutVC, animated: true)
+                workoutVC.onWorkoutSave = { text in
+                    DatabaseManager.shared.updateWorkout(program: selectedWorkout.programID, workoutID: selectedWorkout.id, newDescription: text) { [weak self] success in
+                        guard let self = self else {return}
+                        if success{
+                            print("the workout for \(selectedWorkout.date) is successfully updated")
+                            self.loadListOfWorkouts(for: selectedWorkout.programID)
+                            self.tableView.reloadData()
+                        } else {
+                            self.showAlert(error: "Unable to update selected workout")
+                        }
+                    }
+                }
+            }
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+            alertController.addAction(editAction)
+            alertController.addAction(deleteAction)
+            alertController.addAction(cancelAction)
+            alertController.view.tintColor = .darkGray
+            present(alertController, animated: true)
         }
     }
 
@@ -220,7 +272,6 @@ class SelectedWorkoutTableViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "collectionCell", for: indexPath)
            
             cell.contentView.addSubview(workoutsCollection)
-            
             let constraints = [
                 workoutsCollection.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
                 workoutsCollection.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
@@ -312,6 +363,5 @@ extension SelectedWorkoutTableViewController: UICollectionViewDelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 10
     }
-    
 }
 

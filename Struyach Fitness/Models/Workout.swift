@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Workout: Codable, Equatable {
+struct Workout: Codable {
     let id: String
     let programID: String
     var description: String
