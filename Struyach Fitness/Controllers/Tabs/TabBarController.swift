@@ -20,7 +20,7 @@ class TabBarController: UITabBarController {
         appearance.configureWithDefaultBackground()
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
-        tabBar.tintColor = .black
+        tabBar.tintColor = .systemGreen
         tabBar.unselectedItemTintColor = .darkGray
     }
 
@@ -29,7 +29,6 @@ class TabBarController: UITabBarController {
         let programsVC = ProgramsViewController()
         programsVC.title = "Programs"
         let profileVC = ProfileTableViewController(currentEmail: currentUserEmail)
-//        let profileVC = ProfileTableViewController()
         profileVC.title = "Profile"
         profileVC.fetchUserRecords()
         profileVC.fetchProfileData()

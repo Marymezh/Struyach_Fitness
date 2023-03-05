@@ -32,6 +32,7 @@ class ProfileTableViewCell: UITableViewCell {
         let textField = UITextField()
         textField.placeholder = "00 kg"
         textField.tintColor = .black
+        textField.backgroundColor = .systemGray2
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
         textField.leftViewMode = .always
         textField.keyboardType = .numberPad
@@ -43,8 +44,8 @@ class ProfileTableViewCell: UITableViewCell {
     
     private lazy var saveButton: UIButton = {
         let button = UIButton()
-        button.setBackgroundImage(UIImage(systemName: "checkmark.circle"), for: .normal)
-        button.tintColor = .black
+        button.setBackgroundImage(UIImage(systemName: "checkmark.circle", withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)), for: .normal)
+        button.tintColor = .systemGreen
         button.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
         button.toAutoLayout()
         return button

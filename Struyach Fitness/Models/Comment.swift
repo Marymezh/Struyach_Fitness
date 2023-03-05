@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Comment {
+struct Comment: Codable {
     let timeStamp: TimeInterval
     let userName: String
     let userImage: Data

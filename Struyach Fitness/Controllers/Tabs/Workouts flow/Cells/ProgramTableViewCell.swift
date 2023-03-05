@@ -20,8 +20,8 @@ class ProgramTableViewCell: UITableViewCell {
     private let programNameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        label.textColor = .black
         label.textAlignment = .left
+        label.textColor = .white
         label.numberOfLines = 1
         label.toAutoLayout()
         return label
@@ -30,7 +30,7 @@ class ProgramTableViewCell: UITableViewCell {
     private let descriptionLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        label.textColor = .black
+        label.textColor = .white
         label.numberOfLines = 0
         label.toAutoLayout()
         return label

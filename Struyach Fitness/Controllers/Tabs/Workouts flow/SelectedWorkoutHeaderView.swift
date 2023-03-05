@@ -18,10 +18,15 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     
     private let workoutView: UIView = {
         let view = UIView()
+        view.backgroundColor = .systemBackground
         view.backgroundColor = .white
         view.layer.borderWidth = 0.5
         view.layer.borderColor = UIColor.black.cgColor
         view.layer.cornerRadius = 5
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowRadius = 5
+        view.layer.shadowOffset = CGSize(width: 5, height: 5)
+        view.layer.shadowOpacity = 0.7
         view.alpha = 0.8
         view.toAutoLayout()
         return view
@@ -31,15 +36,14 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         let textView = UITextView()
         textView.sizeToFit()
         textView.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        textView.textColor = .black
         textView.textAlignment = .left
         textView.isEditable = false
         textView.linkTextAttributes = [.foregroundColor: UIColor.systemBlue]
         textView.isSelectable = true
-//        textView.isScrollEnabled = false
-//        textView.sizeToFit()
+        textView.backgroundColor = .white
         textView.isUserInteractionEnabled = true
         textView.dataDetectorTypes = .link
-        textView.layer.borderColor = UIColor.white.cgColor
         textView.toAutoLayout()
         return textView
     }()
@@ -77,6 +81,11 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         textView.layer.borderWidth = 0.5
         textView.layer.borderColor = UIColor.black.cgColor
         textView.layer.cornerRadius = 5
+        textView.layer.shadowColor = UIColor.black.cgColor
+        textView.layer.shadowRadius = 5
+        textView.layer.shadowOffset = CGSize(width: 5, height: 5)
+        textView.layer.shadowOpacity = 0.7
+        textView.alpha = 0.8
         return textView
     }()
     
@@ -111,15 +120,19 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        if let backgroundImage = UIImage(named: "general") {
-        backgroundColor = UIColor(patternImage: backgroundImage)
-        }
+        setupSubviews()
+        randomizeBackgroungImages()
+    }
+    
+    private func setupSubviews() {
+        
         commentTextView.delegate = self
         
-        self.addSubviews (workoutView, fullScreenButton, commentTextView, addCommentButton)
+        self.addSubviews (workoutView, fullScreenButton, commentTextView, addCommentButton )
         workoutView.addSubview(workoutDescriptionTextView)
         
         let textViewHeight: CGFloat = 320
+
         
         let constraints = [
             
@@ -152,6 +165,16 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         NSLayoutConstraint.activate(constraints)
     }
     
+    func randomizeBackgroungImages () {
+        let backgroundImages = ImageStorage.imageArray
+        let randomIndex = Int.random(in: 0..<backgroundImages.count)
+        if let backgroundImage = backgroundImages[randomIndex]
+//        if let backgroundImage = UIImage(named: "rowing")
+        {
+            backgroundColor = UIColor(patternImage: backgroundImage)
+        }
+    }
+    
     func textViewDidChange(_ textView: UITextView) {
         onTextChanged?()
     }
@@ -160,7 +183,6 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         alert.addAction(cancelAction)
-        
         self.window?.rootViewController?.present(alert, animated: true)
     }
 

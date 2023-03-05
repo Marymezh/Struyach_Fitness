@@ -21,18 +21,17 @@ class ProfileHeaderView: UIView {
         let image = UIImageView()
         image.image = UIImage(named: "general")
         image.clipsToBounds = true
-        image.layer.cornerRadius = 60
+        image.layer.cornerRadius = 40
         image.contentMode = .scaleAspectFill
-        image.layer.borderColor = UIColor.black.cgColor
-        image.layer.borderWidth = 0.5
+        image.layer.borderColor = UIColor.tertiarySystemBackground.cgColor
+        image.layer.borderWidth = 3
         image.toAutoLayout()
         return image
     }()
     
     let userNameLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 22, weight: .bold)
-        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         label.text = "Unknown user"
         label.textAlignment = .left
         label.numberOfLines = 0
@@ -43,8 +42,7 @@ class ProfileHeaderView: UIView {
     
     let userEmailLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 20, weight: .medium)
-        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         label.textAlignment = .left
         label.numberOfLines = 0
         label.sizeToFit()
@@ -62,24 +60,25 @@ class ProfileHeaderView: UIView {
     }
     
     private func setupUI () {
-        self.backgroundColor = .systemTeal
+        self.backgroundColor = .secondarySystemBackground
         self.addSubviews(userPhotoImage, userNameLabel, userEmailLabel)
         
         let constraints = [
-            userPhotoImage.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor),
+            userPhotoImage.topAnchor.constraint(equalTo: self.topAnchor),
             userPhotoImage.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
-            userPhotoImage.heightAnchor.constraint(equalToConstant: 120),
+            userPhotoImage.heightAnchor.constraint(equalToConstant: 80),
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),
-            userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2),
+            userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset),
             
-            userNameLabel.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: baseInset),
+            userNameLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
             userNameLabel.leadingAnchor.constraint(equalTo: userPhotoImage.trailingAnchor, constant: baseInset*3),
             userNameLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -baseInset),
             
-            userEmailLabel.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: baseInset),
+            userEmailLabel.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 10),
             userEmailLabel.leadingAnchor.constraint(equalTo: userNameLabel.leadingAnchor),
             userEmailLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -baseInset)
         ]
+        
         NSLayoutConstraint.activate(constraints)
     }
 }

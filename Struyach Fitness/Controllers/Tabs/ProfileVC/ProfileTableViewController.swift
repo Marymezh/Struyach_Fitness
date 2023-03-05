@@ -14,6 +14,7 @@ class ProfileTableViewController: UITableViewController {
     
     private var weights = ["", "00", "00", "00", "00", "00", "00", "00"]
     private let headerView = ProfileHeaderView()
+
     
     let currentEmail: String
 
@@ -39,7 +40,7 @@ class ProfileTableViewController: UITableViewController {
     }
     
     private func setupTableView() {
-        tableView.backgroundColor = .systemTeal
+        tableView.backgroundColor = .secondarySystemBackground
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: ProfileTableViewCell.self))
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
     }
@@ -119,7 +120,7 @@ class ProfileTableViewController: UITableViewController {
     }
 
    private func setupNavigationBar () {
-        navigationController?.navigationBar.tintColor = .darkGray
+       navigationController?.navigationBar.tintColor = .systemRed
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Sign Out",
             style: .done,
@@ -161,7 +162,7 @@ class ProfileTableViewController: UITableViewController {
         switch indexPath.row {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
-            cell.backgroundColor = UIColor(named: "tealLight")
+            cell.backgroundColor = .tertiarySystemBackground
             cell.textLabel?.text = "PERSONAL RECORDS"
             cell.textLabel?.textAlignment = .center
             cell.textLabel?.font = UIFont.systemFont(ofSize: 22, weight: .bold)
@@ -169,7 +170,7 @@ class ProfileTableViewController: UITableViewController {
         default:
             let cell: ProfileTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProfileTableViewCell.self), for: indexPath) as! ProfileTableViewCell
             
-            cell.backgroundColor = UIColor(named: "tealLight")
+            cell.backgroundColor = .tertiarySystemBackground
             cell.movementLabel.text = movements[indexPath.row]
             cell.weightLabel.text = "\(weights[indexPath.row]) kg"
             cell.weightIsSet = { [weak self] text in

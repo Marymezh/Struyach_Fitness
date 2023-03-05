@@ -30,7 +30,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = UIColor(named: "lightGreen")
+        self.view.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = false
         configureButtons()
         setupTextView()

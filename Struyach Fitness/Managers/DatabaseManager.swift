@@ -148,6 +148,7 @@ final class DatabaseManager {
     
     public func deleteListener() {
         listener?.remove()
+        print ("listener is removed")
     }
 
     

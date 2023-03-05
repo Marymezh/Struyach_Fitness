@@ -27,10 +27,10 @@ class CommentTableViewCell: UITableViewCell {
     private let userImage: UIImageView = {
         let image = UIImageView(image: UIImage(named: "general"))
         image.clipsToBounds = true
-        image.layer.cornerRadius = 20
+        image.layer.cornerRadius = 25
         image.contentMode = .scaleAspectFill
-        image.layer.borderColor = UIColor.black.cgColor
-        image.layer.borderWidth = 0.5
+        image.layer.borderColor = UIColor.tertiarySystemBackground.cgColor
+        image.layer.borderWidth = 3
         image.toAutoLayout()
         return image
     }()
@@ -38,7 +38,6 @@ class CommentTableViewCell: UITableViewCell {
     private let userNameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        label.textColor = .black
         label.text = "Current User"
         label.textAlignment = .left
         label.numberOfLines = 1
@@ -59,7 +58,6 @@ class CommentTableViewCell: UITableViewCell {
     private let commentTextLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
-        label.textColor = .black
         label.numberOfLines = 0
         label.toAutoLayout()
         return label
@@ -81,13 +79,13 @@ class CommentTableViewCell: UITableViewCell {
     private func setupUI() {
         contentView.layer.borderWidth = 0.5
         contentView.layer.borderColor = UIColor.black.cgColor
-        contentView.backgroundColor = UIColor(named: "lightGreen")
+        contentView.backgroundColor = .secondarySystemBackground
         contentView.addSubviews(userImage, userNameLabel, dateLabel, commentTextLabel)
         
         let constraints = [
             
             userImage.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
-            userImage.heightAnchor.constraint(equalToConstant: 40),
+            userImage.heightAnchor.constraint(equalToConstant: 50),
             userImage.widthAnchor.constraint(equalTo: userImage.heightAnchor),
             userImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             

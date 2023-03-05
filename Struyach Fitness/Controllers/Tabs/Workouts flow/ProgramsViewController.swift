@@ -20,11 +20,11 @@ class ProgramsViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-       
+        tabBarController?.tabBar.isHidden = false
     }
     
     private func setupTableView () {
-        tableView.backgroundColor = .systemTeal
+        tableView.backgroundColor = .secondarySystemBackground
         tableView.register(ProgramTableViewCell.self, forCellReuseIdentifier: String(describing: ProgramTableViewCell.self))
         tableView.isScrollEnabled = false
     }
@@ -40,7 +40,7 @@ class ProgramsViewController: UITableViewController {
         let cell: ProgramTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProgramTableViewCell.self), for: indexPath) as! ProgramTableViewCell
         
         cell.program = programsArray[indexPath.section]
-        cell.backgroundView?.alpha = 0.3
+        cell.backgroundView?.alpha = 0.7
         
         return cell
     }
@@ -58,16 +58,22 @@ class ProgramsViewController: UITableViewController {
     }
     override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let view = UIView()
-        view.backgroundColor = .systemTeal
+        view.backgroundColor = .systemBackground
         return view
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
-            let selectedProgramVC = SelectedProgramTableViewController()
-            selectedProgramVC.title = programsArray[indexPath.section].programName
-            navigationController?.pushViewController(selectedProgramVC, animated: true)
-            tableView.deselectRow(at: indexPath, animated: true)
+//            let selectedProgramVC = SelectedProgramTableViewController()
+//            selectedProgramVC.title = programsArray[indexPath.section].programName
+//            navigationController?.pushViewController(selectedProgramVC, animated: true)
+//            tableView.deselectRow(at: indexPath, animated: true)
+        
+        let programVC = SelectedWorkoutTableViewController(frame: .zero, style: .grouped)
+        
+        programVC.title = programsArray[indexPath.section].programName
+        navigationController?.pushViewController(programVC, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

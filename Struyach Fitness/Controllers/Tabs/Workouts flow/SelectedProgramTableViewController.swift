@@ -14,7 +14,7 @@ class SelectedProgramTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(named: "darkGreen")
+        view.backgroundColor = .secondarySystemBackground
         setupNavbar()
         setupTableView()
         guard let title = self.title else {return}
@@ -44,7 +44,7 @@ class SelectedProgramTableViewController: UITableViewController {
     
     private func setupNavbar() {
         self.navigationController?.navigationBar.largeTitleTextAttributes = [.font: UIFont.systemFont(ofSize: 25, weight: .bold)]
-        self.navigationController?.navigationBar.tintColor = .black
+        self.navigationController?.navigationBar.tintColor = .systemGreen
         navigationItem.backBarButtonItem = UIBarButtonItem(title: self.title, style: .plain, target: nil, action: nil)
     }
     // Admin's app functionality allows to add new workouts, edit and delete them, when the clients' - doesn't
@@ -153,7 +153,7 @@ class SelectedProgramTableViewController: UITableViewController {
         
         let workout = listOfWorkouts[indexPath.row]
         cell.tintColor = .black
-        cell.backgroundColor = UIColor(named: "lightGreen")
+        cell.backgroundColor = .tertiarySystemBackground
         cell.textLabel?.text = "Workout for \(workout.date)"
         return cell
     }
@@ -181,14 +181,12 @@ class SelectedProgramTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedWorkout = listOfWorkouts[indexPath.row]
-        let selectedWorkoutVC = SelectedWorkoutTableViewController(frame: .zero, style: .grouped, workout: selectedWorkout)
-        selectedWorkoutVC.onCompletion = {
-            self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationController?.pushViewController(selectedWorkoutVC, animated: true)
-        tableView.deselectRow(at: indexPath, animated: true)
-        self.tableView.reloadData()
+  //      let selectedWorkout = listOfWorkouts[indexPath.row]
+ //       let selectedWorkoutVC = SelectedWorkoutTableViewController(frame: .zero, style: .grouped, workout: selectedWorkout)
+//        selectedWorkoutVC.view.backgroundColor = .secondarySystemBackground
+//        navigationController?.navigationBar.prefersLargeTitles = true
+//        navigationController?.pushViewController(selectedWorkoutVC, animated: true)
+//        tableView.deselectRow(at: indexPath, animated: true)
+//        self.tableView.reloadData()
     }
 }
