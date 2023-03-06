@@ -8,9 +8,7 @@
 import UIKit
 
 class WorkoutsCollectionViewCell: UICollectionViewCell {
-    
-   // var isActive: Bool = false
-    
+
     var workout: Workout? {
         didSet{
             self.workoutDateLabel.text = workout?.date
@@ -39,17 +37,8 @@ class WorkoutsCollectionViewCell: UICollectionViewCell {
         
         setupUI()
         prepareForReuse()
-   //     changeStatus()
     }
-//
-//    private func changeStatus() {
-//        if isActive == true {
-//            workoutDateLabel.backgroundColor = .secondaryLabel
-//        } else {
-//            workoutDateLabel.backgroundColor = .systemGreen
-//        }
-//    }
-    
+
     private func setupUI() {
         contentView.layer.cornerRadius = 10
         contentView.layer.shadowColor = UIColor.black.cgColor
@@ -75,5 +64,4 @@ class WorkoutsCollectionViewCell: UICollectionViewCell {
         super.prepareForReuse()
         self.workoutDateLabel.backgroundColor = .systemGreen
     }
-
 }

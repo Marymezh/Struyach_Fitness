@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import FirebaseFirestoreSwift
 
 struct Workout: Codable {
-    let id: String
+    var id: String
     let programID: String
     var description: String
     let date: String
     let timestamp: TimeInterval
+    var comments: [Comment] = []
 }

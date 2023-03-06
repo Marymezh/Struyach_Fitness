@@ -64,13 +64,7 @@ class ProgramsViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
-//            let selectedProgramVC = SelectedProgramTableViewController()
-//            selectedProgramVC.title = programsArray[indexPath.section].programName
-//            navigationController?.pushViewController(selectedProgramVC, animated: true)
-//            tableView.deselectRow(at: indexPath, animated: true)
-        
-        let programVC = SelectedWorkoutTableViewController(frame: .zero, style: .grouped)
-        
+        let programVC = SelectedProgramTableViewController(frame: .zero, style: .grouped)        
         programVC.title = programsArray[indexPath.section].programName
         navigationController?.pushViewController(programVC, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)
@@ -78,9 +72,10 @@ class ProgramsViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         
+       // let screenHeight = UIScreen.main.bounds.height
         let tableViewHeight = Double(tableView.frame.size.height - (navigationController?.navigationBar.frame.size.height)! - (tabBarController?.tabBar.frame.size.height)!)
-        
-        return tableViewHeight / (Double(programsArray.count) + 0.5)
+        let rowHeight = tableViewHeight / (Double(programsArray.count) + 0.5)
+        return rowHeight
     }
 }
 

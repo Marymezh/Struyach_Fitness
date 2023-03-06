@@ -10,10 +10,10 @@ import IQKeyboardManagerSwift
 
 class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     
+    //MARK: - Properties
+    
     var text: String = ""
-    
     var onWorkoutSave: ((String) -> Void)?
-    
     let workoutDescriptionTextView: UITextView = {
         let textView = UITextView()
         textView.font = UIFont.systemFont(ofSize: 15, weight: .regular)

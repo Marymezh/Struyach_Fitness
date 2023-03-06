@@ -17,15 +17,15 @@ class CommentTableViewCell: UITableViewCell {
             let decoded = try! PropertyListDecoder().decode(Data.self, from: data)
             let image = UIImage(data: decoded)
             self.userImage.image = image
-            self.commentTextLabel.text = comment?.text
-            self.dateLabel.text = comment?.date
-            self.userNameLabel.text = comment?.userName
+            self.commentTextLabel.text = comment?.text ?? "Leave the first comment here"
+            self.dateLabel.text = comment?.date ?? ""
+            self.userNameLabel.text = comment?.userName ?? ""
             
         }
     }
     
     private let userImage: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "general"))
+        let image = UIImageView()
         image.clipsToBounds = true
         image.layer.cornerRadius = 25
         image.contentMode = .scaleAspectFill
@@ -38,7 +38,6 @@ class CommentTableViewCell: UITableViewCell {
     private let userNameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        label.text = "Current User"
         label.textAlignment = .left
         label.numberOfLines = 1
         label.toAutoLayout()

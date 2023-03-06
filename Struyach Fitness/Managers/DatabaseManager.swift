@@ -7,79 +7,84 @@
 
 import Foundation
 import FirebaseFirestore
+import FirebaseFirestoreSwift
 
 final class DatabaseManager {
-    static let shared = DatabaseManager()
     
+    static let shared = DatabaseManager()
     private let database = Firestore.firestore()
-    private var listener: ListenerRegistration?
     
     private init() {}
+    
+    //MARK: - Adding, fetching, editing, deleting workouts and listen to the changes in workouts
 
-    public func postWorkout( with workout: Workout,
-                             programID: String,
-                             completion: @escaping(Bool) ->()){
+    public func postWorkout(with workout: Workout, completion: @escaping(Bool) ->()){
         
-        let program = programID
+        let program = workout.programID
             .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
         
-        let workoutData: [String: Any] = [
-            "date": workout.date,
-            "description": workout.description,
-            "programID": workout.programID,
-            "id": workout.id,
-            "timestamp": workout.timestamp]
-        
-        database
-            .collection("programs")
-            .document(program)
-            .collection("workouts")
-            .document(workout.id)
-            .setData(workoutData) { error in
-                completion (error == nil)
-            }
+        do {
+            let workoutData = try Firestore.Encoder().encode(workout)
+            database
+                .collection("programs")
+                .document(program)
+                .collection("workouts")
+                .document(workout.id)
+                .setData(workoutData) { error in
+                    completion(error == nil)
+                }
+        } catch {
+            print("Error encoding workout: \(error)")
+            completion(false)
+        }
     }
     
     public func getAllWorkouts(for program: String,
                                completion: @escaping([Workout])->()){
         
+//        self.deleteListener()
+        
         let documentID = program
             .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "", with: "_")
-        
+            .replacingOccurrences(of: " ", with: "_")
+    
         database
             .collection("programs")
             .document(documentID)
             .collection("workouts")
             .order(by: "timestamp", descending: true)
             .getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
-                let workouts: [Workout] = documents.compactMap { dictionary in
-                    guard let id = dictionary["id"] as? String,
-                          let date = dictionary["date"] as? String,
-                          let timestamp = dictionary["timestamp"] as? TimeInterval,
-                          let programID = dictionary["programID"] as? String,
-                          let text = dictionary["description"] as? String else {return nil}
-                    
-                    let workout = Workout(id: id, programID: programID, description: text, date: date, timestamp: timestamp)
-                    return workout
+                guard let documents = snapshot?.documents else {
+                    print("Error fetching documents: \(error!)")
+                    return
+                }
+                
+                let workouts: [Workout] = documents.compactMap { document in
+                    do {
+                        let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
+                        return workout
+                    } catch {
+                        print("Error decoding workout: \(error)")
+                        return nil
+                    }
                 }
                 completion(workouts)
+                print("new snapshot listener for workouts is added")
             }
     }
     
-    public func updateWorkout(program: String, workoutID: String, newDescription: String, completion: @escaping (Bool)->()){
-        let documentID = program
+    public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Bool)->()){
+        let documentID = workout.programID
             .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
     
     let dbRef = database
             .collection("programs")
             .document(documentID)
             .collection("workouts")
-            .document(workoutID)
-// TODO: - Map with Codable, read here https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping
+            .document(workout.id)
+
     dbRef.getDocument { snapshot, error in
         guard var data = snapshot?.data(), error == nil else {return}
         
@@ -90,167 +95,177 @@ final class DatabaseManager {
     }
 }
     
-    public func deleteWorkout(program: String, workoutID: String, completion: @escaping (Bool)->()){
+    public func deleteWorkout(workout: Workout, completion: @escaping (Bool)->()){
         
-        let documentID = program
+        let documentID = workout.programID
             .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "", with: "_")
-        //TODO: - comments of the deleted workout are still in console! how to delete them?
-        database
-            .collection("programs")
-            .document(documentID)
-            .collection("workouts")
-            .document(workoutID)
-            .collection("comments")
-            .document()
-            .delete() { error in
-                completion (error == nil)
-            }
+            .replacingOccurrences(of: " ", with: "_")
         
-        database
+        let commentsRef = database
             .collection("programs")
             .document(documentID)
             .collection("workouts")
-            .document(workoutID)
-            .delete() { error in
-                completion (error == nil)
+            .document(workout.id)
+            .collection("comments")
+        
+        commentsRef.getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error getting comments: \(error.localizedDescription)")
+                completion(false)
+                return
             }
+            
+            guard let snapshot = snapshot else {
+                print("No comments found")
+                completion(false)
+                return
+            }
+            
+            let batch = self.database.batch()
+            snapshot.documents.forEach { batch.deleteDocument($0.reference) }
+            
+            batch.commit { (error) in
+                if let error = error {
+                    print("Error deleting comments: \(error.localizedDescription)")
+                    completion(false)
+                } else {
+                    print("Comments deleted successfully")
+                    
+                    self.database
+                        .collection("programs")
+                        .document(documentID)
+                        .collection("workouts")
+                        .document(workout.id)
+                        .delete() { error in
+                            if let error = error {
+                                print("Error deleting workout: \(error.localizedDescription)")
+                                completion(false)
+                            } else {
+                                print("Workout deleted successfully")
+                                completion(true)
+                            }
+                        }
+                }
+            }
+        }
     }
     
-    public func addSnapshotListener(for program: String, completion: @escaping ([Workout]) -> ()) {
-        let documentID = program
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "", with: "_")
+    func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
         
-        listener = database
+        let documentID = programName
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let listener = database
             .collection("programs")
             .document(documentID)
             .collection("workouts")
             .order(by: "timestamp", descending: true)
-            .addSnapshotListener { snapshot, error in
-                guard let documents = snapshot?.documents.compactMap({ $0.data() }), error == nil else {
-                    print("Error retrieving snapshot: \(error!)")
-                    return
-                }
-                let workouts: [Workout] = documents.compactMap { dictionary in
-                    guard let id = dictionary["id"] as? String,
-                        let date = dictionary["date"] as? String,
-                        let timestamp = dictionary["timestamp"] as? TimeInterval,
-                        let programID = dictionary["programID"] as? String,
-                        let text = dictionary["description"] as? String else { return nil }
-                    
-                    let workout = Workout(id: id, programID: programID, description: text, date: date, timestamp: timestamp)
+            .addSnapshotListener { (snapshot, error) in
+            guard let snapshot = snapshot else {
+                print("Error fetching workouts: \(error?.localizedDescription ?? "unknown error")")
+                return
+            }
+            do {
+                let workouts = try snapshot.documents.compactMap { document -> Workout? in
+                    let workout = try document.data(as: Workout.self)
                     return workout
                 }
                 completion(workouts)
+            } catch {
+                print("Error decoding workouts: \(error.localizedDescription)")
             }
+        }
+        return listener
     }
     
-    public func deleteListener() {
-        listener?.remove()
-        print ("listener is removed")
+    //MARK: - Adding, fetching and listen to the changes in comments
+    
+    public func addComment(comment: Comment,
+                           completion: @escaping (Bool) ->()){
+        let program = comment.programID
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        do {
+            let workoutRef = database
+                .collection("programs")
+                .document(program)
+                .collection("workouts")
+                .document(comment.workoutID)
+            let commentDoc = try Firestore.Encoder().encode(comment)
+            let commentID = comment.id
+            
+            workoutRef.collection("comments")
+                .document(commentID)
+                .setData(commentDoc) { error in
+                completion(error == nil)
+            }
+        } catch {
+            completion(false)
+        }
+    }
+    
+    public func getAllComments(workout: Workout,
+                               completion: @escaping([Comment])->()){
+        let program = workout.programID
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        database
+            .collection("programs")
+            .document(program)
+            .collection("workouts")
+            .document(workout.id)
+            .collection("comments")
+            .order(by: "timestamp", descending: true)
+            .getDocuments{ snapshot, error in
+                guard let documents = snapshot?.documents, error == nil else {return}
+                
+                let comments: [Comment] = documents.compactMap { document in
+                    do {
+                        let comment = try Firestore.Decoder().decode(Comment.self, from: document.data())
+                        return comment
+                    } catch {
+                        return nil
+                    }
+                }
+                completion(comments)
+            }
     }
 
+    public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
     
-    // TODO: - Map with Codable, read here https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping
-    public func addComment(comment: Comment,
-                           programID: String,
-                           completion: @escaping (Bool) ->()){
-        
-        let documentID = comment.programID
+        let program = workout.programID
             .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
         
-        let commentData: [String: Any] = [
-            "userName": comment.userName,
-            "userImage": comment.userImage,
-            "date": comment.date,
-            "text": comment.text,
-            "programID": comment.programID,
-            "workoutID": comment.workoutID,
-            "commentID": comment.id,
-            "timestamp": comment.timeStamp
-        ]
-        
-        database
+        let listener = database
             .collection("programs")
-            .document(documentID)
+            .document(program)
             .collection("workouts")
-            .document(comment.workoutID)
-            .collection("comments")
-            .document(comment.id)
-            .setData(commentData) { error in
-                completion (error == nil)
-            }
-    }
-    // TODO: - Map with Codable, read here https://firebase.google.com/docs/firestore/solutions/swift-codable-data-mapping
-    public func getAllComments(for workout: String,
-                               program: String,
-                               completion: @escaping([Comment])->()){
-        
-        let documentID = program
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "", with: "_")
-        
-        database
-            .collection("programs")
-            .document(documentID)
-            .collection("workouts")
-            .document(workout)
+            .document(workout.id)
             .collection("comments")
             .order(by: "timestamp", descending: true)
-            .getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
-                let comments: [Comment] = documents.compactMap { dictionary in
-                    guard let userName = dictionary["userName"] as? String,
-                          let userImage = dictionary["userImage"] as? Data,
-                          let id = dictionary["commentID"] as? String,
-                          let workoutID = dictionary["workoutID"] as? String,
-                          let date = dictionary["date"] as? String,
-                          let text = dictionary["text"] as? String,
-                          let timestamp = dictionary["timestamp"] as? TimeInterval,
-                          let programID = dictionary["programID"] as? String else {return nil}
-                    
-                    let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, id: id, workoutID: workoutID, programID: programID)
+            .addSnapshotListener { (snapshot, error) in
+            guard let snapshot = snapshot else {
+                print("Error fetching comments: \(error?.localizedDescription ?? "unknown error")")
+                return
+            }
+            do {
+                let comments = try snapshot.documents.compactMap { document -> Comment? in
+                    let comment = try document.data(as: Comment.self)
                     return comment
                 }
                 completion(comments)
+            } catch {
+                print("Error decoding workouts: \(error.localizedDescription)")
             }
+        }
+        return listener
     }
     
-    public func addNewCommentsListener(for workout: String, program: String, completion: @escaping ([Comment]) -> ()) {
-        let documentID = program
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "", with: "_")
-        
-        listener = database
-            .collection("programs")
-            .document(documentID)
-            .collection("workouts")
-            .document(workout)
-            .collection("comments")
-            .order(by: "timestamp", descending: true)
-            .addSnapshotListener { snapshot, error in
-                guard let documents = snapshot?.documents.compactMap({ $0.data() }), error == nil else {
-                    print("Error retrieving snapshot: \(error!)")
-                    return
-                }
-                let comments: [Comment] = documents.compactMap { dictionary in
-                    guard let userName = dictionary["userName"] as? String,
-                          let userImage = dictionary["userImage"] as? Data,
-                          let id = dictionary["commentID"] as? String,
-                          let workoutID = dictionary["workoutID"] as? String,
-                          let date = dictionary["date"] as? String,
-                          let text = dictionary["text"] as? String,
-                          let timestamp = dictionary["timestamp"] as? TimeInterval,
-                          let programID = dictionary["programID"] as? String else {return nil}
-                    
-                    let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, id: id, workoutID: workoutID, programID: programID)
-                    return comment
-                }
-                completion(comments)
-            }
-    }
+    //MARK: - Adding, fetching and editing users
     
     public func insertUser(user: User,
                            completion: @escaping(Bool) ->()
@@ -336,5 +351,4 @@ final class DatabaseManager {
             }
         }
     }
-    
 }
