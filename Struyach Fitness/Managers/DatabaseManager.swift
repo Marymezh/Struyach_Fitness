@@ -19,7 +19,7 @@ final class DatabaseManager {
     //MARK: - Adding, fetching, editing, deleting workouts and listen to the changes in workouts
 
     public func postWorkout(with workout: Workout, completion: @escaping(Bool) ->()){
-        
+        print("Executing function: \(#function)")
         let program = workout.programID
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
@@ -40,11 +40,8 @@ final class DatabaseManager {
         }
     }
     
-    public func getAllWorkouts(for program: String,
-                               completion: @escaping([Workout])->()){
-        
-//        self.deleteListener()
-        
+    public func getAllWorkouts(for program: String, completion: @escaping([Workout])->()){
+        print("Executing function: \(#function)")
         let documentID = program
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
@@ -63,6 +60,7 @@ final class DatabaseManager {
                 let workouts: [Workout] = documents.compactMap { document in
                     do {
                         let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
+                        print("workouts decoded from database")
                         return workout
                     } catch {
                         print("Error decoding workout: \(error)")
@@ -70,11 +68,11 @@ final class DatabaseManager {
                     }
                 }
                 completion(workouts)
-                print("new snapshot listener for workouts is added")
             }
     }
     
     public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Bool)->()){
+        print("Executing function: \(#function)")
         let documentID = workout.programID
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
@@ -96,6 +94,7 @@ final class DatabaseManager {
 }
     
     public func deleteWorkout(workout: Workout, completion: @escaping (Bool)->()){
+        print("Executing function: \(#function)")
         
         let documentID = workout.programID
             .replacingOccurrences(of: "/", with: "_")
@@ -151,6 +150,7 @@ final class DatabaseManager {
     }
     
     func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
+        print("Executing function: \(#function)")
         
         let documentID = programName
             .replacingOccurrences(of: "/", with: "_")
@@ -181,8 +181,9 @@ final class DatabaseManager {
     
     //MARK: - Adding, fetching and listen to the changes in comments
     
-    public func addComment(comment: Comment,
+    public func postComment(comment: Comment,
                            completion: @escaping (Bool) ->()){
+        print("Executing function: \(#function)")
         let program = comment.programID
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
@@ -200,15 +201,16 @@ final class DatabaseManager {
                 .document(commentID)
                 .setData(commentDoc) { error in
                 completion(error == nil)
+                    print ("posted comment to the database")
             }
         } catch {
             completion(false)
         }
     }
     
-    public func getAllComments(workout: Workout,
-                               completion: @escaping([Comment])->()){
-        let program = workout.programID
+    public func getAllComments(programID: String, workoutID: String, completion: @escaping([Comment])->()){
+        print("Executing function: \(#function)")
+        let program = programID
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
         
@@ -216,17 +218,22 @@ final class DatabaseManager {
             .collection("programs")
             .document(program)
             .collection("workouts")
-            .document(workout.id)
+            .document(workoutID)
             .collection("comments")
             .order(by: "timestamp", descending: true)
             .getDocuments{ snapshot, error in
-                guard let documents = snapshot?.documents, error == nil else {return}
+                guard let documents = snapshot?.documents, error == nil else {
+                    print("Error fetching documents: \(error!)")
+                return}
                 
                 let comments: [Comment] = documents.compactMap { document in
                     do {
+                        print("start decoding comments")
                         let comment = try Firestore.Decoder().decode(Comment.self, from: document.data())
+                        print ("comments decoded from database")
                         return comment
                     } catch {
+                        print("cant fetch comments from database")
                         return nil
                     }
                 }
@@ -235,6 +242,7 @@ final class DatabaseManager {
     }
 
     public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
+        print("Executing function: \(#function)")
     
         let program = workout.programID
             .replacingOccurrences(of: "/", with: "_")

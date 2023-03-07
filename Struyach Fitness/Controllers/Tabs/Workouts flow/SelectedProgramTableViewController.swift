@@ -12,13 +12,13 @@ class SelectedProgramTableViewController: UITableViewController {
     
     //MARK: - Properties
     
-    private var workout: Workout?
     private var listOfWorkouts: [Workout] = []
     private var commentsArray: [Comment] = []
     private let headerView = SelectedWorkoutHeaderView()
     private let workoutsCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
-    private var selectedIntexPath: IndexPath?
+    private var selectedIndexPath: IndexPath?
     private var listener: ListenerRegistration?
+    private var commentsListener: ListenerRegistration?
     
     
     init(frame: CGRect , style: UITableView.Style) {
@@ -87,7 +87,8 @@ class SelectedProgramTableViewController: UITableViewController {
         workoutsCollection.isUserInteractionEnabled = true
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+//        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+//        layout.minimumInteritemSpacing = 10
         workoutsCollection.collectionViewLayout = layout
     }
     
@@ -111,11 +112,11 @@ class SelectedProgramTableViewController: UITableViewController {
             formatter.dateFormat = "EE \n d MMMM \n yyyy"
             let dateString = formatter.string(from: date)
             let workoutID = UUID().uuidString
-            let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp, comments: [])
+            let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 guard let self = self else {return}
                 if success {
-                    self.loadListOfWorkouts(for: title)
+  //                  self.loadListOfWorkouts(for: title)
                     print("workout is added to database - \(newWorkout)")
                     print("Executing function: \(#function)")
                 } else {
@@ -134,13 +135,12 @@ class SelectedProgramTableViewController: UITableViewController {
                 if self.listOfWorkouts.isEmpty {
                     self.headerView.workoutDescriptionTextView.text = "NO WORKOUTS ADDED YET"
                 } else {
-                    // here I need to load comments for each workout
-//                    for workout in self.listOfWorkouts {
-//                        self.loadComments(workout: workout)
-//                    }
-                    self.headerView.workoutDescriptionTextView.text = self.listOfWorkouts[0].description
-                    self.workoutsCollection.reloadData()
+                    self.headerView.workoutDescriptionTextView.text = "PLEASE SELECT THE WORKOUT DATE TO SEE ITS DESCRIPTION AND LOAD COMMENTS"
                     self.tableView.reloadData()
+                    self.workoutsCollection.reloadData()
+                    let indexPath = IndexPath(row: 0, section: 0)
+                    self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+                    self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
                     print("workouts loaded")
                     print("Executing function: \(#function)")
                 }
@@ -162,11 +162,10 @@ class SelectedProgramTableViewController: UITableViewController {
             let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
                 guard let self = self else {return}
                 let workout = self.listOfWorkouts[indexPath.item]
-      //          DatabaseManager.shared.deleteListener()
-                DatabaseManager.shared.deleteWorkout(workout: workout) { [weak self] success in
-                    guard let self = self else {return}
+                DatabaseManager.shared.deleteWorkout(workout: workout) { success in
+         //           guard let self = self else {return}
                     if success {
-                        self.loadListOfWorkouts(for: workout.programID)
+       //                 self.loadListOfWorkouts(for: workout.programID)
                         print("workout is deleted")
                     } else {
                         print ("can not delete workout")
@@ -184,7 +183,7 @@ class SelectedProgramTableViewController: UITableViewController {
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { [weak self] success in
                         guard let self = self else {return}
                         if success{
-                            self.loadListOfWorkouts(for: selectedWorkout.programID)
+            //                self.loadListOfWorkouts(for: selectedWorkout.programID)
                             print("Executing function: \(#function)")
                         } else {
                             self.showAlert(error: "Unable to update selected workout")
@@ -204,19 +203,18 @@ class SelectedProgramTableViewController: UITableViewController {
     //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
     private func addComment(workout: Workout) {
+        print("Executing function: \(#function)")
         headerView.onSendCommentPush = {[weak self] userName, userImage, text, date in
             guard let self = self else {return}
             let timestamp = Date().timeIntervalSince1970
             let commentID = UUID().uuidString
             let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, id: commentID , workoutID: workout.id, programID: workout.programID)
-            DatabaseManager.shared.addComment(comment: newComment) { [weak self] success in
+            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
                 guard let self = self else {return}
                 if success {
-                    self.commentsArray.append(newComment)
-                    self.tableView.reloadData()
-                    self.workoutsCollection.reloadData()
+                    self.loadComments(programID: workout.programID, workoutID: workout.id)
                     print("comment is saved to database")
-                    print("Executing function: \(#function)")
+                   
                 } else {
                     print ("cant save comment")
                 }
@@ -226,27 +224,18 @@ class SelectedProgramTableViewController: UITableViewController {
         }
     }
     
-    private func loadComments(workout: Workout) {
+    private func loadComments(programID: String, workoutID: String) {
         
-        DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
+        DatabaseManager.shared.getAllComments(programID: programID, workoutID: workoutID) { [weak self] comments in
             guard let self = self else {return}
             self.commentsArray = comments
- //           print("comments loaded, total number - \()")
+            print ("loaded \(self.commentsArray.count) comments")
             DispatchQueue.main.async {
                 self.tableView.reloadData()
                 self.workoutsCollection.reloadData()
             }
         }
     }
-    
-//    private func enableSnapshotListenerForComments (workoutID: String, programID: String) {
-//        DatabaseManager.shared.addNewCommentsListener(for: workoutID, program: programID) {[weak self] comments in
-//            guard let self = self else {return}
-//            self.commentsArray = comments
-//            self.tableView.reloadData()
-//            print("snapshot listener for new comments is on")
-//        }
-//    }
     
     private func showAlert (error: String) {
         let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
@@ -300,14 +289,12 @@ class SelectedProgramTableViewController: UITableViewController {
                 workoutsCollection.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)]
             
             NSLayoutConstraint.activate(constraints)
-            
             return cell
+            
         default:
             let cell: CommentTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: CommentTableViewCell.self), for: indexPath) as! CommentTableViewCell
-            cell.comment = self.commentsArray[indexPath.row]
-            cell.backgroundColor = .tertiarySystemBackground
-    //        cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-            
+            cell.comment = commentsArray[indexPath.row]
+            cell.backgroundColor = .tertiaryLabel
             return cell
         }
     }
@@ -320,65 +307,67 @@ class SelectedProgramTableViewController: UITableViewController {
 extension SelectedProgramTableViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         listOfWorkouts.count
-
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
         let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
         let workout = listOfWorkouts[indexPath.item]
- //       self.addComment(workout: workout)
-//        self.enableSnapshotListenerForComments(workoutID: workout.id, programID: workout.programID)
-        
+
         cell.workout = workout
-        cell.workoutDateLabel.backgroundColor = .systemGreen
-     //   print("all cells are set to green")
-        if indexPath.item == 0 {
-            cell.workoutDateLabel.backgroundColor = .secondaryLabel
-     //       print("the first cell is set to gray")
-        }
-        
-        if let selectedIndexPath = selectedIntexPath, selectedIndexPath == indexPath {
-            cell.workoutDateLabel.backgroundColor = .secondaryLabel
-        }
-        
-    
-        return cell
+        if selectedIndexPath == indexPath {
+                  cell.workoutDateLabel.backgroundColor = .secondaryLabel
+              } else {
+                  cell.workoutDateLabel.backgroundColor = .systemGreen
+              }
+              return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Executing function: \(#function)")
-        let workout = listOfWorkouts[indexPath.item]
+        selectedIndexPath = indexPath
+        workoutsCollection.reloadData()
+        let selectedWorkout = listOfWorkouts[indexPath.item]
         headerView.randomizeBackgroungImages()
-        headerView.workoutDescriptionTextView.text = workout.description
-        self.loadComments(workout: workout)
-        self.addComment(workout: workout)
-        
-        let selectedCell: WorkoutsCollectionViewCell = collectionView.cellForItem(at: indexPath) as! WorkoutsCollectionViewCell
-        let firstIndexPath = IndexPath(item: 0, section: 0)
-        if let firstCell = collectionView.cellForItem(at: firstIndexPath) as? WorkoutsCollectionViewCell{
-            firstCell.workoutDateLabel.backgroundColor = .systemGreen
+        headerView.workoutDescriptionTextView.text = selectedWorkout.description
+        self.addComment(workout: selectedWorkout)
+        self.loadComments(programID: selectedWorkout.programID, workoutID: selectedWorkout.id)
+ 
+        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: selectedWorkout) {[weak self] comments in
+            guard let self = self else {return}
+            self.commentsArray = comments
+            self.tableView.reloadData()
+            print("snapshot listener for new comments is on")
         }
-     
-        selectedCell.workoutDateLabel.backgroundColor = .secondaryLabel
-        selectedIntexPath = indexPath
-        
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        guard let cell: WorkoutsCollectionViewCell = collectionView.cellForItem(at: indexPath) as? WorkoutsCollectionViewCell else {return}
+        let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
         cell.workoutDateLabel.backgroundColor = .systemGreen
-        
+        commentsListener?.remove()
+        print ("comments listener is removed")
     }
+    
+//    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+//        let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
+//            if selectedIndexPath == indexPath {
+//                cell.workoutDateLabel.backgroundColor = .secondaryLabel
+//            } else {
+//                cell.workoutDateLabel.backgroundColor = .systemGreen
+//            }
+//        }
 }
 
 extension SelectedProgramTableViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let screenWidth = UIScreen.main.bounds.width
+        let screenWidth = collectionView.bounds.width
         let cellWidth = ((screenWidth - 60) / 5)
         let cellSize = CGSize(width: cellWidth, height: cellWidth)
         return cellSize
     }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+            return UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+        }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 10

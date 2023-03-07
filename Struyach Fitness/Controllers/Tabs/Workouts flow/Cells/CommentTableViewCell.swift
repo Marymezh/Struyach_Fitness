@@ -12,14 +12,13 @@ class CommentTableViewCell: UITableViewCell {
     var comment:Comment? {
         didSet
         {
-            guard let data = comment?.userImage else {print("unable to get image data")
-                return}
+            guard let data = comment?.userImage else {return}
             let decoded = try! PropertyListDecoder().decode(Data.self, from: data)
             let image = UIImage(data: decoded)
             self.userImage.image = image
-            self.commentTextLabel.text = comment?.text ?? "Leave the first comment here"
-            self.dateLabel.text = comment?.date ?? ""
-            self.userNameLabel.text = comment?.userName ?? ""
+            self.commentTextLabel.text = comment?.text
+            self.dateLabel.text = comment?.date
+            self.userNameLabel.text = comment?.userName 
             
         }
     }

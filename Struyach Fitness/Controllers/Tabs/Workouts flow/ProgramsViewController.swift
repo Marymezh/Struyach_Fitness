@@ -30,6 +30,7 @@ class ProgramsViewController: UITableViewController {
     }
     
     private func setupNavbar() {
+
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "Programs", style: .plain, target: nil, action: nil)
         self.navigationController?.navigationBar.largeTitleTextAttributes = [.font: UIFont.systemFont(ofSize: 34, weight: .bold)]
     }

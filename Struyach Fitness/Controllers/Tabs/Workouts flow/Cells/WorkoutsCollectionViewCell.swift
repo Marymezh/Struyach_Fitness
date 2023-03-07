@@ -36,7 +36,7 @@ class WorkoutsCollectionViewCell: UICollectionViewCell {
         super.init(frame: frame)
         
         setupUI()
-        prepareForReuse()
+    //    prepareForReuse()
     }
 
     private func setupUI() {
