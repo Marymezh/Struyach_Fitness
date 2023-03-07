@@ -18,10 +18,13 @@ class TabBarController: UITabBarController {
     private func setupTabBarAppearance() {
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
+        appearance.backgroundColor = .customTabBar
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
         tabBar.tintColor = .systemGreen
         tabBar.unselectedItemTintColor = .darkGray
+        tabBar.backgroundColor = .customDarkGray
+
     }
 
     private func setupControllers() {
@@ -44,7 +47,7 @@ class TabBarController: UITabBarController {
         
         nav1.tabBarItem = UITabBarItem(title: "Programs", image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
         nav2.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 2)
-        
+
         setViewControllers([nav1, nav2], animated: true)
     }
 }

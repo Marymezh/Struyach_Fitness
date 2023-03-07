@@ -67,19 +67,21 @@ class SelectedProgramTableViewController: UITableViewController {
     //MARK: - Methods to setup Navigation Bar, TableView and load workout data
     
     private func setupNavigationAndTabBar() {
-        self.navigationController?.navigationBar.tintColor = .systemGreen
-        self.tabBarController?.tabBar.isHidden = true 
+        navigationController?.navigationBar.tintColor = .systemGreen
+        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
+        tabBarController?.tabBar.isHidden = true 
     }
     
     private func setupTableView() {
         tableView.sectionHeaderHeight = UITableView.automaticDimension
         tableView.register(CommentTableViewCell.self, forCellReuseIdentifier: String(describing: CommentTableViewCell.self))
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "collectionCell")
+        tableView.backgroundColor = .customDarkGray
     }
     
     private func setupCollectionView() {
         workoutsCollection.toAutoLayout()
-        workoutsCollection.backgroundColor = .secondarySystemBackground
+        workoutsCollection.backgroundColor = .customDarkGray
         workoutsCollection.dataSource = self
         workoutsCollection.delegate = self
         workoutsCollection.register(WorkoutsCollectionViewCell.self, forCellWithReuseIdentifier: "workoutCell")
@@ -87,8 +89,6 @@ class SelectedProgramTableViewController: UITableViewController {
         workoutsCollection.isUserInteractionEnabled = true
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-//        layout.sectionInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-//        layout.minimumInteritemSpacing = 10
         workoutsCollection.collectionViewLayout = layout
     }
     
@@ -116,7 +116,6 @@ class SelectedProgramTableViewController: UITableViewController {
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 guard let self = self else {return}
                 if success {
-  //                  self.loadListOfWorkouts(for: title)
                     print("workout is added to database - \(newWorkout)")
                     print("Executing function: \(#function)")
                 } else {
@@ -135,7 +134,6 @@ class SelectedProgramTableViewController: UITableViewController {
                 if self.listOfWorkouts.isEmpty {
                     self.headerView.workoutDescriptionTextView.text = "NO WORKOUTS ADDED YET"
                 } else {
-                    self.headerView.workoutDescriptionTextView.text = "PLEASE SELECT THE WORKOUT DATE TO SEE ITS DESCRIPTION AND LOAD COMMENTS"
                     self.tableView.reloadData()
                     self.workoutsCollection.reloadData()
                     let indexPath = IndexPath(row: 0, section: 0)
@@ -163,9 +161,7 @@ class SelectedProgramTableViewController: UITableViewController {
                 guard let self = self else {return}
                 let workout = self.listOfWorkouts[indexPath.item]
                 DatabaseManager.shared.deleteWorkout(workout: workout) { success in
-         //           guard let self = self else {return}
                     if success {
-       //                 self.loadListOfWorkouts(for: workout.programID)
                         print("workout is deleted")
                     } else {
                         print ("can not delete workout")
@@ -183,7 +179,6 @@ class SelectedProgramTableViewController: UITableViewController {
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { [weak self] success in
                         guard let self = self else {return}
                         if success{
-            //                self.loadListOfWorkouts(for: selectedWorkout.programID)
                             print("Executing function: \(#function)")
                         } else {
                             self.showAlert(error: "Unable to update selected workout")
@@ -280,7 +275,7 @@ class SelectedProgramTableViewController: UITableViewController {
         switch indexPath.section {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "collectionCell", for: indexPath)
-           
+            cell.contentView.backgroundColor = .customDarkGray
             cell.contentView.addSubview(workoutsCollection)
             let constraints = [
                 workoutsCollection.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
@@ -289,12 +284,17 @@ class SelectedProgramTableViewController: UITableViewController {
                 workoutsCollection.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)]
             
             NSLayoutConstraint.activate(constraints)
+       
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: tableView.bounds.width)
             return cell
             
         default:
             let cell: CommentTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: CommentTableViewCell.self), for: indexPath) as! CommentTableViewCell
             cell.comment = commentsArray[indexPath.row]
-            cell.backgroundColor = .tertiaryLabel
+            cell.backgroundColor = .customLightGray
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: tableView.bounds.width)
+            cell.layoutMargins = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
+            cell.backgroundColor = .tertiarySystemBackground
             return cell
         }
     }
@@ -302,6 +302,7 @@ class SelectedProgramTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         return nil
     }
+    
 }
 
 extension SelectedProgramTableViewController: UICollectionViewDataSource, UICollectionViewDelegate {
@@ -312,7 +313,6 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
         let workout = listOfWorkouts[indexPath.item]
-
         cell.workout = workout
         if selectedIndexPath == indexPath {
                   cell.workoutDateLabel.backgroundColor = .secondaryLabel
@@ -341,6 +341,7 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        print("Executing function: \(#function)")
         let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
         cell.workoutDateLabel.backgroundColor = .systemGreen
         commentsListener?.remove()

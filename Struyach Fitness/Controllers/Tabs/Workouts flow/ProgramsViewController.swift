@@ -24,24 +24,24 @@ class ProgramsViewController: UITableViewController {
     }
     
     private func setupTableView () {
-        tableView.backgroundColor = .secondarySystemBackground
+        tableView.backgroundColor = .customDarkGray
         tableView.register(ProgramTableViewCell.self, forCellReuseIdentifier: String(describing: ProgramTableViewCell.self))
         tableView.isScrollEnabled = false
     }
     
     private func setupNavbar() {
-
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "Programs", style: .plain, target: nil, action: nil)
-        self.navigationController?.navigationBar.largeTitleTextAttributes = [.font: UIFont.systemFont(ofSize: 34, weight: .bold)]
+        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
     }
-    
+
     //MARK: - Table View datasource and delegate methods
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: ProgramTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProgramTableViewCell.self), for: indexPath) as! ProgramTableViewCell
         
         cell.program = programsArray[indexPath.section]
-        cell.backgroundView?.alpha = 0.7
+        cell.backgroundView?.alpha = 0.5
+        cell.backgroundColor = .customDarkGray
         
         return cell
     }
@@ -59,7 +59,7 @@ class ProgramsViewController: UITableViewController {
     }
     override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let view = UIView()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .customDarkGray
         return view
     }
     

@@ -18,7 +18,6 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     
     private let workoutView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemBackground
         view.backgroundColor = .white
         view.layer.borderWidth = 0.5
         view.layer.borderColor = UIColor.black.cgColor

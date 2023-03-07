@@ -23,7 +23,7 @@ class ProfileHeaderView: UIView {
         image.clipsToBounds = true
         image.layer.cornerRadius = 40
         image.contentMode = .scaleAspectFill
-        image.layer.borderColor = UIColor.tertiarySystemBackground.cgColor
+        image.layer.borderColor = UIColor.darkGray.cgColor 
         image.layer.borderWidth = 3
         image.toAutoLayout()
         return image
@@ -33,6 +33,7 @@ class ProfileHeaderView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         label.text = "Unknown user"
+        label.textColor = .white
         label.textAlignment = .left
         label.numberOfLines = 0
         label.sizeToFit()
@@ -44,6 +45,7 @@ class ProfileHeaderView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         label.textAlignment = .left
+        label.textColor = .white
         label.numberOfLines = 0
         label.sizeToFit()
         label.toAutoLayout()
@@ -60,7 +62,7 @@ class ProfileHeaderView: UIView {
     }
     
     private func setupUI () {
-        self.backgroundColor = .secondarySystemBackground
+        self.backgroundColor = .customDarkGray
         self.addSubviews(userPhotoImage, userNameLabel, userEmailLabel)
         
         let constraints = [

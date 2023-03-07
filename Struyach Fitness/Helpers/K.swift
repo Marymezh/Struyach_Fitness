@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 
 struct K {
@@ -15,3 +16,4 @@ struct K {
     static let badass = "BADASS"
     static let hardpress = "HARD PRESS"
 }
+
