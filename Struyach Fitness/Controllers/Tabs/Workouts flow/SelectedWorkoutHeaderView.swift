@@ -12,6 +12,7 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     var onSendCommentPush: ((String, Data, String, String) -> Void)?
     
     var onTextChanged: (() -> Void)?
+    var onAddPhotoVideoPush: (() -> Void)?
     
     private var baseInset: CGFloat { return 15 }
     private var innerInset: CGFloat { return 10 }
@@ -68,6 +69,15 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         self.window?.rootViewController?.present(fullWorkoutDescriptionVC, animated: true)
     }
     
+    private lazy var attachPhotoVideoButton:UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.tintColor = .white
+        button.setImage(UIImage(systemName: "photo.on.rectangle", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+        button.addTarget(self, action: #selector(addPhotoVideo), for: .touchUpInside)
+        return button
+    }()
+    
     let commentTextView: UITextView = {
        let textView = UITextView()
         textView.toAutoLayout()
@@ -97,6 +107,9 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         return button
     }()
     
+    @objc func addPhotoVideo() {
+        onAddPhotoVideoPush?()
+    }
     
     @objc func commentSent() {
         if let text = commentTextView.text,
@@ -127,11 +140,10 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         
         commentTextView.delegate = self
         
-        self.addSubviews (workoutView, fullScreenButton, commentTextView, addCommentButton )
+        self.addSubviews (workoutView, fullScreenButton, attachPhotoVideoButton, commentTextView, addCommentButton )
         workoutView.addSubview(workoutDescriptionTextView)
         
         let textViewHeight: CGFloat = 320
-
         
         let constraints = [
             
@@ -150,9 +162,14 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
             fullScreenButton.heightAnchor.constraint(equalToConstant: 35),
             fullScreenButton.widthAnchor.constraint(equalTo: fullScreenButton.heightAnchor),
             
+            attachPhotoVideoButton.topAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: baseInset),
+            attachPhotoVideoButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
+            attachPhotoVideoButton.widthAnchor.constraint(equalToConstant: 35),
+            attachPhotoVideoButton.heightAnchor.constraint(equalToConstant: 35),
+            
             commentTextView.topAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: baseInset),
-            commentTextView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
-            commentTextView.widthAnchor.constraint(equalTo: self.widthAnchor, constant: -70),
+            commentTextView.leadingAnchor.constraint(equalTo: attachPhotoVideoButton.trailingAnchor, constant: 7),
+            commentTextView.trailingAnchor.constraint(equalTo: addCommentButton.leadingAnchor, constant: -5),
             commentTextView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset),
             
             addCommentButton.topAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: baseInset),

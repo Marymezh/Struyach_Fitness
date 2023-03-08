@@ -13,10 +13,6 @@ class ProfileHeaderView: UIView {
     
     private var baseInset: CGFloat { return 15 }
     
-  //var currentUserEmail = UserDefaults.standard.string(forKey: "email")
-
- //   var profilePhoto: String?
-    
     let userPhotoImage: UIImageView = {
         let image = UIImageView()
         image.image = UIImage(named: "general")

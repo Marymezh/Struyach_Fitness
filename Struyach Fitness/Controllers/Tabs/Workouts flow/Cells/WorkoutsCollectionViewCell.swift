@@ -52,8 +52,6 @@ class WorkoutsCollectionViewCell: UICollectionViewCell {
             workoutDateLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
             workoutDateLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             workoutDateLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            workoutDateLabel.heightAnchor.constraint(equalToConstant: 70),
-            workoutDateLabel.widthAnchor.constraint(equalTo: workoutDateLabel.heightAnchor),
             workoutDateLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
         ]
         

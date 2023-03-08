@@ -52,6 +52,9 @@ class SelectedProgramTableViewController: UITableViewController {
             DispatchQueue.main.async {
                 self.tableView.reloadData()
                 self.workoutsCollection.reloadData()
+                if let selectedIndexPath = self.selectedIndexPath {
+                       self.workoutsCollection.reloadItems(at: [selectedIndexPath])
+                   }
             }
         }
     }
@@ -68,9 +71,6 @@ class SelectedProgramTableViewController: UITableViewController {
     
     private func setupNavigationAndTabBar() {
         navigationController?.navigationBar.tintColor = .systemGreen
-        navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 27, weight: .bold)]
-        navigationController?.navigationBar.barTintColor =  .customTabBar
-        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         tabBarController?.tabBar.isHidden = true 
     }
     
@@ -166,6 +166,9 @@ class SelectedProgramTableViewController: UITableViewController {
                 let workout = self.listOfWorkouts[indexPath.item]
                 DatabaseManager.shared.deleteWorkout(workout: workout) { success in
                     if success {
+                        self.workoutsCollection.reloadData()
+                        self.tableView.reloadData()
+                        
                         print("workout is deleted")
                     } else {
                         print ("can not delete workout")
@@ -314,16 +317,24 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
         let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
         let workout = listOfWorkouts[indexPath.item]
         cell.workout = workout
-        if selectedIndexPath == indexPath {
-                  cell.workoutDateLabel.backgroundColor = .customMediumGray
-              } else {
-                  cell.workoutDateLabel.backgroundColor = .systemGreen
-              }
-              return cell
+        updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
+            return cell
+//        if selectedIndexPath == indexPath {
+//                  cell.workoutDateLabel.backgroundColor = .customMediumGray
+//              } else {
+//                  cell.workoutDateLabel.backgroundColor = .systemGreen
+//              }
+//              return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Executing function: \(#function)")
+        if let selectedIndexPath = selectedIndexPath {
+               collectionView.deselectItem(at: selectedIndexPath, animated: true)
+               commentsListener?.remove()
+            print("comments listener is removed")
+           }
+        
         selectedIndexPath = indexPath
         workoutsCollection.reloadData()
         let selectedWorkout = listOfWorkouts[indexPath.item]
@@ -335,27 +346,39 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
         commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: selectedWorkout) {[weak self] comments in
             guard let self = self else {return}
             self.commentsArray = comments
-            self.tableView.reloadData()
-            print("snapshot listener for new comments is on")
+            DispatchQueue.main.async {
+                self.workoutsCollection.reloadData()
+                self.tableView.reloadData()
+                print("snapshot listener for new comments is on")
+                if let selectedIndexPath = self.selectedIndexPath {
+                        self.workoutsCollection.reloadItems(at: [selectedIndexPath])
+                    }
+            }
+    
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         print("Executing function: \(#function)")
-        let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
-        cell.workoutDateLabel.backgroundColor = .systemGreen
-        commentsListener?.remove()
+        if indexPath == selectedIndexPath {
+                commentsListener?.remove()
+            print ("comments listener is removed")
+                selectedIndexPath = nil
+            }
         print ("comments listener is removed")
     }
-    
-//    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-//        let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
-//            if selectedIndexPath == indexPath {
-//                cell.workoutDateLabel.backgroundColor = .secondaryLabel
-//            } else {
-//                cell.workoutDateLabel.backgroundColor = .systemGreen
-//            }
+//
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        let cell = cell as! WorkoutsCollectionViewCell // cast the cell to your custom cell class
+           updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
+//        let cell = cell as! WorkoutsCollectionViewCell // cast the cell to your custom cell class
+//
+//        if selectedIndexPath == indexPath {
+//            cell.workoutDateLabel.backgroundColor = .customMediumGray
+//        } else {
+//            cell.workoutDateLabel.backgroundColor = .systemGreen
 //        }
+    }
 }
 
 extension SelectedProgramTableViewController: UICollectionViewDelegateFlowLayout {
@@ -373,5 +396,45 @@ extension SelectedProgramTableViewController: UICollectionViewDelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 10
     }
+    
+    func updateCellColor(_ cell: WorkoutsCollectionViewCell, isSelected: Bool) {
+        if isSelected {
+            cell.workoutDateLabel.backgroundColor = .customMediumGray
+        } else {
+            cell.workoutDateLabel.backgroundColor = .systemGreen
+        }
+    }
+    
 }
+
+//MARK: - UIImagePickerControllerDelegate methods
+extension SelectedProgramTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    private func showImagePickerController() {
+        let picker = UIImagePickerController()
+        picker.allowsEditing = true
+        picker.delegate = self
+        picker.sourceType = .photoLibrary
+        navigationController?.present(picker, animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        navigationController?.dismiss(animated: true)
+//        
+//        guard let image = info[.editedImage] as? UIImage else { return }
+//        self.headerView.userPhotoImage.image = image
+//        
+//        StorageManager.shared.uploadUserProfilePicture(email: currentEmail, image: image) { [weak self] success in
+//            guard let self = self else {return}
+//            if success {
+//                DatabaseManager.shared.updateProfilePhoto(email: self.currentEmail) { success in
+//                    guard success else {return}
+//                    DispatchQueue.main.async {
+//                        self.fetchProfileData()
+//                    }
+//                }
+//            }
+//        }
+    }
+}
+
 
