@@ -66,13 +66,13 @@ class ProfileHeaderView: UIView {
         self.addSubviews(userPhotoImage, userNameLabel, userEmailLabel)
         
         let constraints = [
-            userPhotoImage.topAnchor.constraint(equalTo: self.topAnchor),
+            userPhotoImage.topAnchor.constraint(equalTo: self.topAnchor, constant: baseInset),
             userPhotoImage.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
             userPhotoImage.heightAnchor.constraint(equalToConstant: 80),
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),
             userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset),
             
-            userNameLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
+            userNameLabel.bottomAnchor.constraint(equalTo: userPhotoImage.centerYAnchor, constant: -5),
             userNameLabel.leadingAnchor.constraint(equalTo: userPhotoImage.trailingAnchor, constant: baseInset*3),
             userNameLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -baseInset),
             

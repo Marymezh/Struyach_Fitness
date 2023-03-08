@@ -45,7 +45,7 @@ class WorkoutsCollectionViewCell: UICollectionViewCell {
         contentView.layer.shadowRadius = 10
         contentView.layer.shadowOffset = CGSize(width: 1, height: 1)
         contentView.layer.shadowOpacity = 0.3
-        contentView.backgroundColor = .secondarySystemBackground
+        contentView.backgroundColor = .customDarkGray
         contentView.addSubview(workoutDateLabel)
         
         let constraints = [

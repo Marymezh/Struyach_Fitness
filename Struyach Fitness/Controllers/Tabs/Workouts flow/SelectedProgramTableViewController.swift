@@ -68,7 +68,9 @@ class SelectedProgramTableViewController: UITableViewController {
     
     private func setupNavigationAndTabBar() {
         navigationController?.navigationBar.tintColor = .systemGreen
-        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
+        navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 27, weight: .bold)]
+        navigationController?.navigationBar.barTintColor =  .customTabBar
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         tabBarController?.tabBar.isHidden = true 
     }
     
@@ -77,6 +79,8 @@ class SelectedProgramTableViewController: UITableViewController {
         tableView.register(CommentTableViewCell.self, forCellReuseIdentifier: String(describing: CommentTableViewCell.self))
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "collectionCell")
         tableView.backgroundColor = .customDarkGray
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = .customLightGray
     }
     
     private func setupCollectionView() {
@@ -291,10 +295,6 @@ class SelectedProgramTableViewController: UITableViewController {
         default:
             let cell: CommentTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: CommentTableViewCell.self), for: indexPath) as! CommentTableViewCell
             cell.comment = commentsArray[indexPath.row]
-            cell.backgroundColor = .customLightGray
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: tableView.bounds.width)
-            cell.layoutMargins = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
-            cell.backgroundColor = .tertiarySystemBackground
             return cell
         }
     }
@@ -315,7 +315,7 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
         let workout = listOfWorkouts[indexPath.item]
         cell.workout = workout
         if selectedIndexPath == indexPath {
-                  cell.workoutDateLabel.backgroundColor = .secondaryLabel
+                  cell.workoutDateLabel.backgroundColor = .customMediumGray
               } else {
                   cell.workoutDateLabel.backgroundColor = .systemGreen
               }

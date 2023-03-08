@@ -23,21 +23,12 @@ class CommentTableViewCell: UITableViewCell {
         }
     }
     
-    private let containerView: UIView = {
-        let containerView = UIView()
-        containerView.backgroundColor = .customMediumGray
-        containerView.layer.cornerRadius = 15
-        containerView.layer.masksToBounds = true
-        containerView.toAutoLayout()
-        return containerView
-    }()
-    
     private let userImage: UIImageView = {
         let image = UIImageView()
         image.clipsToBounds = true
         image.layer.cornerRadius = 30
         image.contentMode = .scaleAspectFill
-        image.layer.borderColor = UIColor.darkGray.cgColor
+        image.layer.borderColor = UIColor.customLightGray?.cgColor 
         image.layer.borderWidth = 1
         image.toAutoLayout()
         return image
@@ -89,33 +80,27 @@ class CommentTableViewCell: UITableViewCell {
     private func setupUI() {
 
         contentView.backgroundColor = .customDarkGray
-        contentView.addSubviews(containerView, userImage)
-        containerView.addSubviews(userNameLabel, dateLabel, commentTextLabel)
+        contentView.addSubviews(userImage, userNameLabel, dateLabel, commentTextLabel)
         
         let constraints = [
             
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
-            containerView.leadingAnchor.constraint(equalTo: userImage.trailingAnchor, constant: baseInset),
-            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            
-            userImage.topAnchor.constraint(equalTo: containerView.topAnchor),
+            userImage.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
             userImage.heightAnchor.constraint(equalToConstant: 60),
             userImage.widthAnchor.constraint(equalTo: userImage.heightAnchor),
             userImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             
-            userNameLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: baseInset),
-            userNameLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: baseInset),
-            userNameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -baseInset),
+            userNameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
+            userNameLabel.leadingAnchor.constraint(equalTo: userImage.trailingAnchor, constant: baseInset),
+            userNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
             
             dateLabel.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: 5),
             dateLabel.leadingAnchor.constraint(equalTo: userNameLabel.leadingAnchor),
             dateLabel.trailingAnchor.constraint(equalTo: userNameLabel.trailingAnchor),
             
             commentTextLabel.topAnchor.constraint(equalTo: userImage.bottomAnchor, constant: baseInset),
-            commentTextLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: baseInset),
-            commentTextLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -baseInset),
-            commentTextLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -baseInset)
+            commentTextLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
+            commentTextLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
+            commentTextLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
         ]
         
         NSLayoutConstraint.activate(constraints)

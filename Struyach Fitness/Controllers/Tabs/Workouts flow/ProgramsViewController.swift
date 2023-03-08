@@ -31,7 +31,9 @@ class ProgramsViewController: UITableViewController {
     
     private func setupNavbar() {
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "Programs", style: .plain, target: nil, action: nil)
-        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
+        navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
+        navigationController?.navigationBar.barTintColor =  .customTabBar
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
     }
 
     //MARK: - Table View datasource and delegate methods

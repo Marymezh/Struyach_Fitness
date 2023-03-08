@@ -121,7 +121,9 @@ class ProfileTableViewController: UITableViewController {
 
    private func setupNavigationBar () {
        navigationController?.navigationBar.tintColor = .systemRed
-       navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
+       navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
+       navigationController?.navigationBar.barTintColor = .customTabBar
+       navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Sign Out",
             style: .done,
