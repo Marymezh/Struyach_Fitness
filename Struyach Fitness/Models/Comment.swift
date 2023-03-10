@@ -13,6 +13,7 @@ struct Comment: Codable {
     let userImage: Data
     let date: String
     let text: String
+    let imageRef: String?
     let id: String
     let workoutID: String
     let programID: String

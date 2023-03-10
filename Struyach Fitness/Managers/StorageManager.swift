@@ -14,7 +14,41 @@ final class StorageManager {
     private let container = Storage.storage()
     
     private init() {}
+    //TODO: - write methods to upload image and video URL to Firebase Storage
     
+    public func uploadImageForComment(image: UIImage?, imageID: String, completion: @escaping (String?)->()) {
+        guard let pngData = image?.pngData() else {return}
+        
+        let imageRef = "comments_photo/\(imageID)/photo.png"
+        container
+            .reference(withPath: imageRef)
+            .putData(pngData, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(nil)
+                    return
+                }
+                completion(imageRef)
+            }
+        
+    }
+    
+    public func uploadVideoURLForComment(email: String, video: URL?, completion: @escaping (Bool)->()) {
+        
+    }
+    
+    public func downloadUrlForCommentImage(path: String, completion: @escaping (URL?)->()){
+        container.reference(withPath: path)
+            .downloadURL { url, _ in
+                completion(url)
+            }
+    }
+    
+    public func downloadUrlForCommentVideo(path: String, completion: @escaping (URL?)->()){
+        container.reference(withPath: path)
+            .downloadURL { url, _ in
+                completion(url)
+            }
+    }
     
     public func uploadUserProfilePicture(email: String, image: UIImage?, completion: @escaping (Bool)->()) {
         let path = email
@@ -39,7 +73,7 @@ final class StorageManager {
                 completion(url)
             }
     }
-    //TODO: - make a func to upload personal records connected to a particular user
+
     public func uploadUserPersonalRecords(email: String, weights: [String]?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")

@@ -191,6 +191,7 @@ final class DatabaseManager {
                "userImage": comment.userImage,
                "date": comment.date,
                "text": comment.text,
+               "image": comment.imageRef ?? "",
                "programID": comment.programID,
                "workoutID": comment.workoutID,
                "commentID": comment.id,
@@ -231,10 +232,11 @@ final class DatabaseManager {
                              let workoutID = dictionary["workoutID"] as? String,
                              let date = dictionary["date"] as? String,
                              let text = dictionary["text"] as? String,
+                             let image = dictionary["image"] as? String,
                              let timestamp = dictionary["timestamp"] as? TimeInterval,
                              let programID = dictionary["programID"] as? String else {return nil}
 
-                       let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, id: id, workoutID: workoutID, programID: programID)
+                       let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: image, id: id, workoutID: workoutID, programID: programID)
                        return comment
                    }
                    completion(comments)
@@ -265,10 +267,11 @@ final class DatabaseManager {
                               let workoutID = dictionary["workoutID"] as? String,
                               let date = dictionary["date"] as? String,
                               let text = dictionary["text"] as? String,
+                              let image = dictionary["image"] as? String,
                               let timestamp = dictionary["timestamp"] as? TimeInterval,
                               let programID = dictionary["programID"] as? String else {return nil}
                         
-                        let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, id: id, workoutID: workoutID, programID: programID)
+                        let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: image, id: id, workoutID: workoutID, programID: programID)
                         return comment
                     }
                     completion(comments)

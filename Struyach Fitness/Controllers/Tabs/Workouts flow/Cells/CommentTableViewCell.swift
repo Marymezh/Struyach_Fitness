@@ -18,8 +18,7 @@ class CommentTableViewCell: UITableViewCell {
             self.userImage.image = image
             self.commentTextLabel.text = comment?.text
             self.dateLabel.text = comment?.date
-            self.userNameLabel.text = comment?.userName 
-            
+            self.userNameLabel.text = comment?.userName
         }
     }
     
@@ -64,6 +63,17 @@ class CommentTableViewCell: UITableViewCell {
         return label
     }()
     
+    let commentImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.cornerRadius = 5
+        imageView.clipsToBounds = true
+//        imageView.sizeToFit()
+        imageView.isHidden = true
+        imageView.toAutoLayout()
+        return imageView
+    }()
+    
     private var baseInset: CGFloat { return 15 }
     
     //TODO: - Add functionality to load short videos into comment and "likes" button and counter
@@ -80,7 +90,7 @@ class CommentTableViewCell: UITableViewCell {
     private func setupUI() {
 
         contentView.backgroundColor = .customDarkGray
-        contentView.addSubviews(userImage, userNameLabel, dateLabel, commentTextLabel)
+        contentView.addSubviews(userImage, userNameLabel, dateLabel, commentTextLabel, commentImageView)
         
         let constraints = [
             
@@ -100,7 +110,14 @@ class CommentTableViewCell: UITableViewCell {
             commentTextLabel.topAnchor.constraint(equalTo: userImage.bottomAnchor, constant: baseInset),
             commentTextLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             commentTextLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
-            commentTextLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
+//            commentTextLabel.heightAnchor.constraint(equalToConstant: 200),
+    //        commentTextLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
+            
+            commentImageView.topAnchor.constraint(equalTo: commentTextLabel.bottomAnchor, constant: baseInset),
+            commentImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
+            commentImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
+            commentImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 200),
+            commentImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
         ]
         
         NSLayoutConstraint.activate(constraints)

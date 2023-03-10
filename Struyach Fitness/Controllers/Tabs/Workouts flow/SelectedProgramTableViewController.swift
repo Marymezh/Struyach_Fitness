@@ -19,7 +19,7 @@ class SelectedProgramTableViewController: UITableViewController {
     private var selectedIndexPath: IndexPath?
     private var listener: ListenerRegistration?
     private var commentsListener: ListenerRegistration?
-    
+    private var onImagePicked: ((String) -> ())?
     
     init(frame: CGRect , style: UITableView.Style) {
         super.init(style: style)
@@ -45,6 +45,7 @@ class SelectedProgramTableViewController: UITableViewController {
         super.viewWillAppear(animated)
         print("Executing function: \(#function)")
         guard let title = title else {return}
+        navigationController?.navigationBar.prefersLargeTitles = true
         loadListOfWorkouts(for: title)
         listener = DatabaseManager.shared.addWorkoutsListener(for: title) { [weak self] workouts in
             guard let self = self else { return }
@@ -166,9 +167,11 @@ class SelectedProgramTableViewController: UITableViewController {
                 let workout = self.listOfWorkouts[indexPath.item]
                 DatabaseManager.shared.deleteWorkout(workout: workout) { success in
                     if success {
-                        self.workoutsCollection.reloadData()
-                        self.tableView.reloadData()
-                        
+                        DispatchQueue.main.async {
+                            self.workoutsCollection.reloadData()
+                            self.tableView.reloadData()
+                            self.headerView.workoutDescriptionTextView.text = "Workout is successfully deleted"
+                        }
                         print("workout is deleted")
                     } else {
                         print ("can not delete workout")
@@ -206,17 +209,30 @@ class SelectedProgramTableViewController: UITableViewController {
     
     private func addComment(workout: Workout) {
         print("Executing function: \(#function)")
+       
         headerView.onSendCommentPush = {[weak self] userName, userImage, text, date in
             guard let self = self else {return}
             let timestamp = Date().timeIntervalSince1970
             let commentID = UUID().uuidString
-            let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, id: commentID , workoutID: workout.id, programID: workout.programID)
+            self.onImagePicked = {[weak self] imageRef in
+                let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: imageRef, id: commentID , workoutID: workout.id, programID: workout.programID)
+                DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+                    guard let self = self else {return}
+                    if success {
+                        self.loadComments(programID: workout.programID, workoutID: workout.id)
+                        print ("comments with image loaded")
+
+                    } else {
+                        print ("cant save comment")
+                    }
+                }
+            }
+            let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: nil, id: commentID , workoutID: workout.id, programID: workout.programID)
             DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
                 guard let self = self else {return}
                 if success {
                     self.loadComments(programID: workout.programID, workoutID: workout.id)
-                    print("comment is saved to database")
-                   
+                    print ("comments without image loaded")
                 } else {
                     print ("cant save comment")
                 }
@@ -298,6 +314,21 @@ class SelectedProgramTableViewController: UITableViewController {
         default:
             let cell: CommentTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: CommentTableViewCell.self), for: indexPath) as! CommentTableViewCell
             cell.comment = commentsArray[indexPath.row]
+            if let ref = cell.comment?.imageRef, ref != ""  {
+                StorageManager.shared.downloadUrlForProfilePicture(path: ref) { url in
+                    guard let url = url else {return}
+                    print ("\(url)")
+                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+                        if let data = data {
+                            DispatchQueue.main.async {
+                                cell.commentImageView.isHidden = false
+                                cell.commentImageView.image = UIImage(data: data)
+                            }
+                        }
+                    }
+                    task.resume()
+                }
+            }
             return cell
         }
     }
@@ -336,10 +367,16 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
            }
         
         selectedIndexPath = indexPath
-        workoutsCollection.reloadData()
+        DispatchQueue.main.async {
+            self.workoutsCollection.reloadData()
+        }
+       
         let selectedWorkout = listOfWorkouts[indexPath.item]
         headerView.randomizeBackgroungImages()
         headerView.workoutDescriptionTextView.text = selectedWorkout.description
+        headerView.onAddPhotoVideoPush = {
+            self.showImagePickerController()
+        }
         self.addComment(workout: selectedWorkout)
         self.loadComments(programID: selectedWorkout.programID, workoutID: selectedWorkout.id)
  
@@ -351,10 +388,9 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
                 self.tableView.reloadData()
                 print("snapshot listener for new comments is on")
                 if let selectedIndexPath = self.selectedIndexPath {
-                        self.workoutsCollection.reloadItems(at: [selectedIndexPath])
-                    }
+                    self.workoutsCollection.reloadItems(at: [selectedIndexPath])
+                }
             }
-    
         }
     }
     
@@ -367,12 +403,11 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
             }
         print ("comments listener is removed")
     }
-//
+
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        let cell = cell as! WorkoutsCollectionViewCell // cast the cell to your custom cell class
+        let cell = cell as! WorkoutsCollectionViewCell
            updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
-//        let cell = cell as! WorkoutsCollectionViewCell // cast the cell to your custom cell class
-//
+
 //        if selectedIndexPath == indexPath {
 //            cell.workoutDateLabel.backgroundColor = .customMediumGray
 //        } else {
@@ -414,27 +449,36 @@ extension SelectedProgramTableViewController: UIImagePickerControllerDelegate, U
         picker.allowsEditing = true
         picker.delegate = self
         picker.sourceType = .photoLibrary
+        picker.mediaTypes = ["public.image", "public.movie"]
         navigationController?.present(picker, animated: true)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        navigationController?.dismiss(animated: true)
-//        
-//        guard let image = info[.editedImage] as? UIImage else { return }
-//        self.headerView.userPhotoImage.image = image
-//        
-//        StorageManager.shared.uploadUserProfilePicture(email: currentEmail, image: image) { [weak self] success in
-//            guard let self = self else {return}
-//            if success {
-//                DatabaseManager.shared.updateProfilePhoto(email: self.currentEmail) { success in
-//                    guard success else {return}
-//                    DispatchQueue.main.async {
-//                        self.fetchProfileData()
-//                    }
-//                }
-//            }
-//        }
-    }
+           // Dismiss the picker
+           picker.dismiss(animated: true)
+
+           // Check if the selected media is an image or video
+           let imageID = UUID().uuidString
+           if let image = info[.editedImage] as? UIImage
+               {
+               // Handle the selected image
+               StorageManager.shared.uploadImageForComment(image: image, imageID: imageID) {imageRef in
+                   //                  guard let self = self else {return}
+                   if let imageRef = imageRef, !imageRef.isEmpty {
+                       self.onImagePicked?(imageRef)
+                   }
+               }
+               // Here you can do something with the image, like display it in the photoImageView in your custom cell
+//           } else if let videoURL = info[.mediaURL] as? URL {
+               // Handle the selected video
+               // Here you can do something with the video, like save the URL to attach it to the comment
+           }
+       }
+
+       func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+           // Dismiss the picker if the user cancels
+           picker.dismiss(animated: true)
+       }
 }
 
 

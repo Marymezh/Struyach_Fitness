@@ -69,7 +69,7 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         self.window?.rootViewController?.present(fullWorkoutDescriptionVC, animated: true)
     }
     
-    private lazy var attachPhotoVideoButton:UIButton = {
+    private lazy var addPhotoVideoButton:UIButton = {
         let button = UIButton()
         button.toAutoLayout()
         button.tintColor = .white
@@ -108,6 +108,8 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
     }()
     
     @objc func addPhotoVideo() {
+        print ("executing function \(#function)")
+        
         onAddPhotoVideoPush?()
     }
     
@@ -140,7 +142,7 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         
         commentTextView.delegate = self
         
-        self.addSubviews (workoutView, fullScreenButton, attachPhotoVideoButton, commentTextView, addCommentButton )
+        self.addSubviews (workoutView, fullScreenButton, addPhotoVideoButton, commentTextView, addCommentButton )
         workoutView.addSubview(workoutDescriptionTextView)
         
         let textViewHeight: CGFloat = 320
@@ -162,13 +164,13 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
             fullScreenButton.heightAnchor.constraint(equalToConstant: 35),
             fullScreenButton.widthAnchor.constraint(equalTo: fullScreenButton.heightAnchor),
             
-            attachPhotoVideoButton.topAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: baseInset),
-            attachPhotoVideoButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
-            attachPhotoVideoButton.widthAnchor.constraint(equalToConstant: 35),
-            attachPhotoVideoButton.heightAnchor.constraint(equalToConstant: 35),
+            addPhotoVideoButton.topAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: baseInset),
+            addPhotoVideoButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
+            addPhotoVideoButton.widthAnchor.constraint(equalToConstant: 35),
+            addPhotoVideoButton.heightAnchor.constraint(equalToConstant: 35),
             
             commentTextView.topAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: baseInset),
-            commentTextView.leadingAnchor.constraint(equalTo: attachPhotoVideoButton.trailingAnchor, constant: 7),
+            commentTextView.leadingAnchor.constraint(equalTo: addPhotoVideoButton.trailingAnchor, constant: 7),
             commentTextView.trailingAnchor.constraint(equalTo: addCommentButton.leadingAnchor, constant: -5),
             commentTextView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset),
             
@@ -185,7 +187,6 @@ class SelectedWorkoutHeaderView: UIView, UITextViewDelegate {
         let backgroundImages = ImageStorage.imageArray
         let randomIndex = Int.random(in: 0..<backgroundImages.count)
         if let backgroundImage = backgroundImages[randomIndex]
-//        if let backgroundImage = UIImage(named: "rowing")
         {
             backgroundColor = UIColor(patternImage: backgroundImage)
         }
