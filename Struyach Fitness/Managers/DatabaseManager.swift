@@ -244,6 +244,7 @@ final class DatabaseManager {
        }
     
     public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
+        print("Executing function: \(#function)")
         let documentID = workout.programID
                 .replacingOccurrences(of: "/", with: "_")
                 .replacingOccurrences(of: " ", with: "_")

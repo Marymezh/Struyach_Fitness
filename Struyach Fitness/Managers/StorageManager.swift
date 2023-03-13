@@ -16,8 +16,8 @@ final class StorageManager {
     private init() {}
     //TODO: - write methods to upload image and video URL to Firebase Storage
     
-    public func uploadImageForComment(image: UIImage?, imageID: String, completion: @escaping (String?)->()) {
-        guard let pngData = image?.pngData() else {return}
+    public func uploadImageForComment(image: Data?, imageID: String, completion: @escaping (String?)->()) {
+        guard let pngData = image else {return}
         
         let imageRef = "comments_photo/\(imageID)/photo.png"
         container
@@ -50,12 +50,12 @@ final class StorageManager {
             }
     }
     
-    public func uploadUserProfilePicture(email: String, image: UIImage?, completion: @escaping (Bool)->()) {
+    public func uploadUserProfilePicture(email: String, image: Data?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
         
-        guard let pngData = image?.pngData() else {return}
+        guard let pngData = image else {return}
         container
             .reference(withPath: "profile_pictures/\(path)/photo.png")
             .putData(pngData, metadata: nil) { metadata, error in

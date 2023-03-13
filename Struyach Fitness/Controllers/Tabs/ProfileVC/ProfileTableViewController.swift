@@ -214,10 +214,12 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         navigationController?.dismiss(animated: true)
         
-        guard let image = info[.editedImage] as? UIImage else { return }
+        guard let image = info[.editedImage] as? UIImage,
+        let imageData = image.jpegData(compressionQuality: 0.3) else { return }
+        
         self.headerView.userPhotoImage.image = image
         
-        StorageManager.shared.uploadUserProfilePicture(email: currentEmail, image: image) { [weak self] success in
+        StorageManager.shared.uploadUserProfilePicture(email: currentEmail, image: imageData) { [weak self] success in
             guard let self = self else {return}
             if success {
                 DatabaseManager.shared.updateProfilePhoto(email: self.currentEmail) { success in

@@ -19,6 +19,25 @@ class CommentTableViewCell: UITableViewCell {
             self.commentTextLabel.text = comment?.text
             self.dateLabel.text = comment?.date
             self.userNameLabel.text = comment?.userName
+            
+            if let ref = comment?.imageRef, ref != ""  {
+                StorageManager.shared.downloadUrlForProfilePicture(path: ref) { url in
+                    guard let url = url else {return}
+                    print ("\(url)")
+                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+                        if let data = data {
+                            DispatchQueue.main.async {
+                                self.commentImageView.isHidden = false
+                                self.commentImageView.image = UIImage(data: data)
+                            }
+                        }
+                    }
+                    task.resume()
+                }
+            } else {
+                self.commentImageView.image = nil
+                self.commentImageView.isHidden = true 
+            }
         }
     }
     
@@ -85,6 +104,7 @@ class CommentTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
+  //      prepareForReuse()
     }
     
     private func setupUI() {
@@ -121,5 +141,11 @@ class CommentTableViewCell: UITableViewCell {
         ]
         
         NSLayoutConstraint.activate(constraints)
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.commentImageView.image = nil
+        self.commentImageView.isHidden = true
     }
 }

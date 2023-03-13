@@ -20,6 +20,7 @@ class SelectedProgramTableViewController: UITableViewController {
     private var listener: ListenerRegistration?
     private var commentsListener: ListenerRegistration?
     private var onImagePicked: ((String) -> ())?
+    var imageRef = ""
     
     init(frame: CGRect , style: UITableView.Style) {
         super.init(style: style)
@@ -214,23 +215,11 @@ class SelectedProgramTableViewController: UITableViewController {
             guard let self = self else {return}
             let timestamp = Date().timeIntervalSince1970
             let commentID = UUID().uuidString
-            self.onImagePicked = {[weak self] imageRef in
-                let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: imageRef, id: commentID , workoutID: workout.id, programID: workout.programID)
-                DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-                    guard let self = self else {return}
-                    if success {
-                        self.loadComments(programID: workout.programID, workoutID: workout.id)
-                        print ("comments with image loaded")
-
-                    } else {
-                        print ("cant save comment")
-                    }
-                }
-            }
-            let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: nil, id: commentID , workoutID: workout.id, programID: workout.programID)
+            let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: self.imageRef, id: commentID , workoutID: workout.id, programID: workout.programID)
             DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
                 guard let self = self else {return}
                 if success {
+                    self.imageRef = ""
                     self.loadComments(programID: workout.programID, workoutID: workout.id)
                     print ("comments without image loaded")
                 } else {
@@ -314,21 +303,6 @@ class SelectedProgramTableViewController: UITableViewController {
         default:
             let cell: CommentTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: CommentTableViewCell.self), for: indexPath) as! CommentTableViewCell
             cell.comment = commentsArray[indexPath.row]
-            if let ref = cell.comment?.imageRef, ref != ""  {
-                StorageManager.shared.downloadUrlForProfilePicture(path: ref) { url in
-                    guard let url = url else {return}
-                    print ("\(url)")
-                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-                        if let data = data {
-                            DispatchQueue.main.async {
-                                cell.commentImageView.isHidden = false
-                                cell.commentImageView.image = UIImage(data: data)
-                            }
-                        }
-                    }
-                    task.resume()
-                }
-            }
             return cell
         }
     }
@@ -350,12 +324,6 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
         cell.workout = workout
         updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
             return cell
-//        if selectedIndexPath == indexPath {
-//                  cell.workoutDateLabel.backgroundColor = .customMediumGray
-//              } else {
-//                  cell.workoutDateLabel.backgroundColor = .systemGreen
-//              }
-//              return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -384,9 +352,7 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
             guard let self = self else {return}
             self.commentsArray = comments
             DispatchQueue.main.async {
-                self.workoutsCollection.reloadData()
                 self.tableView.reloadData()
-                print("snapshot listener for new comments is on")
                 if let selectedIndexPath = self.selectedIndexPath {
                     self.workoutsCollection.reloadItems(at: [selectedIndexPath])
                 }
@@ -459,13 +425,15 @@ extension SelectedProgramTableViewController: UIImagePickerControllerDelegate, U
 
            // Check if the selected media is an image or video
            let imageID = UUID().uuidString
-           if let image = info[.editedImage] as? UIImage
+        if let image = info[.editedImage] as? UIImage,
+           let imageData = image.jpegData(compressionQuality: 0.3)
                {
                // Handle the selected image
-               StorageManager.shared.uploadImageForComment(image: image, imageID: imageID) {imageRef in
+               StorageManager.shared.uploadImageForComment(image: imageData, imageID: imageID) {imageRef in
                    //                  guard let self = self else {return}
                    if let imageRef = imageRef, !imageRef.isEmpty {
-                       self.onImagePicked?(imageRef)
+                       self.imageRef = imageRef
+    //                   self.onImagePicked?(imageRef)
                    }
                }
                // Here you can do something with the image, like display it in the photoImageView in your custom cell
