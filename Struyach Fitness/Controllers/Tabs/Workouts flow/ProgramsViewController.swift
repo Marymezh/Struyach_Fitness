@@ -67,7 +67,7 @@ class ProgramsViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
-        let programVC = SelectedProgramTableViewController(frame: .zero, style: .grouped)        
+        let programVC = SelectedProgramViewController()        
         programVC.title = programsArray[indexPath.section].programName
         navigationController?.pushViewController(programVC, animated: true)
         tableView.deselectRow(at: indexPath, animated: true)

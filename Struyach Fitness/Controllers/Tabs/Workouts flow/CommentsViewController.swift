@@ -8,22 +8,39 @@
 import UIKit
 
 class CommentsViewController: UIViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+    
+    private let workout: Workout
+    
+    private let workoutView: UITextView = {
+        let textView = UITextView()
+        textView.toAutoLayout()
+        return textView
+    }()
+    
+    init (workout: Workout) {
+        self.workout = workout
+        super.init(nibName: nil, bundle: nil)
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
-    */
-
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+            view.backgroundColor = .cyan
+        view.addSubview(workoutView)
+        
+        workoutView.text = workout.description
+ 
+        
+        let constraints = [
+            workoutView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            workoutView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            workoutView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            workoutView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ]
+        NSLayoutConstraint.activate(constraints)
+        
+    }
 }

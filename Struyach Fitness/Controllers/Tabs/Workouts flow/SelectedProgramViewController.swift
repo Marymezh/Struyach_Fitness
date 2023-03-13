@@ -8,26 +8,48 @@
 import UIKit
 import FirebaseFirestore
 
-class SelectedProgramTableViewController: UITableViewController {
+class SelectedProgramViewController: UIViewController {
     
     //MARK: - Properties
     
     private var listOfWorkouts: [Workout] = []
     private var commentsArray: [Comment] = []
-    private let headerView = SelectedWorkoutHeaderView()
+    private let selectedWorkoutView = SelectedWorkoutView()
     private let workoutsCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var selectedIndexPath: IndexPath?
     private var listener: ListenerRegistration?
     private var commentsListener: ListenerRegistration?
     private var onImagePicked: ((String) -> ())?
     var imageRef = ""
+    private var baseInset: CGFloat { return 15 }
+    private var selectedWorkout: Workout?
     
-    init(frame: CGRect , style: UITableView.Style) {
-        super.init(style: style)
-    }
+    private lazy var addCommentButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.tintColor = .white
+        button.setImage(UIImage(systemName: "message", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+        button.addTarget(self, action: #selector(pushCommentsVC), for: .touchUpInside)
+        return button
+    }()
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    private let commentsLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        label.textColor = .white
+        label.text = "No comments added yet"
+        label.toAutoLayout()
+        return label
+    }()
+
+    @objc private func pushCommentsVC() {
+        guard let selectedWorkout = selectedWorkout else {
+            return
+        }
+
+        let commentsVC = CommentsViewController(workout: selectedWorkout)
+        navigationController?.pushViewController(commentsVC, animated: true)
+        
     }
     
     //TODO: - Access data offline - when is not connected to the WEB, first give a notification, cache all the data to a copy of Firestore database and sincronize when the device is online again. read here https://firebase.google.com/docs/firestore/manage-data/enable-offline
@@ -35,8 +57,9 @@ class SelectedProgramTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationAndTabBar()
-        setupTableView()
         setupCollectionView()
+        setupSubviews()
+       
 #if Admin
         setupAdminFunctionality()
 #endif
@@ -52,7 +75,6 @@ class SelectedProgramTableViewController: UITableViewController {
             guard let self = self else { return }
             self.listOfWorkouts = workouts
             DispatchQueue.main.async {
-                self.tableView.reloadData()
                 self.workoutsCollection.reloadData()
                 if let selectedIndexPath = self.selectedIndexPath {
                        self.workoutsCollection.reloadItems(at: [selectedIndexPath])
@@ -73,16 +95,37 @@ class SelectedProgramTableViewController: UITableViewController {
     
     private func setupNavigationAndTabBar() {
         navigationController?.navigationBar.tintColor = .systemGreen
-        tabBarController?.tabBar.isHidden = true 
+        tabBarController?.tabBar.isHidden = true
     }
     
-    private func setupTableView() {
-        tableView.sectionHeaderHeight = UITableView.automaticDimension
-        tableView.register(CommentTableViewCell.self, forCellReuseIdentifier: String(describing: CommentTableViewCell.self))
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "collectionCell")
-        tableView.backgroundColor = .customDarkGray
-        tableView.separatorStyle = .singleLine
-        tableView.separatorColor = .customLightGray
+    private func setupSubviews(){
+        view.backgroundColor = .customDarkGray
+        selectedWorkoutView.toAutoLayout()
+        view.addSubviews(workoutsCollection, selectedWorkoutView, addCommentButton, commentsLabel)
+        
+        let constraints = [
+            workoutsCollection.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            workoutsCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            workoutsCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            workoutsCollection.heightAnchor.constraint(equalToConstant: 90),
+
+            selectedWorkoutView.topAnchor.constraint(equalTo: workoutsCollection.bottomAnchor, constant: baseInset),
+            selectedWorkoutView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            selectedWorkoutView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            selectedWorkoutView.bottomAnchor.constraint(equalTo: addCommentButton.topAnchor, constant: -baseInset),
+            
+            addCommentButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
+            addCommentButton.widthAnchor.constraint(equalToConstant: 35),
+            addCommentButton.heightAnchor.constraint(equalToConstant: 35),
+            addCommentButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
+            
+            commentsLabel.topAnchor.constraint(equalTo: addCommentButton.topAnchor),
+            commentsLabel.leadingAnchor.constraint(equalTo: addCommentButton.trailingAnchor, constant: baseInset*2),
+            commentsLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
+            commentsLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
+        ]
+        
+        NSLayoutConstraint.activate(constraints)
     }
     
     private func setupCollectionView() {
@@ -138,9 +181,9 @@ class SelectedProgramTableViewController: UITableViewController {
             self.listOfWorkouts = workouts
             DispatchQueue.main.async {
                 if self.listOfWorkouts.isEmpty {
-                    self.headerView.workoutDescriptionTextView.text = "NO WORKOUTS ADDED YET"
+  //                  print("no workouts")
+//                    self.selectedWorkoutView.workoutDescriptionTextView.text = "NO WORKOUTS ADDED YET"
                 } else {
-                    self.tableView.reloadData()
                     self.workoutsCollection.reloadData()
                     let indexPath = IndexPath(row: 0, section: 0)
                     self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
@@ -170,8 +213,7 @@ class SelectedProgramTableViewController: UITableViewController {
                     if success {
                         DispatchQueue.main.async {
                             self.workoutsCollection.reloadData()
-                            self.tableView.reloadData()
-                            self.headerView.workoutDescriptionTextView.text = "Workout is successfully deleted"
+                            self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout is successfully deleted"
                         }
                         print("workout is deleted")
                     } else {
@@ -208,41 +250,41 @@ class SelectedProgramTableViewController: UITableViewController {
 
     //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
-    private func addComment(workout: Workout) {
-        print("Executing function: \(#function)")
-       
-        headerView.onSendCommentPush = {[weak self] userName, userImage, text, date in
-            guard let self = self else {return}
-            let timestamp = Date().timeIntervalSince1970
-            let commentID = UUID().uuidString
-            let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: self.imageRef, id: commentID , workoutID: workout.id, programID: workout.programID)
-            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-                guard let self = self else {return}
-                if success {
-                    self.imageRef = ""
-                    self.loadComments(programID: workout.programID, workoutID: workout.id)
-                    print ("comments without image loaded")
-                } else {
-                    print ("cant save comment")
-                }
-            }
-            self.headerView.commentTextView.text = ""
-            self.tableView.reloadData()
-        }
-    }
-    
-    private func loadComments(programID: String, workoutID: String) {
-        
-        DatabaseManager.shared.getAllComments(programID: programID, workoutID: workoutID) { [weak self] comments in
-            guard let self = self else {return}
-            self.commentsArray = comments
-            print ("loaded \(self.commentsArray.count) comments")
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-                self.workoutsCollection.reloadData()
-            }
-        }
-    }
+//    private func addComment(workout: Workout) {
+//        print("Executing function: \(#function)")
+//
+//        selectedWorkoutView.onSendCommentPush = {[weak self] userName, userImage, text, date in
+//            guard let self = self else {return}
+//            let timestamp = Date().timeIntervalSince1970
+//            let commentID = UUID().uuidString
+//            let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: self.imageRef, id: commentID , workoutID: workout.id, programID: workout.programID)
+//            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+//                guard let self = self else {return}
+//                if success {
+//                    self.imageRef = ""
+//                    self.loadComments(programID: workout.programID, workoutID: workout.id)
+//                    print ("comments without image loaded")
+//                } else {
+//                    print ("cant save comment")
+//                }
+//            }
+////            self.headerView.commentTextView.text = ""
+////            self.tableView.reloadData()
+//        }
+//    }
+//
+//    private func loadComments(programID: String, workoutID: String) {
+//
+//        DatabaseManager.shared.getAllComments(programID: programID, workoutID: workoutID) { [weak self] comments in
+//            guard let self = self else {return}
+//            self.commentsArray = comments
+//            print ("loaded \(self.commentsArray.count) comments")
+//            DispatchQueue.main.async {
+// //               self.tableView.reloadData()
+//                self.workoutsCollection.reloadData()
+//            }
+//        }
+//    }
     
     private func showAlert (error: String) {
         let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
@@ -251,69 +293,9 @@ class SelectedProgramTableViewController: UITableViewController {
         
         self.present(alert, animated: true, completion: nil)
     }
-
-    // MARK: - Table view data source methods
-    
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        2
-    }
-    
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        switch section {
-        case 1:
-            headerView.onTextChanged = {tableView.performBatchUpdates(nil, completion: nil)}
-            return headerView
-        default: return nil
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case 0: return 1
-        default:
-            return commentsArray.count
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch indexPath.section {
-        case 0: return 100
-        default: return UITableView.automaticDimension
-        }
-        
-    }
-    
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.section {
-        case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "collectionCell", for: indexPath)
-            cell.contentView.backgroundColor = .customDarkGray
-            cell.contentView.addSubview(workoutsCollection)
-            let constraints = [
-                workoutsCollection.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
-                workoutsCollection.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
-                workoutsCollection.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor),
-                workoutsCollection.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)]
-            
-            NSLayoutConstraint.activate(constraints)
-       
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: tableView.bounds.width)
-            return cell
-            
-        default:
-            let cell: CommentTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: CommentTableViewCell.self), for: indexPath) as! CommentTableViewCell
-            cell.comment = commentsArray[indexPath.row]
-            return cell
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        return nil
-    }
-    
 }
 
-extension SelectedProgramTableViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+extension SelectedProgramViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         listOfWorkouts.count
     }
@@ -340,31 +322,32 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
         }
        
         let selectedWorkout = listOfWorkouts[indexPath.item]
-        headerView.randomizeBackgroungImages()
-        headerView.workoutDescriptionTextView.text = selectedWorkout.description
-        headerView.onAddPhotoVideoPush = {
-            self.showImagePickerController()
-        }
-        self.addComment(workout: selectedWorkout)
-        self.loadComments(programID: selectedWorkout.programID, workoutID: selectedWorkout.id)
- 
-        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: selectedWorkout) {[weak self] comments in
-            guard let self = self else {return}
-            self.commentsArray = comments
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-                if let selectedIndexPath = self.selectedIndexPath {
-                    self.workoutsCollection.reloadItems(at: [selectedIndexPath])
-                }
-            }
-        }
+        self.selectedWorkout = selectedWorkout
+        selectedWorkoutView.randomizeBackgroungImages()
+        selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout.description
+//        selectedWorkoutView.onAddPhotoVideoPush = {
+////            self.showImagePickerController()
+//        }
+//        self.addComment(workout: selectedWorkout)
+//        self.loadComments(programID: selectedWorkout.programID, workoutID: selectedWorkout.id)
+//
+//        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: selectedWorkout) {[weak self] comments in
+//            guard let self = self else {return}
+//            self.commentsArray = comments
+//            DispatchQueue.main.async {
+////                self.tableView.reloadData()
+//                if let selectedIndexPath = self.selectedIndexPath {
+//                    self.workoutsCollection.reloadItems(at: [selectedIndexPath])
+//                }
+//            }
+//        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         print("Executing function: \(#function)")
         if indexPath == selectedIndexPath {
-                commentsListener?.remove()
-            print ("comments listener is removed")
+//                commentsListener?.remove()
+//            print ("comments listener is removed")
                 selectedIndexPath = nil
             }
         print ("comments listener is removed")
@@ -382,7 +365,7 @@ extension SelectedProgramTableViewController: UICollectionViewDataSource, UIColl
     }
 }
 
-extension SelectedProgramTableViewController: UICollectionViewDelegateFlowLayout {
+extension SelectedProgramViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let screenWidth = collectionView.bounds.width
         let cellWidth = ((screenWidth - 60) / 5)
@@ -408,45 +391,45 @@ extension SelectedProgramTableViewController: UICollectionViewDelegateFlowLayout
     
 }
 
-//MARK: - UIImagePickerControllerDelegate methods
-extension SelectedProgramTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    private func showImagePickerController() {
-        let picker = UIImagePickerController()
-        picker.allowsEditing = true
-        picker.delegate = self
-        picker.sourceType = .photoLibrary
-        picker.mediaTypes = ["public.image", "public.movie"]
-        navigationController?.present(picker, animated: true)
-    }
-    
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-           // Dismiss the picker
-           picker.dismiss(animated: true)
-
-           // Check if the selected media is an image or video
-           let imageID = UUID().uuidString
-        if let image = info[.editedImage] as? UIImage,
-           let imageData = image.jpegData(compressionQuality: 0.3)
-               {
-               // Handle the selected image
-               StorageManager.shared.uploadImageForComment(image: imageData, imageID: imageID) {imageRef in
-                   //                  guard let self = self else {return}
-                   if let imageRef = imageRef, !imageRef.isEmpty {
-                       self.imageRef = imageRef
-    //                   self.onImagePicked?(imageRef)
-                   }
-               }
-               // Here you can do something with the image, like display it in the photoImageView in your custom cell
-//           } else if let videoURL = info[.mediaURL] as? URL {
-               // Handle the selected video
-               // Here you can do something with the video, like save the URL to attach it to the comment
-           }
-       }
-
-       func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-           // Dismiss the picker if the user cancels
-           picker.dismiss(animated: true)
-       }
-}
+////MARK: - UIImagePickerControllerDelegate methods
+//extension SelectedProgramViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+//    private func showImagePickerController() {
+//        let picker = UIImagePickerController()
+//        picker.allowsEditing = true
+//        picker.delegate = self
+//        picker.sourceType = .photoLibrary
+//        picker.mediaTypes = ["public.image", "public.movie"]
+//        navigationController?.present(picker, animated: true)
+//    }
+//
+//    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+//           // Dismiss the picker
+//           picker.dismiss(animated: true)
+//
+//           // Check if the selected media is an image or video
+//           let imageID = UUID().uuidString
+//        if let image = info[.editedImage] as? UIImage,
+//           let imageData = image.jpegData(compressionQuality: 0.3)
+//               {
+//               // Handle the selected image
+//               StorageManager.shared.uploadImageForComment(image: imageData, imageID: imageID) {imageRef in
+//                   //                  guard let self = self else {return}
+//                   if let imageRef = imageRef, !imageRef.isEmpty {
+//                       self.imageRef = imageRef
+//    //                   self.onImagePicked?(imageRef)
+//                   }
+//               }
+//               // Here you can do something with the image, like display it in the photoImageView in your custom cell
+////           } else if let videoURL = info[.mediaURL] as? URL {
+//               // Handle the selected video
+//               // Here you can do something with the video, like save the URL to attach it to the comment
+//           }
+//       }
+//
+//       func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+//           // Dismiss the picker if the user cancels
+//           picker.dismiss(animated: true)
+//       }
+//}
 
 
