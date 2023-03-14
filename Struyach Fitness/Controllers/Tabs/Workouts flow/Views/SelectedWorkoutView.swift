@@ -23,12 +23,6 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
         return view
     }()
     
-    private let scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.toAutoLayout()
-        return scrollView
-    }()
-    
     private let workoutView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -75,10 +69,9 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
     
     private func setupSubviews() {
         
-        self.addSubview(backgroundView)
-        backgroundView.addSubview (workoutView)
-        workoutView.addSubview (scrollView)
-        scrollView.addSubview(workoutDescriptionTextView)
+        self.addSubviews(backgroundView, workoutView)
+        workoutView.addSubview(workoutDescriptionTextView)
+ 
         
         let constraints = [
             
@@ -87,21 +80,15 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
             backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
-            workoutView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: baseInset),
-            workoutView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: baseInset),
-            workoutView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -baseInset),
-            workoutView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -baseInset),
+            workoutView.topAnchor.constraint(equalTo: backgroundView.topAnchor, constant: baseInset),
+            workoutView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor, constant: baseInset),
+            workoutView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor, constant: -baseInset),
+            workoutView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor, constant: -baseInset),
 
-            scrollView.topAnchor.constraint(equalTo: workoutView.topAnchor, constant: innerInset),
-            scrollView.leadingAnchor.constraint(equalTo: workoutView.leadingAnchor, constant: innerInset),
-            scrollView.trailingAnchor.constraint(equalTo: workoutView.trailingAnchor, constant: -innerInset),
-            scrollView.bottomAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: -innerInset),
-            
-            workoutDescriptionTextView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            workoutDescriptionTextView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            workoutDescriptionTextView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            workoutDescriptionTextView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            workoutDescriptionTextView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            workoutDescriptionTextView.topAnchor.constraint(equalTo: workoutView.topAnchor, constant: innerInset),
+            workoutDescriptionTextView.leadingAnchor.constraint(equalTo: workoutView.leadingAnchor, constant: innerInset),
+            workoutDescriptionTextView.trailingAnchor.constraint(equalTo: workoutView.trailingAnchor, constant: -innerInset),
+            workoutDescriptionTextView.bottomAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: -innerInset),
         ]
         
         NSLayoutConstraint.activate(constraints)

@@ -71,6 +71,45 @@ final class DatabaseManager {
             }
     }
     
+//    public func searchForWorkouts(for program: String, searchText: String, completion: @escaping([Workout])->()){
+//        print("Executing function: \(#function)")
+//        let documentID = program
+//            .replacingOccurrences(of: "/", with: "_")
+//            .replacingOccurrences(of: " ", with: "_")
+//        var query: Query?
+//        
+//       let workoutRef =  database
+//            .collection("programs")
+//            .document(documentID)
+//            .collection("workouts")
+//            .order(by: "timestamp", descending: true)
+//        
+//        if searchText.isEmpty {
+//            query = workoutRef
+//        } else {
+//            query = workoutRef.whereField("description", arrayContains: searchText)
+//        }
+//        
+//            query?.getDocuments { snapshot, error in
+//                guard let documents = snapshot?.documents else {
+//                    print("Error fetching documents: \(error!)")
+//                    return
+//                }
+//                
+//                let workouts: [Workout] = documents.compactMap { document in
+//                    do {
+//                        let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
+//                        print("workouts decoded from database")
+//                        return workout
+//                    } catch {
+//                        print("Error decoding workout: \(error)")
+//                        return nil
+//                    }
+//                }
+//                completion(workouts)
+//            }
+//    }
+    
     public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         let documentID = workout.programID

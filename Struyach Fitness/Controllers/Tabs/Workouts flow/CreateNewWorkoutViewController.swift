@@ -21,8 +21,6 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         textView.tintColor = .black
         textView.isScrollEnabled = true 
         textView.backgroundColor = .white
-        textView.layer.borderWidth = 0.5
-        textView.layer.borderColor = UIColor.black.cgColor
         textView.layer.cornerRadius = 5
         textView.toAutoLayout()
         return textView
@@ -86,12 +84,14 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         view.addSubviews(workoutDescriptionTextView)
 
         var baseInset: CGFloat { return 15 }
+        let textViewHeight = self.view.frame.height / 2.2
         
         let constraints = [
-            workoutDescriptionTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: baseInset),
+            workoutDescriptionTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: baseInset*2),
             workoutDescriptionTextView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
             workoutDescriptionTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
-            workoutDescriptionTextView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset)
+            workoutDescriptionTextView.heightAnchor.constraint(equalToConstant: textViewHeight),
+//            workoutDescriptionTextView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2)
         ]
         NSLayoutConstraint.activate(constraints)
     }

@@ -13,16 +13,14 @@ class SelectedProgramViewController: UIViewController {
     //MARK: - Properties
     
     private var listOfWorkouts: [Workout] = []
-    private var commentsArray: [Comment] = []
+    private var filteredWorkouts: [Workout] = []
     private let selectedWorkoutView = SelectedWorkoutView()
     private let workoutsCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var selectedIndexPath: IndexPath?
     private var listener: ListenerRegistration?
-    private var commentsListener: ListenerRegistration?
-    private var onImagePicked: ((String) -> ())?
-    var imageRef = ""
     private var baseInset: CGFloat { return 15 }
     private var selectedWorkout: Workout?
+//    private var searchQuery: String = ""
     
     private lazy var addCommentButton: UIButton = {
         let button = UIButton()
@@ -41,21 +39,27 @@ class SelectedProgramViewController: UIViewController {
         label.toAutoLayout()
         return label
     }()
+    
+    private let searchBar: UISearchBar = {
+        let searchBar = UISearchBar()
+        searchBar.placeholder = "Search for workouts"
+        searchBar.searchBarStyle = .minimal
+        searchBar.backgroundColor = .customDarkGray
+        searchBar.searchTextField.textColor = .white
+        searchBar.barTintColor = .white
+        searchBar.tintColor = .white
+        searchBar.clipsToBounds = true
+        searchBar.showsSearchResultsButton = true
+        searchBar.toAutoLayout()
+        return searchBar
+    }()
 
-    @objc private func pushCommentsVC() {
-        guard let selectedWorkout = selectedWorkout else {
-            return
-        }
-
-        let commentsVC = CommentsViewController(workout: selectedWorkout)
-        navigationController?.pushViewController(commentsVC, animated: true)
-        
-    }
     
     //TODO: - Access data offline - when is not connected to the WEB, first give a notification, cache all the data to a copy of Firestore database and sincronize when the device is online again. read here https://firebase.google.com/docs/firestore/manage-data/enable-offline
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        searchBar.delegate = self
         setupNavigationAndTabBar()
         setupCollectionView()
         setupSubviews()
@@ -74,6 +78,7 @@ class SelectedProgramViewController: UIViewController {
         listener = DatabaseManager.shared.addWorkoutsListener(for: title) { [weak self] workouts in
             guard let self = self else { return }
             self.listOfWorkouts = workouts
+            self.filteredWorkouts = self.listOfWorkouts
             DispatchQueue.main.async {
                 self.workoutsCollection.reloadData()
                 if let selectedIndexPath = self.selectedIndexPath {
@@ -88,6 +93,8 @@ class SelectedProgramViewController: UIViewController {
         print("Executing function: \(#function)")
         listener?.remove()
         print ("listener is removed")
+        searchBarCancelButtonClicked(searchBar)
+        
         
     }
     
@@ -101,10 +108,15 @@ class SelectedProgramViewController: UIViewController {
     private func setupSubviews(){
         view.backgroundColor = .customDarkGray
         selectedWorkoutView.toAutoLayout()
-        view.addSubviews(workoutsCollection, selectedWorkoutView, addCommentButton, commentsLabel)
+        view.addSubviews(searchBar, workoutsCollection, selectedWorkoutView, addCommentButton, commentsLabel)
         
         let constraints = [
-            workoutsCollection.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
+            searchBar.heightAnchor.constraint(equalToConstant: 44),
+            
+            workoutsCollection.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 15),
             workoutsCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             workoutsCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             workoutsCollection.heightAnchor.constraint(equalToConstant: 90),
@@ -146,6 +158,15 @@ class SelectedProgramViewController: UIViewController {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewWorkout))
     }
     
+    
+    @objc private func pushCommentsVC() {
+        guard let selectedWorkout = selectedWorkout else {
+            return
+        }
+        let commentsVC = CommentsViewController(workout: selectedWorkout)
+        navigationController?.pushViewController(commentsVC, animated: true)
+    }
+    
     // MARK: - Adding new workout
     // only Admin user can add new workout
     @objc private func addNewWorkout() {
@@ -179,10 +200,11 @@ class SelectedProgramViewController: UIViewController {
         DatabaseManager.shared.getAllWorkouts(for: programName) { [weak self] workouts in
             guard let self = self else {return}
             self.listOfWorkouts = workouts
+            self.filteredWorkouts = self.listOfWorkouts
             DispatchQueue.main.async {
                 if self.listOfWorkouts.isEmpty {
-  //                  print("no workouts")
-//                    self.selectedWorkoutView.workoutDescriptionTextView.text = "NO WORKOUTS ADDED YET"
+                    print("no workouts")
+                    self.selectedWorkoutView.workoutDescriptionTextView.text = "NO WORKOUTS ADDED YET"
                 } else {
                     self.workoutsCollection.reloadData()
                     let indexPath = IndexPath(row: 0, section: 0)
@@ -204,7 +226,7 @@ class SelectedProgramViewController: UIViewController {
         print("Executing function: \(#function)")
         let location = sender.location(in: workoutsCollection)
         if let indexPath = workoutsCollection.indexPathForItem(at: location) {
-            let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
             
             let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
                 guard let self = self else {return}
@@ -229,8 +251,7 @@ class SelectedProgramViewController: UIViewController {
                 workoutVC.text = selectedWorkout.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
                 workoutVC.onWorkoutSave = { text in
-                    DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { [weak self] success in
-                        guard let self = self else {return}
+                    DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { success in
                         if success{
                             print("Executing function: \(#function)")
                         } else {
@@ -248,44 +269,6 @@ class SelectedProgramViewController: UIViewController {
         }
     }
 
-    //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
-    
-//    private func addComment(workout: Workout) {
-//        print("Executing function: \(#function)")
-//
-//        selectedWorkoutView.onSendCommentPush = {[weak self] userName, userImage, text, date in
-//            guard let self = self else {return}
-//            let timestamp = Date().timeIntervalSince1970
-//            let commentID = UUID().uuidString
-//            let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: self.imageRef, id: commentID , workoutID: workout.id, programID: workout.programID)
-//            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-//                guard let self = self else {return}
-//                if success {
-//                    self.imageRef = ""
-//                    self.loadComments(programID: workout.programID, workoutID: workout.id)
-//                    print ("comments without image loaded")
-//                } else {
-//                    print ("cant save comment")
-//                }
-//            }
-////            self.headerView.commentTextView.text = ""
-////            self.tableView.reloadData()
-//        }
-//    }
-//
-//    private func loadComments(programID: String, workoutID: String) {
-//
-//        DatabaseManager.shared.getAllComments(programID: programID, workoutID: workoutID) { [weak self] comments in
-//            guard let self = self else {return}
-//            self.commentsArray = comments
-//            print ("loaded \(self.commentsArray.count) comments")
-//            DispatchQueue.main.async {
-// //               self.tableView.reloadData()
-//                self.workoutsCollection.reloadData()
-//            }
-//        }
-//    }
-    
     private func showAlert (error: String) {
         let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
@@ -297,12 +280,14 @@ class SelectedProgramViewController: UIViewController {
 
 extension SelectedProgramViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        listOfWorkouts.count
+   //     listOfWorkouts.count
+        filteredWorkouts.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
-        let workout = listOfWorkouts[indexPath.item]
+//        let workout = listOfWorkouts[indexPath.item]
+        let workout = filteredWorkouts[indexPath.item]
         cell.workout = workout
         updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
             return cell
@@ -312,8 +297,6 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
         print("Executing function: \(#function)")
         if let selectedIndexPath = selectedIndexPath {
                collectionView.deselectItem(at: selectedIndexPath, animated: true)
-               commentsListener?.remove()
-            print("comments listener is removed")
            }
         
         selectedIndexPath = indexPath
@@ -321,47 +304,23 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
             self.workoutsCollection.reloadData()
         }
        
-        let selectedWorkout = listOfWorkouts[indexPath.item]
+     //   let selectedWorkout = listOfWorkouts[indexPath.item]
+        let selectedWorkout = filteredWorkouts[selectedIndexPath!.item]
         self.selectedWorkout = selectedWorkout
         selectedWorkoutView.randomizeBackgroungImages()
         selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout.description
-//        selectedWorkoutView.onAddPhotoVideoPush = {
-////            self.showImagePickerController()
-//        }
-//        self.addComment(workout: selectedWorkout)
-//        self.loadComments(programID: selectedWorkout.programID, workoutID: selectedWorkout.id)
-//
-//        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: selectedWorkout) {[weak self] comments in
-//            guard let self = self else {return}
-//            self.commentsArray = comments
-//            DispatchQueue.main.async {
-////                self.tableView.reloadData()
-//                if let selectedIndexPath = self.selectedIndexPath {
-//                    self.workoutsCollection.reloadItems(at: [selectedIndexPath])
-//                }
-//            }
-//        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         print("Executing function: \(#function)")
         if indexPath == selectedIndexPath {
-//                commentsListener?.remove()
-//            print ("comments listener is removed")
                 selectedIndexPath = nil
             }
-        print ("comments listener is removed")
     }
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let cell = cell as! WorkoutsCollectionViewCell
            updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
-
-//        if selectedIndexPath == indexPath {
-//            cell.workoutDateLabel.backgroundColor = .customMediumGray
-//        } else {
-//            cell.workoutDateLabel.backgroundColor = .systemGreen
-//        }
     }
 }
 
@@ -388,48 +347,27 @@ extension SelectedProgramViewController: UICollectionViewDelegateFlowLayout {
             cell.workoutDateLabel.backgroundColor = .systemGreen
         }
     }
-    
 }
 
-////MARK: - UIImagePickerControllerDelegate methods
-//extension SelectedProgramViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-//    private func showImagePickerController() {
-//        let picker = UIImagePickerController()
-//        picker.allowsEditing = true
-//        picker.delegate = self
-//        picker.sourceType = .photoLibrary
-//        picker.mediaTypes = ["public.image", "public.movie"]
-//        navigationController?.present(picker, animated: true)
-//    }
-//
-//    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-//           // Dismiss the picker
-//           picker.dismiss(animated: true)
-//
-//           // Check if the selected media is an image or video
-//           let imageID = UUID().uuidString
-//        if let image = info[.editedImage] as? UIImage,
-//           let imageData = image.jpegData(compressionQuality: 0.3)
-//               {
-//               // Handle the selected image
-//               StorageManager.shared.uploadImageForComment(image: imageData, imageID: imageID) {imageRef in
-//                   //                  guard let self = self else {return}
-//                   if let imageRef = imageRef, !imageRef.isEmpty {
-//                       self.imageRef = imageRef
-//    //                   self.onImagePicked?(imageRef)
-//                   }
-//               }
-//               // Here you can do something with the image, like display it in the photoImageView in your custom cell
-////           } else if let videoURL = info[.mediaURL] as? URL {
-//               // Handle the selected video
-//               // Here you can do something with the video, like save the URL to attach it to the comment
-//           }
-//       }
-//
-//       func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-//           // Dismiss the picker if the user cancels
-//           picker.dismiss(animated: true)
-//       }
-//}
-
+extension SelectedProgramViewController: UISearchBarDelegate {
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        let searchQuery = searchText
+        if searchQuery.isEmpty {
+            filteredWorkouts = listOfWorkouts
+        } else {
+            filteredWorkouts = listOfWorkouts.filter { $0.description.contains(searchQuery)}
+            selectedWorkoutView.workoutDescriptionTextView.text = "Select from search result"
+        }
+        workoutsCollection.reloadData()
+        
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = nil
+        filteredWorkouts = listOfWorkouts
+        workoutsCollection.reloadData()
+        searchBar.resignFirstResponder()
+    }
+}
 
