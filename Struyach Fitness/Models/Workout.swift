@@ -14,4 +14,5 @@ struct Workout: Codable {
     var description: String
     let date: String
     let timestamp: TimeInterval
+//    var comments: [Comment] = []
 }

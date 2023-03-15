@@ -9,37 +9,37 @@ import UIKit
 
 class CommentTableViewCell: UITableViewCell {
     
-    var comment:Comment? {
-        didSet
-        {
-            guard let data = comment?.userImage else {return}
-            let decoded = try! PropertyListDecoder().decode(Data.self, from: data)
-            let image = UIImage(data: decoded)
-            self.userImage.image = image
-            self.commentTextLabel.text = comment?.text
-            self.dateLabel.text = comment?.date
-            self.userNameLabel.text = comment?.userName
-            
-            if let ref = comment?.imageRef, ref != ""  {
-                StorageManager.shared.downloadUrlForProfilePicture(path: ref) { url in
-                    guard let url = url else {return}
-                    print ("\(url)")
-                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-                        if let data = data {
-                            DispatchQueue.main.async {
-                                self.commentImageView.isHidden = false
-                                self.commentImageView.image = UIImage(data: data)
-                            }
-                        }
-                    }
-                    task.resume()
-                }
-            } else {
-                self.commentImageView.image = nil
-                self.commentImageView.isHidden = true 
-            }
-        }
-    }
+//    var comment:Comment? {
+//        didSet
+//        {
+//            guard let data = comment?.userImage else {return}
+//            let decoded = try! PropertyListDecoder().decode(Data.self, from: data)
+//            let image = UIImage(data: decoded)
+//            self.userImage.image = image
+//            self.commentTextLabel.text = comment?.text
+//            self.dateLabel.text = comment?.date
+//            self.userNameLabel.text = comment?.userName
+//            
+//            if let ref = comment?.imageRef, ref != ""  {
+//                StorageManager.shared.downloadUrlForProfilePicture(path: ref) { url in
+//                    guard let url = url else {return}
+//                    print ("\(url)")
+//                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+//                        if let data = data {
+//                            DispatchQueue.main.async {
+//                                self.commentImageView.isHidden = false
+//                                self.commentImageView.image = UIImage(data: data)
+//                            }
+//                        }
+//                    }
+//                    task.resume()
+//                }
+//            } else {
+//                self.commentImageView.image = nil
+//                self.commentImageView.isHidden = true 
+//            }
+//        }
+//    }
     
     private let userImage: UIImageView = {
         let image = UIImageView()

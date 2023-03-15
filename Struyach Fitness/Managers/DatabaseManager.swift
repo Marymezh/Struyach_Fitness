@@ -71,45 +71,6 @@ final class DatabaseManager {
             }
     }
     
-//    public func searchForWorkouts(for program: String, searchText: String, completion: @escaping([Workout])->()){
-//        print("Executing function: \(#function)")
-//        let documentID = program
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//        var query: Query?
-//        
-//       let workoutRef =  database
-//            .collection("programs")
-//            .document(documentID)
-//            .collection("workouts")
-//            .order(by: "timestamp", descending: true)
-//        
-//        if searchText.isEmpty {
-//            query = workoutRef
-//        } else {
-//            query = workoutRef.whereField("description", arrayContains: searchText)
-//        }
-//        
-//            query?.getDocuments { snapshot, error in
-//                guard let documents = snapshot?.documents else {
-//                    print("Error fetching documents: \(error!)")
-//                    return
-//                }
-//                
-//                let workouts: [Workout] = documents.compactMap { document in
-//                    do {
-//                        let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
-//                        print("workouts decoded from database")
-//                        return workout
-//                    } catch {
-//                        print("Error decoding workout: \(error)")
-//                        return nil
-//                    }
-//                }
-//                completion(workouts)
-//            }
-//    }
-    
     public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         let documentID = workout.programID
@@ -131,6 +92,51 @@ final class DatabaseManager {
         }
     }
 }
+    
+//    public func appendComment(workout: Workout, newComment: Comment, completion: @escaping (Bool)->()){
+//        print("Executing function: \(#function)")
+//        let documentID = workout.programID
+//            .replacingOccurrences(of: "/", with: "_")
+//            .replacingOccurrences(of: " ", with: "_")
+//
+//        let dbRef = database
+//            .collection("programs")
+//            .document(documentID)
+//            .collection("workouts")
+//            .document(workout.id)
+//
+//        dbRef.updateData(["comments" : FieldValue.arrayUnion([newComment])]) { error in
+//            if let error = error {
+//                print ("Error updating document \(error.localizedDescription)")
+//            } else {
+//                print("document successfully updated")
+//            }
+//        }
+//    }
+//
+//    public func fetchComments(workout: Workout, completion: @escaping([Comment])->()){
+//        print("Executing function: \(#function)")
+//        let documentID = workout.programID
+//            .replacingOccurrences(of: "/", with: "_")
+//            .replacingOccurrences(of: " ", with: "_")
+//
+//        let dbRef = database
+//            .collection("programs")
+//            .document(documentID)
+//            .collection("workouts")
+//            .document(workout.id)
+//
+//        dbRef.getDocument { snapshot, error in
+//            if let document = snapshot, document.exists {
+//                let data = document.data()
+//                let comments = data?["comments"] as? [Comment] ?? []
+//                print("Comments:\(comments)")
+//            } else {
+//                print ("DOcument does not exist")
+//            }
+//        }
+//
+//    }
     
     public func deleteWorkout(workout: Workout, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
@@ -219,105 +225,105 @@ final class DatabaseManager {
     }
     
     //MARK: - Adding, fetching and listen to the changes in comments
-    public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
-
-           let documentID = comment.programID
-               .replacingOccurrences(of: "/", with: "_")
-               .replacingOccurrences(of: " ", with: "_")
-
-           let commentData: [String: Any] = [
-               "userName": comment.userName,
-               "userImage": comment.userImage,
-               "date": comment.date,
-               "text": comment.text,
-               "image": comment.imageRef ?? "",
-               "programID": comment.programID,
-               "workoutID": comment.workoutID,
-               "commentID": comment.id,
-               "timestamp": comment.timeStamp
-           ]
-
-           database
-               .collection("programs")
-               .document(documentID)
-               .collection("workouts")
-               .document(comment.workoutID)
-               .collection("comments")
-               .document(comment.id)
-               .setData(commentData) { error in
-                   completion (error == nil)
-               }
-       }
-
-    public func getAllComments(programID: String, workoutID: String, completion: @escaping([Comment])->()){
-
-           let documentID = programID
-               .replacingOccurrences(of: "/", with: "_")
-               .replacingOccurrences(of: " ", with: "_")
-
-           database
-               .collection("programs")
-               .document(documentID)
-               .collection("workouts")
-               .document(workoutID)
-               .collection("comments")
-               .order(by: "timestamp", descending: true)
-               .getDocuments { snapshot, error in
-                   guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
-                   let comments: [Comment] = documents.compactMap { dictionary in
-                       guard let userName = dictionary["userName"] as? String,
-                             let userImage = dictionary["userImage"] as? Data,
-                             let id = dictionary["commentID"] as? String,
-                             let workoutID = dictionary["workoutID"] as? String,
-                             let date = dictionary["date"] as? String,
-                             let text = dictionary["text"] as? String,
-                             let image = dictionary["image"] as? String,
-                             let timestamp = dictionary["timestamp"] as? TimeInterval,
-                             let programID = dictionary["programID"] as? String else {return nil}
-
-                       let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: image, id: id, workoutID: workoutID, programID: programID)
-                       return comment
-                   }
-                   completion(comments)
-               }
-       }
-    
-    public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
-        print("Executing function: \(#function)")
-        let documentID = workout.programID
-                .replacingOccurrences(of: "/", with: "_")
-                .replacingOccurrences(of: " ", with: "_")
-            
-           let listener = database
-                .collection("programs")
-                .document(documentID)
-                .collection("workouts")
-                .document(workout.id)
-                .collection("comments")
-                .order(by: "timestamp", descending: true)
-                .addSnapshotListener { snapshot, error in
-                    guard let documents = snapshot?.documents.compactMap({ $0.data() }), error == nil else {
-                        print("Error retrieving snapshot: \(error!)")
-                        return
-                    }
-                    let comments: [Comment] = documents.compactMap { dictionary in
-                        guard let userName = dictionary["userName"] as? String,
-                              let userImage = dictionary["userImage"] as? Data,
-                              let id = dictionary["commentID"] as? String,
-                              let workoutID = dictionary["workoutID"] as? String,
-                              let date = dictionary["date"] as? String,
-                              let text = dictionary["text"] as? String,
-                              let image = dictionary["image"] as? String,
-                              let timestamp = dictionary["timestamp"] as? TimeInterval,
-                              let programID = dictionary["programID"] as? String else {return nil}
-                        
-                        let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: image, id: id, workoutID: workoutID, programID: programID)
-                        return comment
-                    }
-                    completion(comments)
-                }
-        return listener
-        }
+//    public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
+//
+//           let documentID = comment.programID
+//               .replacingOccurrences(of: "/", with: "_")
+//               .replacingOccurrences(of: " ", with: "_")
+//
+//           let commentData: [String: Any] = [
+//               "userName": comment.userName,
+//               "userImage": comment.userImage,
+//               "date": comment.date,
+//               "text": comment.text,
+//               "image": comment.imageRef ?? "",
+//               "programID": comment.programID,
+//               "workoutID": comment.workoutID,
+//               "commentID": comment.id,
+//               "timestamp": comment.timeStamp
+//           ]
+//
+//           database
+//               .collection("programs")
+//               .document(documentID)
+//               .collection("workouts")
+//               .document(comment.workoutID)
+//               .collection("comments")
+//               .document(comment.id)
+//               .setData(commentData) { error in
+//                   completion (error == nil)
+//               }
+//       }
+//
+//    public func getAllComments(programID: String, workoutID: String, completion: @escaping([Comment])->()){
+//
+//           let documentID = programID
+//               .replacingOccurrences(of: "/", with: "_")
+//               .replacingOccurrences(of: " ", with: "_")
+//
+//           database
+//               .collection("programs")
+//               .document(documentID)
+//               .collection("workouts")
+//               .document(workoutID)
+//               .collection("comments")
+//               .order(by: "timestamp", descending: true)
+//               .getDocuments { snapshot, error in
+//                   guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+//                   let comments: [Comment] = documents.compactMap { dictionary in
+//                       guard let userName = dictionary["userName"] as? String,
+//                             let userImage = dictionary["userImage"] as? Data,
+//                             let id = dictionary["commentID"] as? String,
+//                             let workoutID = dictionary["workoutID"] as? String,
+//                             let date = dictionary["date"] as? String,
+//                             let text = dictionary["text"] as? String,
+//                             let image = dictionary["image"] as? String,
+//                             let timestamp = dictionary["timestamp"] as? TimeInterval,
+//                             let programID = dictionary["programID"] as? String else {return nil}
+//
+//                       let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: image, id: id, workoutID: workoutID, programID: programID)
+//                       return comment
+//                   }
+//                   completion(comments)
+//               }
+//       }
+//    
+//    public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
+//        print("Executing function: \(#function)")
+//        let documentID = workout.programID
+//                .replacingOccurrences(of: "/", with: "_")
+//                .replacingOccurrences(of: " ", with: "_")
+//            
+//           let listener = database
+//                .collection("programs")
+//                .document(documentID)
+//                .collection("workouts")
+//                .document(workout.id)
+//                .collection("comments")
+//                .order(by: "timestamp", descending: true)
+//                .addSnapshotListener { snapshot, error in
+//                    guard let documents = snapshot?.documents.compactMap({ $0.data() }), error == nil else {
+//                        print("Error retrieving snapshot: \(error!)")
+//                        return
+//                    }
+//                    let comments: [Comment] = documents.compactMap { dictionary in
+//                        guard let userName = dictionary["userName"] as? String,
+//                              let userImage = dictionary["userImage"] as? Data,
+//                              let id = dictionary["commentID"] as? String,
+//                              let workoutID = dictionary["workoutID"] as? String,
+//                              let date = dictionary["date"] as? String,
+//                              let text = dictionary["text"] as? String,
+//                              let image = dictionary["image"] as? String,
+//                              let timestamp = dictionary["timestamp"] as? TimeInterval,
+//                              let programID = dictionary["programID"] as? String else {return nil}
+//                        
+//                        let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: image, id: id, workoutID: workoutID, programID: programID)
+//                        return comment
+//                    }
+//                    completion(comments)
+//                }
+//        return listener
+//        }
 //
 //    public func postComment(comment: Comment,
 //                           completion: @escaping (Bool) ->()){

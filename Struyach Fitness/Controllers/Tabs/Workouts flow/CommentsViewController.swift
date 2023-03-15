@@ -8,12 +8,19 @@
 import UIKit
 import FirebaseFirestore
 import MessageKit
+import InputBarAccessoryView
 
-class CommentsViewController: UIViewController {
-    
+class CommentsViewController: MessagesViewController {
+
     private let workout: Workout
     private var commentsArray: [Comment] = []
     private var commentsListener: ListenerRegistration?
+    
+    let userImage = UserDefaults.standard.data(forKey: "userImage")
+    let userName = UserDefaults.standard.string(forKey: "userName")
+
+    let sender = Sender(senderImage: "image", senderId: UUID().uuidString, displayName: "Maria Mezhova")
+    
     
     private let workoutView: UITextView = {
         let textView = UITextView()
@@ -39,25 +46,61 @@ class CommentsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Comments"
-        navigationController?.navigationBar.prefersLargeTitles = false
-        
-        view.backgroundColor = .customMediumGray
-        view.addSubview(workoutView)
-        
-        workoutView.text = workout.description
-        
-        let constraints = [
-            workoutView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 15),
-            workoutView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
-            workoutView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
-            workoutView.heightAnchor.constraint(equalToConstant: 300)
-        ]
-        NSLayoutConstraint.activate(constraints)
+        setupNavbarAndView()
+        messagesCollectionView.messagesDataSource = self
+        messagesCollectionView.messagesLayoutDelegate = self
+        messagesCollectionView.messagesDisplayDelegate = self
+        messageInputBar.delegate = self
+        messageInputBar.backgroundView.backgroundColor = .customMediumGray
+        messageInputBar.tintColor = .white
+        messageInputBar.inputTextView.tintColor = .white
+        messageInputBar.inputTextView.textColor = .white 
+        messageInputBar.inputTextView.becomeFirstResponder()
+        loadComments()
+
     }
     
-    //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
+    func loadComments() {
+        commentsArray.append(Comment(sender: sender, messageId: UUID().uuidString, sentDate: Date(), kind: .text("test comment")))
+        commentsArray.append(Comment(sender: sender, messageId: UUID().uuidString, sentDate: Date(), kind: .text("test comment, testing the test, looking how it will look like")))
+        commentsArray.append(Comment(sender: sender, messageId: UUID().uuidString, sentDate: Date(), kind: .text("hello world, hello world, hello world, hello world, hello world, hello world, hello world, hello world, hello world, hello world, hello world, hello world, hello world, hello world, hello world, ")))
+        messagesCollectionView.reloadData()
+    }
     
+    private func setupNavbarAndView() {
+        title = "Comments"
+        navigationController?.navigationBar.prefersLargeTitles = false
+        messagesCollectionView.backgroundColor = .customMediumGray
+    }
+}
+
+extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
+    var currentSender: SenderType {
+        sender
+    }
+    
+    func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
+        commentsArray[indexPath.section]
+    }
+    
+    func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
+        commentsArray.count
+    }
+    
+
+}
+
+extension CommentsViewController: InputBarAccessoryViewDelegate {
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
+        let newComment = Comment(sender: sender, messageId: "test", sentDate: Date(), kind: .text(text))
+        commentsArray.append(newComment)
+        messagesCollectionView.reloadData()
+        messageInputBar.inputTextView.text = nil
+        
+    }
+}
+//MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
+
 //    private func addComment(workout: Workout, text: String) {
 //        print("Executing function: \(#function)")
 //        guard let userName = UserDefaults.standard.string(forKey: "userName"),
@@ -81,27 +124,24 @@ class CommentsViewController: UIViewController {
 //        }
 //    }
 
-    private func loadComments(programID: String, workoutID: String) {
+//    private func loadComments(programID: String, workoutID: String) {
+//
+//        DatabaseManager.shared.getAllComments(programID: programID, workoutID: workoutID) { [weak self] comments in
+//            guard let self = self else {return}
+//            self.commentsArray = comments
+//            print ("loaded \(self.commentsArray.count) comments")
+//            DispatchQueue.main.async {
+//            }
+//        }
+//    }
 
-        DatabaseManager.shared.getAllComments(programID: programID, workoutID: workoutID) { [weak self] comments in
-            guard let self = self else {return}
-            self.commentsArray = comments
-            print ("loaded \(self.commentsArray.count) comments")
-            DispatchQueue.main.async {
-            }
-        }
-    }
-    
-    //        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: selectedWorkout) {[weak self] comments in
-    //            guard let self = self else {return}
-    //            self.commentsArray = comments
-    //            DispatchQueue.main.async {
-    ////                self.tableView.reloadData()
-    //                if let selectedIndexPath = self.selectedIndexPath {
-    //                    self.workoutsCollection.reloadItems(at: [selectedIndexPath])
-    //                }
-    //            }
-    //        }
-    
-    
-}
+//        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: selectedWorkout) {[weak self] comments in
+//            guard let self = self else {return}
+//            self.commentsArray = comments
+//            DispatchQueue.main.async {
+////                self.tableView.reloadData()
+//                if let selectedIndexPath = self.selectedIndexPath {
+//                    self.workoutsCollection.reloadItems(at: [selectedIndexPath])
+//                }
+//            }
+//        }
