@@ -94,8 +94,8 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
         NSLayoutConstraint.activate(constraints)
     }
     
+    /// This function makes background images random from ImagesStorage
     func randomizeBackgroungImages () {
-        /// This function makes background images random from ImagesStorage
         let backgroundImages = ImageStorage.imageArray
         let randomIndex = Int.random(in: 0..<backgroundImages.count)
         if let backgroundImage = backgroundImages[randomIndex]

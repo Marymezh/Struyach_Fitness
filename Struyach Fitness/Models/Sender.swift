@@ -10,9 +10,7 @@ import MessageKit
 import UIKit
 
 struct Sender: SenderType {
-    var senderImage: String
+//    var senderImage: String
     var senderId: String
     var displayName: String
-    
-    
 }

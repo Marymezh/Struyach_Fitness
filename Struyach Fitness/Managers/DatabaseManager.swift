@@ -8,11 +8,13 @@
 import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import MessageKit
 
 final class DatabaseManager {
     
     static let shared = DatabaseManager()
     private let database = Firestore.firestore()
+    let formatter = DateFormatter()
     
     private init() {}
     
@@ -225,105 +227,130 @@ final class DatabaseManager {
     }
     
     //MARK: - Adding, fetching and listen to the changes in comments
-//    public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
-//
-//           let documentID = comment.programID
-//               .replacingOccurrences(of: "/", with: "_")
-//               .replacingOccurrences(of: " ", with: "_")
-//
-//           let commentData: [String: Any] = [
-//               "userName": comment.userName,
-//               "userImage": comment.userImage,
-//               "date": comment.date,
-//               "text": comment.text,
-//               "image": comment.imageRef ?? "",
-//               "programID": comment.programID,
-//               "workoutID": comment.workoutID,
-//               "commentID": comment.id,
-//               "timestamp": comment.timeStamp
-//           ]
-//
-//           database
-//               .collection("programs")
-//               .document(documentID)
-//               .collection("workouts")
-//               .document(comment.workoutID)
-//               .collection("comments")
-//               .document(comment.id)
-//               .setData(commentData) { error in
-//                   completion (error == nil)
-//               }
-//       }
-//
-//    public func getAllComments(programID: String, workoutID: String, completion: @escaping([Comment])->()){
-//
-//           let documentID = programID
-//               .replacingOccurrences(of: "/", with: "_")
-//               .replacingOccurrences(of: " ", with: "_")
-//
-//           database
-//               .collection("programs")
-//               .document(documentID)
-//               .collection("workouts")
-//               .document(workoutID)
-//               .collection("comments")
-//               .order(by: "timestamp", descending: true)
-//               .getDocuments { snapshot, error in
-//                   guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
-//                   let comments: [Comment] = documents.compactMap { dictionary in
-//                       guard let userName = dictionary["userName"] as? String,
-//                             let userImage = dictionary["userImage"] as? Data,
-//                             let id = dictionary["commentID"] as? String,
-//                             let workoutID = dictionary["workoutID"] as? String,
-//                             let date = dictionary["date"] as? String,
-//                             let text = dictionary["text"] as? String,
-//                             let image = dictionary["image"] as? String,
-//                             let timestamp = dictionary["timestamp"] as? TimeInterval,
-//                             let programID = dictionary["programID"] as? String else {return nil}
-//
-//                       let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: image, id: id, workoutID: workoutID, programID: programID)
-//                       return comment
-//                   }
-//                   completion(comments)
-//               }
-//       }
-//    
-//    public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
-//        print("Executing function: \(#function)")
-//        let documentID = workout.programID
-//                .replacingOccurrences(of: "/", with: "_")
-//                .replacingOccurrences(of: " ", with: "_")
-//            
-//           let listener = database
-//                .collection("programs")
-//                .document(documentID)
-//                .collection("workouts")
-//                .document(workout.id)
-//                .collection("comments")
-//                .order(by: "timestamp", descending: true)
-//                .addSnapshotListener { snapshot, error in
-//                    guard let documents = snapshot?.documents.compactMap({ $0.data() }), error == nil else {
-//                        print("Error retrieving snapshot: \(error!)")
-//                        return
-//                    }
-//                    let comments: [Comment] = documents.compactMap { dictionary in
-//                        guard let userName = dictionary["userName"] as? String,
-//                              let userImage = dictionary["userImage"] as? Data,
-//                              let id = dictionary["commentID"] as? String,
-//                              let workoutID = dictionary["workoutID"] as? String,
-//                              let date = dictionary["date"] as? String,
-//                              let text = dictionary["text"] as? String,
-//                              let image = dictionary["image"] as? String,
-//                              let timestamp = dictionary["timestamp"] as? TimeInterval,
-//                              let programID = dictionary["programID"] as? String else {return nil}
-//                        
-//                        let comment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: date, text: text, imageRef: image, id: id, workoutID: workoutID, programID: programID)
-//                        return comment
-//                    }
-//                    completion(comments)
-//                }
-//        return listener
-//        }
+    public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
+        print("posting comment to Firestore")
+
+           let documentID = comment.programId
+               .replacingOccurrences(of: "/", with: "_")
+               .replacingOccurrences(of: " ", with: "_")
+
+        var commentText = ""
+
+        switch comment.kind {
+        case .text(let enteredText): commentText = enteredText
+        default : break
+        }
+       
+        let dateString = formatter.string(from: comment.sentDate)
+
+
+        let commentData: [String: Any] = [
+            "senderId": comment.sender.senderId,
+            "senderName": comment.sender.displayName,
+            "messageId": comment.messageId,
+            "sentDate": dateString,
+            "text": commentText,
+
+            "userImage": comment.userImage,
+            "programId": comment.programId,
+            "workoutId": comment.workoutId,
+            "timestamp": comment.timestamp
+        ]
+
+           database
+               .collection("programs")
+               .document(documentID)
+               .collection("workouts")
+               .document(comment.workoutId)
+               .collection("comments")
+               .document(comment.messageId)
+               .setData(commentData) { error in
+                   if let error = error {
+                       print(error.localizedDescription)
+                   } else {
+                       completion(error == nil)
+                   }
+               }
+       }
+
+    public func getAllComments(workout: Workout, completion: @escaping([Comment])->()){
+        print ("executing loading comments from database \(#function)")
+
+        let documentID = workout.programID
+               .replacingOccurrences(of: "/", with: "_")
+               .replacingOccurrences(of: " ", with: "_")
+
+        database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workout.id)
+            .collection("comments")
+            .order(by: "timestamp", descending: false)
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+                let comments: [Comment] = documents.compactMap { dictionary in
+                    guard let senderId = dictionary["senderId"] as? String,
+                          let senderName = dictionary["senderName"] as? String,
+                          let userImage = dictionary["userImage"] as? Data,
+                          let messageId = dictionary["messageId"] as? String,
+                          let text = dictionary["text"] as? String,
+                          let timestamp = dictionary["timestamp"] as? TimeInterval,
+                          let dateString = dictionary["sentDate"] as? String,
+                          let date = self.formatter.date(from: dateString),
+                          let workoutId = dictionary["workoutId"] as? String,
+                          let programId = dictionary["programId"] as? String else {print("unable to create comment")
+                        return nil}
+                    
+                    
+                    let sender = Sender(senderId: senderId, displayName: senderName)
+                    
+                    let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: .text(text), userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
+                    return comment
+                }
+                   print (comments.count)
+                   completion(comments)
+               }
+       }
+    
+    public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
+        print("Executing function: \(#function)")
+        let documentID = workout.programID
+                .replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: " ", with: "_")
+            
+           let listener = database
+                .collection("programs")
+                .document(documentID)
+                .collection("workouts")
+                .document(workout.id)
+                .collection("comments")
+                .order(by: "timestamp", descending: false)
+                .addSnapshotListener { snapshot, error in
+                    guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+                    let comments: [Comment] = documents.compactMap { dictionary in
+                        guard let senderId = dictionary["senderId"] as? String,
+                              let senderName = dictionary["senderName"] as? String,
+                              let userImage = dictionary["userImage"] as? Data,
+                              let messageId = dictionary["messageId"] as? String,
+                              let text = dictionary["text"] as? String,
+                              let timestamp = dictionary["timestamp"] as? TimeInterval,
+                              let dateString = dictionary["sentDate"] as? String,
+                              let date = self.formatter.date(from: dateString),
+                              let workoutId = dictionary["workoutId"] as? String,
+                              let programId = dictionary["programId"] as? String else {print("unable to create comment")
+                            return nil}
+                        
+                        
+                        let sender = Sender(senderId: senderId, displayName: senderName)
+                        
+                        let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: .text(text), userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
+                        return comment
+                    }
+                    completion(comments)
+                }
+        return listener
+        }
 //
 //    public func postComment(comment: Comment,
 //                           completion: @escaping (Bool) ->()){

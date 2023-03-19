@@ -8,19 +8,15 @@
 import Foundation
 import MessageKit
 
-struct Comment: MessageType {
+struct Comment: MessageType {    
     var sender: SenderType
     var messageId: String
     var sentDate: Date
     var kind: MessageKind
-    
-//    let timeStamp: TimeInterval
-//    let userName: String
-//    let userImage: Data
-//    let date: String
-//    let text: String
-//    let imageRef: String?
-//    let id: String
-//    let workoutID: String
-//    let programID: String
+//    
+    let userImage: Data
+    let workoutId: String
+    let programId: String
+    let timestamp: TimeInterval
 }
+
