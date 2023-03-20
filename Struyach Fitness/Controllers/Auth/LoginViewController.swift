@@ -72,7 +72,7 @@ class LoginViewController: UIViewController {
         button.toAutoLayout()
         button.layer.cornerRadius = 10
         button.clipsToBounds = true
-        button.backgroundColor = .systemGray
+        button.backgroundColor = .systemGreen
         button.setTitle("Log In", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
@@ -84,7 +84,7 @@ class LoginViewController: UIViewController {
         button.toAutoLayout()
         button.layer.cornerRadius = 10
         button.clipsToBounds = true
-        button.backgroundColor = .systemGray2
+        button.backgroundColor = .systemGray
         button.setTitle("Create new account", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(createAccountTapped), for: .touchUpInside)

@@ -35,6 +35,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = window
         
         IQKeyboardManager.shared.enable = true
+        IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(CommentsViewController.self)
+        IQKeyboardManager.shared.disabledToolbarClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.toolbarTintColor = .darkGray
 
     }

@@ -20,7 +20,7 @@ class SelectedProgramViewController: UIViewController {
     private var listener: ListenerRegistration?
     private var baseInset: CGFloat { return 15 }
     private var selectedWorkout: Workout?
-//    private var searchQuery: String = ""
+   
     
     private lazy var addCommentButton: UIButton = {
         let button = UIButton()
@@ -35,7 +35,6 @@ class SelectedProgramViewController: UIViewController {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .white
-        label.text = "No comments added yet"
         label.toAutoLayout()
         return label
     }()
@@ -160,9 +159,8 @@ class SelectedProgramViewController: UIViewController {
     
     
     @objc private func pushCommentsVC() {
-        guard let selectedWorkout = selectedWorkout else {
-            return
-        }
+        guard let selectedWorkout = selectedWorkout else { print("workout is not selected")
+            return }
         let commentsVC = CommentsViewController(workout: selectedWorkout)
         navigationController?.pushViewController(commentsVC, animated: true)
     }
@@ -198,6 +196,7 @@ class SelectedProgramViewController: UIViewController {
     private func loadListOfWorkouts(for programName: String) {
        
         DatabaseManager.shared.getAllWorkouts(for: programName) { [weak self] workouts in
+            print("Executing function: \(#function)")
             guard let self = self else {return}
             self.listOfWorkouts = workouts
             self.filteredWorkouts = self.listOfWorkouts
@@ -211,7 +210,6 @@ class SelectedProgramViewController: UIViewController {
                     self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
                     self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
                     print("workouts loaded")
-                    print("Executing function: \(#function)")
                 }
             }
         }
@@ -296,19 +294,26 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Executing function: \(#function)")
         if let selectedIndexPath = selectedIndexPath {
-               collectionView.deselectItem(at: selectedIndexPath, animated: true)
-           }
+            collectionView.deselectItem(at: selectedIndexPath, animated: true)
+        }
         
         selectedIndexPath = indexPath
         DispatchQueue.main.async {
             self.workoutsCollection.reloadData()
         }
-       
-     //   let selectedWorkout = listOfWorkouts[indexPath.item]
+        
+        //   let selectedWorkout = listOfWorkouts[indexPath.item]
         let selectedWorkout = filteredWorkouts[selectedIndexPath!.item]
         self.selectedWorkout = selectedWorkout
         selectedWorkoutView.randomizeBackgroungImages()
         selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout.description
+        
+        DatabaseManager.shared.getAllComments(workout: selectedWorkout) { [weak self] comments in
+            print("found\(comments.count) comments for selected workout")
+            DispatchQueue.main.async {
+                self?.commentsLabel.text = comments.count == 0 ? "No comments posted yet" : "Read all \(comments.count) comments"
+            }
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {

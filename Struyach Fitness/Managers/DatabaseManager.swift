@@ -14,12 +14,12 @@ final class DatabaseManager {
     
     static let shared = DatabaseManager()
     private let database = Firestore.firestore()
-    let formatter = DateFormatter()
+    private let formatter = DateFormatter()
     
     private init() {}
     
     //MARK: - Adding, fetching, editing, deleting workouts and listen to the changes in workouts
-//TODO: - Firebase pagination and caching workouts and comments localy 
+    //TODO: - Firebase pagination and caching workouts and comments localy
     public func postWorkout(with workout: Workout, completion: @escaping(Bool) ->()){
         print("Executing function: \(#function)")
         let program = workout.programID
@@ -47,7 +47,7 @@ final class DatabaseManager {
         let documentID = program
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
-    
+        
         database
             .collection("programs")
             .document(documentID)
@@ -78,67 +78,22 @@ final class DatabaseManager {
         let documentID = workout.programID
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
-    
-    let dbRef = database
+        
+        let dbRef = database
             .collection("programs")
             .document(documentID)
             .collection("workouts")
             .document(workout.id)
-
-    dbRef.getDocument { snapshot, error in
-        guard var data = snapshot?.data(), error == nil else {return}
         
-        data["description"] = newDescription
-        dbRef.setData(data) { error in
-            completion(error == nil)
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["description"] = newDescription
+            dbRef.setData(data) { error in
+                completion(error == nil)
+            }
         }
     }
-}
-    
-//    public func appendComment(workout: Workout, newComment: Comment, completion: @escaping (Bool)->()){
-//        print("Executing function: \(#function)")
-//        let documentID = workout.programID
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        let dbRef = database
-//            .collection("programs")
-//            .document(documentID)
-//            .collection("workouts")
-//            .document(workout.id)
-//
-//        dbRef.updateData(["comments" : FieldValue.arrayUnion([newComment])]) { error in
-//            if let error = error {
-//                print ("Error updating document \(error.localizedDescription)")
-//            } else {
-//                print("document successfully updated")
-//            }
-//        }
-//    }
-//
-//    public func fetchComments(workout: Workout, completion: @escaping([Comment])->()){
-//        print("Executing function: \(#function)")
-//        let documentID = workout.programID
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        let dbRef = database
-//            .collection("programs")
-//            .document(documentID)
-//            .collection("workouts")
-//            .document(workout.id)
-//
-//        dbRef.getDocument { snapshot, error in
-//            if let document = snapshot, document.exists {
-//                let data = document.data()
-//                let comments = data?["comments"] as? [Comment] ?? []
-//                print("Comments:\(comments)")
-//            } else {
-//                print ("DOcument does not exist")
-//            }
-//        }
-//
-//    }
     
     public func deleteWorkout(workout: Workout, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
@@ -308,7 +263,6 @@ final class DatabaseManager {
                     let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: .text(text), userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
                     return comment
                 }
-                   print (comments.count)
                    completion(comments)
                }
        }

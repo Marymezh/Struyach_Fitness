@@ -11,9 +11,12 @@ import MessageKit
 import InputBarAccessoryView
 
 class CommentsViewController: MessagesViewController, UITextViewDelegate {
+    
+    let layout = UICollectionViewLayout()
 
+    private lazy var messageCollectionView = MessagesCollectionView(frame: .zero, collectionViewLayout: layout)
     private let workout: Workout
-    private var commentsArray: [Comment] = []
+    var commentsArray: [Comment] = []
     private var commentsListener: ListenerRegistration?
     
     private let userName = UserDefaults.standard.string(forKey: "userName")
@@ -22,18 +25,18 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
        
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
 
-//    private let workoutView: UITextView = {
-//        let textView = UITextView()
-//        textView.isScrollEnabled = true
-//        textView.isUserInteractionEnabled = true
-//        textView.isEditable = false
-//        textView.layer.cornerRadius = 5
-//        textView.layer.shadowRadius = 5
-//        textView.layer.shadowOpacity = 0.7
-//        textView.layer.shadowColor = UIColor.black.cgColor
-//        textView.toAutoLayout()
-//        return textView
-//    }()
+    private let workoutView: UITextView = {
+        let textView = UITextView()
+        textView.isScrollEnabled = true
+        textView.isUserInteractionEnabled = true
+        textView.isEditable = false
+        textView.layer.cornerRadius = 5
+        textView.layer.shadowRadius = 5
+        textView.layer.shadowOpacity = 0.7
+        textView.layer.shadowColor = UIColor.black.cgColor
+        textView.toAutoLayout()
+        return textView
+    }()
 
     init (workout: Workout) {
         self.workout = workout
@@ -65,14 +68,17 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        
         commentsListener?.remove()
     }
     
     private func setupMessageCollectionView () {
+        messagesCollectionView.toAutoLayout()
         messagesCollectionView.backgroundColor = .customMediumGray
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
+        messagesCollectionView.register(CommentCollectionViewCell.self, forCellWithReuseIdentifier: "customMessageCell")
         messageInputBar.delegate = self
         messageInputBar.inputTextView.delegate = self
         messageInputBar.inputTextView.becomeFirstResponder()
@@ -82,19 +88,25 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private func setupNavbarAndView() {
         title = "Comments"
         navigationController?.navigationBar.prefersLargeTitles = false
-//        workoutView.text = workout.description
-//        view.addSubview(workoutView)
+        self.view.backgroundColor = .customDarkGray
+        workoutView.text = workout.description
+        view.addSubviews(workoutView)
+
+        let constraints = [
+            workoutView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            workoutView.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 10),
+            workoutView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            workoutView.heightAnchor.constraint(equalToConstant: 150),
 //
-//        let constraints = [
-//            workoutView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-//            workoutView.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 10),
-//            workoutView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-//            workoutView.heightAnchor.constraint(equalToConstant: 150)
-//        ]
-//        NSLayoutConstraint.activate(constraints)
+//            messagesCollectionView.topAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: 10)
+//            messagesCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//            messagesCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//            messagesCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10)
+        ]
+        NSLayoutConstraint.activate(constraints)
     }
     
-    private func loadComments(workout: Workout) {
+    func loadComments(workout: Workout) {
 
             DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
                 guard let self = self else {return}
@@ -108,6 +120,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
 }
 
 extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
+
+    
     var currentSender: SenderType {
        return sender
     }
@@ -116,9 +130,13 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
        return commentsArray[indexPath.section]
     }
     
+    
+    
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
        return commentsArray.count
     }
+    
+    
 }
 
 extension CommentsViewController: InputBarAccessoryViewDelegate {
@@ -127,9 +145,9 @@ extension CommentsViewController: InputBarAccessoryViewDelegate {
         guard let name = userName else {return}
         let messageId = " \(name)_\(Date())"
         guard let userImage = self.userImage else {return}
-       let timestamp = Date().timeIntervalSince1970
+        let timestamp = Date().timeIntervalSince1970
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
-
+        
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
             guard let self = self else {return}
             if success {

@@ -6,8 +6,10 @@
 //
 
 import UIKit
+import MessageKit
+import AVFoundation
 
-class CommentTableViewCell: UITableViewCell {
+class CommentCollectionViewCell: UICollectionViewCell {
     
 //    var comment:Comment? {
 //        didSet
@@ -64,9 +66,6 @@ class CommentTableViewCell: UITableViewCell {
     
     private let dateLabel: UILabel = {
         let label = UILabel()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd MMM yyyy  HH:mm"
-        label.text = formatter.string(from: Date())
         label.font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         label.textColor = .white
         label.toAutoLayout()
@@ -93,6 +92,17 @@ class CommentTableViewCell: UITableViewCell {
         return imageView
     }()
     
+    let commentVideoPlayerView: UIView = {
+        let imageView = UIView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.cornerRadius = 5
+        imageView.clipsToBounds = true
+//        imageView.sizeToFit()
+        imageView.isHidden = true
+        imageView.toAutoLayout()
+        return imageView
+    }()
+    
     private var baseInset: CGFloat { return 15 }
     
     //TODO: - Add functionality to load short videos into comment and "likes" button and counter
@@ -101,14 +111,13 @@ class CommentTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setupUI()
   //      prepareForReuse()
     }
-    
+ 
     private func setupUI() {
-
         contentView.backgroundColor = .customDarkGray
         contentView.addSubviews(userImage, userNameLabel, dateLabel, commentTextLabel, commentImageView)
         
@@ -137,7 +146,12 @@ class CommentTableViewCell: UITableViewCell {
             commentImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             commentImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
             commentImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 200),
-            commentImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
+            
+            commentVideoPlayerView.topAnchor.constraint(equalTo: commentImageView.bottomAnchor, constant: baseInset),
+            commentVideoPlayerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
+            commentVideoPlayerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
+            commentVideoPlayerView.heightAnchor.constraint(lessThanOrEqualToConstant: 200),
+            commentVideoPlayerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset),
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -145,7 +159,83 @@ class CommentTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        self.userImage.image = nil
+        self.userNameLabel.text = nil
+        self.dateLabel.text = nil
+        self.commentTextLabel.text = nil
         self.commentImageView.image = nil
         self.commentImageView.isHidden = true
+        self.commentVideoPlayerView.subviews.forEach { $0.removeFromSuperview()}
+    }
+}
+
+extension CommentCollectionViewCell: MessageCellDelegate {
+    
+    func configure(with comment: Comment, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
+//        guard let displayDelegate = messagesCollectionView.messagesDisplayDelegate else {
+//            fatalError("MessagesDisplayDelegate has not been set.")
+//        }
+//        
+//        guard let layoutDelegate = messagesCollectionView.messagesLayoutDelegate else {
+//            fatalError("MessagesLayoutDelegate has not been set.")
+//        }
+//        
+//        let textColor = displayDelegate.textColor(for: comment, at: indexPath, in: messagesCollectionView)
+//        let backgroundColor = displayDelegate.backgroundColor(for: comment, at: indexPath, in: messagesCollectionView)
+        self .backgroundColor = backgroundColor
+        
+        let data = comment.userImage
+        let decoded = try! PropertyListDecoder().decode(Data.self, from: data)
+        let image = UIImage(data: decoded)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMM yyyy  HH:mm"
+        let sentDate = formatter.string(from: comment.sentDate)
+        
+        
+        userImage.image = image
+        userNameLabel.text = comment.sender.displayName
+        dateLabel.text = sentDate
+        
+        switch comment.kind {
+        case .text(let text):
+            commentTextLabel.text = text
+            commentTextLabel.isHidden = false
+            commentImageView.isHidden = true
+            commentVideoPlayerView.isHidden = true
+        case .photo(let mediaItem):
+            let image = mediaItem.image
+            commentImageView.image = image
+            commentImageView.isHidden = false
+            commentTextLabel.isHidden = true
+            commentVideoPlayerView.isHidden = true
+        case .video(let mediaItem):
+            commentImageView.isHidden = true
+            commentTextLabel.isHidden = true
+            commentVideoPlayerView.isHidden = false
+            
+            guard let safeUrl = mediaItem.url else {print ("url for video is invalid or does not exist")
+                return
+            }
+            let player = AVPlayer(url: safeUrl)
+            let playerLayer = AVPlayerLayer(player: player)
+            playerLayer.frame = commentVideoPlayerView.bounds
+            commentVideoPlayerView.layer.addSublayer(playerLayer)
+            player.play()
+            
+            let playButton = UIButton(type: .custom)
+            playButton.frame = commentVideoPlayerView.bounds
+            playButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+            playButton.addTarget(self, action: #selector(playButtonTapped), for: .touchUpInside)
+            commentVideoPlayerView.addSubview(playButton)
+            
+        default:
+            commentTextLabel.isHidden = true
+            commentImageView.isHidden = true
+            commentVideoPlayerView.isHidden = true
+        }
+    }
+    
+    @objc private func playButtonTapped() {
+        
     }
 }
