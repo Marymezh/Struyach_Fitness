@@ -14,4 +14,5 @@ extension UIColor {
     static let customMediumGray = UIColor(named: "mediumGray")
     static let customDarkGray = UIColor(named: "darkBackground")
     static let customTabBar = UIColor(named: "tabbar")
+    static let customKeyboard = UIColor(named: "customKeyboardColor" )
 }

@@ -11,10 +11,7 @@ import MessageKit
 import InputBarAccessoryView
 
 class CommentsViewController: MessagesViewController, UITextViewDelegate {
-    
-    let layout = UICollectionViewLayout()
 
-    private lazy var messageCollectionView = MessagesCollectionView(frame: .zero, collectionViewLayout: layout)
     private let workout: Workout
     var commentsArray: [Comment] = []
     private var commentsListener: ListenerRegistration?
@@ -22,21 +19,41 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private let userName = UserDefaults.standard.string(forKey: "userName")
     private let userImage = UserDefaults.standard.data(forKey: "userImage")
     private let userEmail = UserDefaults.standard.string(forKey: "email")
-       
-    private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
-
-    private let workoutView: UITextView = {
+    
+    let workoutView: UITextView = {
         let textView = UITextView()
         textView.isScrollEnabled = true
         textView.isUserInteractionEnabled = true
         textView.isEditable = false
-        textView.layer.cornerRadius = 5
-        textView.layer.shadowRadius = 5
-        textView.layer.shadowOpacity = 0.7
-        textView.layer.shadowColor = UIColor.black.cgColor
+        textView.layer.cornerRadius = 10
+
         textView.toAutoLayout()
         return textView
     }()
+    
+    let containerView: UIView = {
+        let view = UIView()
+        view.toAutoLayout()
+        view.backgroundColor = .customMediumGray
+        return view
+    }()
+    
+    let secondContainerView: UIView = {
+        let view = UIView()
+        view.toAutoLayout()
+        view.backgroundColor = .white
+        view.layer.borderWidth = 0.5
+        view.layer.borderColor = UIColor.black.cgColor
+        view.layer.cornerRadius = 10
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowRadius = 10
+        view.layer.shadowOffset = CGSize(width: 5, height: 5)
+        view.layer.shadowOpacity = 0.7
+        view.alpha = 0.8
+        return view
+    }()
+       
+    private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
 
     init (workout: Workout) {
         self.workout = workout
@@ -50,6 +67,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupMessageCollectionView()
+        setupInputBar()
         setupNavbarAndView()
         loadComments(workout: self.workout)
     }
@@ -61,62 +79,82 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             self.commentsArray = comments
             DispatchQueue.main.async {
                 self.messagesCollectionView.reloadData()
-
             }
         }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
         commentsListener?.remove()
     }
     
-    private func setupMessageCollectionView () {
+    private func setupMessageCollectionView() {
         messagesCollectionView.toAutoLayout()
         messagesCollectionView.backgroundColor = .customMediumGray
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
         messagesCollectionView.register(CommentCollectionViewCell.self, forCellWithReuseIdentifier: "customMessageCell")
+    }
+    
+    private func setupInputBar() {
+        // Set up inputBar
         messageInputBar.delegate = self
+        messageInputBar.backgroundView.backgroundColor = .customKeyboard
         messageInputBar.inputTextView.delegate = self
-        messageInputBar.inputTextView.becomeFirstResponder()
-        messagesCollectionView.delegate = self
+        messageInputBar.inputTextView.placeholder = "Write a comment..."
+        messageInputBar.inputTextView.placeholderTextColor = .gray
+        messageInputBar.inputTextView.backgroundColor = .white
+        messageInputBar.inputTextView.layer.cornerRadius = 10
+        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 10, bottom: 5, right: 10)
+        messageInputBar.sendButton.setTitleColor(.systemGreen, for: .normal)
+        messageInputBar.sendButton.setTitle("Send", for: .normal)
     }
     
     private func setupNavbarAndView() {
         title = "Comments"
         navigationController?.navigationBar.prefersLargeTitles = false
         self.view.backgroundColor = .customDarkGray
+
         workoutView.text = workout.description
-        view.addSubviews(workoutView)
+        view.addSubview(containerView)
+        containerView.addSubview(secondContainerView)
+        secondContainerView.addSubview(workoutView)
+        
+        messagesCollectionView.contentInset.top = 180
+      
+        messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
 
         let constraints = [
-            workoutView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            workoutView.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 10),
-            workoutView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            workoutView.heightAnchor.constraint(equalToConstant: 150),
-//
-//            messagesCollectionView.topAnchor.constraint(equalTo: workoutView.bottomAnchor, constant: 10)
-//            messagesCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            messagesCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            messagesCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10)
+            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            secondContainerView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            secondContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
+            secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
+            secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+            
+            workoutView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
+            workoutView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
+            workoutView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
+            workoutView.heightAnchor.constraint(equalToConstant: 130),
+            workoutView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
         ]
         NSLayoutConstraint.activate(constraints)
     }
-    
-    func loadComments(workout: Workout) {
 
-            DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
-                guard let self = self else {return}
-                self.commentsArray = comments
-                self.messagesCollectionView.reloadData()
-                print ("loaded \(self.commentsArray.count) comments")
-                DispatchQueue.main.async {
-                }
+    func loadComments(workout: Workout) {
+        
+        DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
+            guard let self = self else {return}
+            self.commentsArray = comments
+            self.messagesCollectionView.reloadData()
+            print ("loaded \(self.commentsArray.count) comments")
+            DispatchQueue.main.async {
             }
         }
+    }
 }
 
 extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {

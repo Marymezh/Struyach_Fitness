@@ -9,7 +9,7 @@ import UIKit
 import MessageKit
 import AVFoundation
 
-class CommentCollectionViewCell: UICollectionViewCell {
+class CommentCollectionViewCell: MessageContentCell {
     
 //    var comment:Comment? {
 //        didSet
