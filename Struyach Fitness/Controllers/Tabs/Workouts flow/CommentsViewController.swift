@@ -77,9 +77,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: workout) {[weak self] comments in
             guard let self = self else {return}
             self.commentsArray = comments
-            DispatchQueue.main.async {
-                self.messagesCollectionView.reloadData()
-            }
+            self.messagesCollectionView.reloadData()
         }
     }
     
@@ -94,7 +92,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
-        messagesCollectionView.register(CommentCollectionViewCell.self, forCellWithReuseIdentifier: "customMessageCell")
     }
     
     private func setupInputBar() {
@@ -102,13 +99,39 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messageInputBar.delegate = self
         messageInputBar.backgroundView.backgroundColor = .customKeyboard
         messageInputBar.inputTextView.delegate = self
-        messageInputBar.inputTextView.placeholder = "Write a comment..."
+        messageInputBar.inputTextView.placeholder = " Write a comment..."
         messageInputBar.inputTextView.placeholderTextColor = .gray
         messageInputBar.inputTextView.backgroundColor = .white
         messageInputBar.inputTextView.layer.cornerRadius = 10
-        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 10, bottom: 5, right: 10)
-        messageInputBar.sendButton.setTitleColor(.systemGreen, for: .normal)
-        messageInputBar.sendButton.setTitle("Send", for: .normal)
+        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 5, bottom: 5, right: 5)
+        messageInputBar.inputTextView.tintColor = .customDarkGray
+        messageInputBar.tintColor = .systemGray
+        
+        let attachButton = InputBarButtonItem()
+        attachButton.setSize(CGSize(width: 35, height: 44), animated: false)
+        attachButton.setImage(UIImage(systemName: "paperclip", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)), for: .normal)
+        attachButton.onTouchUpInside { [weak self]_ in
+            self?.presentInputOptions()
+        }
+        messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: false)
+        messageInputBar.setStackViewItems([attachButton], forStack: .left, animated: false)
+        messageInputBar.sendButton.setTitle(nil, for: .normal)
+        messageInputBar.sendButton.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)), for: .normal)
+    }
+    
+    private func presentInputOptions() {
+        let actionSheet = UIAlertController(title: "Attach media", message: nil, preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "Photo", style: .default, handler: { [weak self] _ in
+            self?.showImagePickerController()
+        }))
+//        actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
+//            <#code#>
+//        }))
+//        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: { [weak self] _ in
+//            <#code#>
+//        }))
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(actionSheet, animated: true)
     }
     
     private func setupNavbarAndView() {
@@ -143,43 +166,10 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         ]
         NSLayoutConstraint.activate(constraints)
     }
-
-    func loadComments(workout: Workout) {
-        
-        DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
-            guard let self = self else {return}
-            self.commentsArray = comments
-            self.messagesCollectionView.reloadData()
-            print ("loaded \(self.commentsArray.count) comments")
-            DispatchQueue.main.async {
-            }
-        }
-    }
-}
-
-extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
-
     
-    var currentSender: SenderType {
-       return sender
-    }
+    //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
-    func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
-       return commentsArray[indexPath.section]
-    }
-    
-    
-    
-    func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
-       return commentsArray.count
-    }
-    
-    
-}
-
-extension CommentsViewController: InputBarAccessoryViewDelegate {
-    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        print("executing \(#function)")
+    private func postComment(text: String) {
         guard let name = userName else {return}
         let messageId = " \(name)_\(Date())"
         guard let userImage = self.userImage else {return}
@@ -197,50 +187,151 @@ extension CommentsViewController: InputBarAccessoryViewDelegate {
         }
         messageInputBar.inputTextView.text = nil
     }
+    private func postPhotoComment(photoURL: String) {
+        guard let name = userName else {return}
+        let messageId = " \(name)_\(Date())"
+        guard let userImage = self.userImage else {return}
+        let timestamp = Date().timeIntervalSince1970
+        
+        guard let url = URL(string: photoURL),
+        let placeholder = UIImage(systemName: "plus") else {return}
+        
+        let media = Media(url: url, image: nil, placeholderImage: placeholder, size: .zero)
+        
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
+        
+        DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+            guard let self = self else {return}
+            if success {
+                self.loadComments(workout: self.workout)
+                print ("successfully send photo message ")
+            } else {
+                print ("cant save comment")
+            }
+        }
+        messageInputBar.inputTextView.text = nil
+    }
+    
+    private func loadComments(workout: Workout) {
+         DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
+             guard let self = self else {return}
+             self.commentsArray = comments
+             print ("loaded \(self.commentsArray.count) comments")
+             print (self.commentsArray)
+             DispatchQueue.main.async {
+                 self.messagesCollectionView.reloadData()
+             }
+         }
+     }
 }
-//MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
 
-//    private func addComment(workout: Workout, text: String) {
-//        print("Executing function: \(#function)")
-//        guard let userName = UserDefaults.standard.string(forKey: "userName"),
-//              let userImage = UserDefaults.standard.data(forKey: "userImage") else {return}
-//        let timestamp = Date().timeIntervalSince1970
-//        let date = Date(timeIntervalSince1970: timestamp)
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "EE \n d MMMM \n yyyy"
-//        let dateString = formatter.string(from: date)
-//        let commentID = UUID().uuidString
-//        let newComment = Comment(timeStamp: timestamp, userName: userName, userImage: userImage, date: dateString, text: text, id: commentID , workoutID: workout.id, programID: workout.programID)
-//        DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-//            guard let self = self else {return}
-//            if success {
-//                self.imageRef = ""
-//                self.loadComments(programID: workout.programID, workoutID: workout.id)
-//                print ("comments without image loaded")
-//            } else {
-//                print ("cant save comment")
-//            }
-//        }
+//MARK: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate
+extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
+
+    var currentSender: SenderType {
+       return sender
+    }
+
+    func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
+       return commentsArray[indexPath.section]
+    }
+
+    func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
+       return commentsArray.count
+    }
+//    func currentSender() -> SenderType {
+//        return sender
 //    }
-
-//    private func loadComments(programID: String, workoutID: String) {
 //
-//        DatabaseManager.shared.getAllComments(programID: programID, workoutID: workoutID) { [weak self] comments in
-//            guard let self = self else {return}
-//            self.commentsArray = comments
-//            print ("loaded \(self.commentsArray.count) comments")
-//            DispatchQueue.main.async {
-//            }
+//    func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
+//        let comment = commentsArray[indexPath.section]
+//        return comment
+//    }
+//
+//    func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
+//        return commentsArray.count
+//    }
+//
+//    func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+//        let comment = commentsArray[indexPath.section]
+//        let dateString = DateFormatter.localizedString(from: comment.sentDate, dateStyle: .medium, timeStyle: .short)
+//        let senderName = comment.sender.displayName
+//        let attributedString = NSAttributedString(string: "\(senderName) - \(dateString)", attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 12)])
+//        return attributedString
+//    }
+    
+//    func cellBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+//        return nil
+//    }
+//
+//    func messageTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+//        return nil
+//    }
+//
+//    func messageBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+//        return nil
+//    }
+//
+//    func messageStyle(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageStyle {
+//        let comment = commentsArray[indexPath.section]
+//        if comment.sender.senderId == userEmail {
+//            return .bubbleTail(.bottomRight, .curved)
+//        } else {
+//            return .bubbleTail(.bottomLeft, .curved)
 //        }
 //    }
+//
+//    func messageHeaderView(for indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageReusableView? {
+//        return nil
+//    }
+//
+//    func messageFooterView(for indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageReusableView? {
+//        return nil
+//    }
+}
 
-//        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: selectedWorkout) {[weak self] comments in
-//            guard let self = self else {return}
-//            self.commentsArray = comments
-//            DispatchQueue.main.async {
-////                self.tableView.reloadData()
-//                if let selectedIndexPath = self.selectedIndexPath {
-//                    self.workoutsCollection.reloadItems(at: [selectedIndexPath])
-//                }
-//            }
-//        }
+extension CommentsViewController: InputBarAccessoryViewDelegate {
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
+        print("executing \(#function)")
+        postComment(text: text)
+    }
+}
+
+//MARK: - UIImagePickerControllerDelegate methods
+extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    private func showImagePickerController() {
+        let picker = UIImagePickerController()
+        picker.allowsEditing = true
+        picker.delegate = self
+        picker.sourceType = .photoLibrary
+        self.present(picker, animated: true)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true)
+        
+        guard let image = info[.editedImage] as? UIImage,
+        let imageData = image.jpegData(compressionQuality: 0.3) else { return }
+        let date = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy_MM_dd_HH_mm_ss"
+        let dateString = formatter.string(from: date)
+        let imageId = "\(sender.displayName)_\(dateString)"
+        
+        StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout) { [weak self] urlString in
+            guard let self = self else {return}
+            if let safeURL = urlString {
+                self.postPhotoComment(photoURL: safeURL)
+            } else {
+                print ("Error uploading image to Storage")
+            }
+        }
+    }
+}
+
+
+

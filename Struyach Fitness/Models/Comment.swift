@@ -13,7 +13,7 @@ struct Comment: MessageType {
     var messageId: String
     var sentDate: Date
     var kind: MessageKind
-//    
+    
     let userImage: Data
     let workoutId: String
     let programId: String

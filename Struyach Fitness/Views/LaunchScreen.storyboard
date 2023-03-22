@@ -16,7 +16,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="struyach-eng-white" translatesAutoresizingMaskIntoConstraints="NO" id="OlB-83-HXl">
-                                <rect key="frame" x="58" y="144" width="274" height="261"/>
+                                <rect key="frame" x="58" y="291.66666666666669" width="274" height="261.00000000000006"/>
                                 <color key="tintColor" red="0.1960784314" green="0.67843137249999996" blue="0.90196078430000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="261" id="441-St-lfp"/>
@@ -25,29 +25,20 @@
                                 <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="STRUYACH FITNESS" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Rz5-vh-T2b">
-                                <rect key="frame" x="29" y="460" width="332" height="39.666666666666686"/>
+                                <rect key="frame" x="29" y="572.66666666666663" width="332" height="39.666666666666629"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="33"/>
                                 <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="CLIENT" textAlignment="center" lineBreakMode="middleTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="18" translatesAutoresizingMaskIntoConstraints="NO" id="A1f-FZ-Kkl">
-                                <rect key="frame" x="100" y="532.66666666666663" width="190" height="43"/>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="36"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="Rz5-vh-T2b" firstAttribute="top" secondItem="OlB-83-HXl" secondAttribute="bottom" constant="55" id="5QX-Zr-ijc"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" secondItem="Rz5-vh-T2b" secondAttribute="trailing" constant="29" id="DHq-Ds-cBI"/>
-                            <constraint firstItem="OlB-83-HXl" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="QJ9-aB-bjl"/>
-                            <constraint firstItem="Rz5-vh-T2b" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="29" id="W2c-l9-IiJ"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" secondItem="A1f-FZ-Kkl" secondAttribute="trailing" constant="100" id="WuA-EY-pCS"/>
-                            <constraint firstItem="A1f-FZ-Kkl" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="100" id="ddC-di-9lx"/>
-                            <constraint firstItem="A1f-FZ-Kkl" firstAttribute="top" secondItem="Rz5-vh-T2b" secondAttribute="bottom" constant="33" id="pY8-tG-4V9"/>
-                            <constraint firstItem="OlB-83-HXl" firstAttribute="top" secondItem="Bcu-3y-fUS" secondAttribute="top" constant="100" id="qH3-Xk-jOQ"/>
+                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" secondItem="Rz5-vh-T2b" secondAttribute="trailing" constant="29" id="0RB-ah-TYM"/>
+                            <constraint firstItem="Rz5-vh-T2b" firstAttribute="top" secondItem="OlB-83-HXl" secondAttribute="bottom" constant="20" id="CCz-dM-O0S"/>
+                            <constraint firstItem="OlB-83-HXl" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="d7a-y0-bKq"/>
+                            <constraint firstItem="OlB-83-HXl" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="mOX-2m-EEy"/>
+                            <constraint firstItem="Rz5-vh-T2b" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="29" id="tL4-rT-zOg"/>
                         </constraints>
                     </view>
                 </viewController>

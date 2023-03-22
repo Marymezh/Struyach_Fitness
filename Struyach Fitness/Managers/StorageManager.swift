@@ -16,15 +16,17 @@ final class StorageManager {
     private init() {}
     //TODO: - write methods to upload image and video URL to Firebase Storage
     
-    public func uploadImageForComment(image: Data?, imageID: String, completion: @escaping (String?)->()) {
+    public func uploadImageForComment(image: Data?, imageId: String, workout: Workout, completion: @escaping (String?)->()) {
         guard let pngData = image else {return}
         
-        let imageRef = "comments_photo/\(imageID)/photo.png"
+//        let imageRef = "comments_photo/\(workout.programID)/\(workout.id)/\(imageID)_photo.png"
+        let imageRef = "comments_photo/\(workout.programID)/\(workout.id)/\(imageId)_photo.png"
         container
             .reference(withPath: imageRef)
             .putData(pngData, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
                     completion(nil)
+                    print(error?.localizedDescription)
                     return
                 }
                 completion(imageRef)

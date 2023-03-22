@@ -111,8 +111,8 @@ class SelectedProgramViewController: UIViewController {
         
         let constraints = [
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             searchBar.heightAnchor.constraint(equalToConstant: 44),
             
             workoutsCollection.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 15),
@@ -179,7 +179,11 @@ class SelectedProgramViewController: UIViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "EE \n d MMMM \n yyyy"
             let dateString = formatter.string(from: date)
-            let workoutID = UUID().uuidString
+            // make the second formatter to correctly construct the workout ID
+            let secondFormatter = DateFormatter()
+            secondFormatter.dateFormat = "yyyy_MM_dd_HH_mm_ss"
+            let dateForId = secondFormatter.string(from: date)
+            let workoutID = "\(title)_\(dateForId)"
             let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 guard let self = self else {return}
@@ -360,6 +364,7 @@ extension SelectedProgramViewController: UISearchBarDelegate {
         let searchQuery = searchText
         if searchQuery.isEmpty {
             filteredWorkouts = listOfWorkouts
+            selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout?.description
         } else {
             filteredWorkouts = listOfWorkouts.filter { $0.description.contains(searchQuery)}
             selectedWorkoutView.workoutDescriptionTextView.text = "Select from search result"
@@ -371,6 +376,7 @@ extension SelectedProgramViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = nil
         filteredWorkouts = listOfWorkouts
+
         workoutsCollection.reloadData()
         searchBar.resignFirstResponder()
     }
