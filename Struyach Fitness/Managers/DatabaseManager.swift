@@ -193,9 +193,10 @@ final class DatabaseManager {
 
         switch comment.kind {
         case .text(let enteredText): commentText = enteredText
+            
         default : break
         }
-       
+       //for some reasons this lines result in a bug with fetching comments, will come back to this later
 //        formatter.locale = .current
 //        formatter.dateFormat = "dd MM YYYY HH:mm"
         let dateString = formatter.string(from: comment.sentDate)
