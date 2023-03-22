@@ -173,7 +173,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         guard let name = userName else {return}
         let formatter = DateFormatter()
         formatter.locale = .current
-        formatter.dateStyle = .full
+        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
         let date = formatter.string(from: Date())
         
         let messageId = " \(name)_\(date)"
