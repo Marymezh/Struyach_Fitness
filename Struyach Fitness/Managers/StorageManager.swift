@@ -19,8 +19,7 @@ final class StorageManager {
     public func uploadImageForComment(image: Data?, imageId: String, workout: Workout, completion: @escaping (String?)->()) {
         guard let pngData = image else {return}
         
-//        let imageRef = "comments_photo/\(workout.programID)/\(workout.id)/\(imageID)_photo.png"
-        let imageRef = "comments_photo/\(workout.programID)/\(workout.id)/\(imageId)_photo.png"
+        let imageRef = "comments_photo/\(workout.programID)/\(imageId)_photo.png"
         container
             .reference(withPath: imageRef)
             .putData(pngData, metadata: nil) { metadata, error in
@@ -31,7 +30,6 @@ final class StorageManager {
                 }
                 completion(imageRef)
             }
-        
     }
     
     public func uploadVideoURLForComment(email: String, video: URL?, completion: @escaping (Bool)->()) {

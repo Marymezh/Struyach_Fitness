@@ -171,7 +171,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     private func postComment(text: String) {
         guard let name = userName else {return}
-        let messageId = " \(name)_\(Date())"
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateStyle = .full
+        let date = formatter.string(from: Date())
+        
+        let messageId = " \(name)_\(date)"
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)

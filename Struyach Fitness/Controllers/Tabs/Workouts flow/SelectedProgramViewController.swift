@@ -49,6 +49,7 @@ class SelectedProgramViewController: UIViewController {
         searchBar.tintColor = .white
         searchBar.clipsToBounds = true
         searchBar.showsSearchResultsButton = true
+        searchBar.isHidden = true
         searchBar.toAutoLayout()
         return searchBar
     }()
@@ -113,7 +114,7 @@ class SelectedProgramViewController: UIViewController {
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            searchBar.heightAnchor.constraint(equalToConstant: 44),
+            searchBar.heightAnchor.constraint(lessThanOrEqualToConstant: 44),
             
             workoutsCollection.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 15),
             workoutsCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -179,11 +180,7 @@ class SelectedProgramViewController: UIViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "EE \n d MMMM \n yyyy"
             let dateString = formatter.string(from: date)
-            // make the second formatter to correctly construct the workout ID
-            let secondFormatter = DateFormatter()
-            secondFormatter.dateFormat = "yyyy_MM_dd_HH_mm_ss"
-            let dateForId = secondFormatter.string(from: date)
-            let workoutID = "\(title)_\(dateForId)"
+            let workoutID = UUID().uuidString
             let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 guard let self = self else {return}

@@ -196,6 +196,8 @@ final class DatabaseManager {
         default : break
         }
        
+        formatter.locale = .current
+        formatter.dateStyle = .full
         let dateString = formatter.string(from: comment.sentDate)
 
 
