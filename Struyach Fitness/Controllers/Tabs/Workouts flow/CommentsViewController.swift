@@ -193,8 +193,13 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messageInputBar.inputTextView.text = nil
     }
     private func postPhotoComment(photoURL: String) {
-        guard let name = userName else {return}
-        let messageId = " \(name)_\(Date())"
+//        guard let name = userName else {return}
+//        let formatter = DateFormatter()
+//        formatter.locale = .current
+//        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
+//        let date = formatter.string(from: Date())
+        
+        let messageId = UUID().uuidString
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
         

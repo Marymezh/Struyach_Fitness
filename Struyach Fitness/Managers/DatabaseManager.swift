@@ -196,8 +196,8 @@ final class DatabaseManager {
         default : break
         }
        
-        formatter.locale = .current
-        formatter.dateFormat = "dd MM YYYY HH:mm"
+//        formatter.locale = .current
+//        formatter.dateFormat = "dd MM YYYY HH:mm"
         let dateString = formatter.string(from: comment.sentDate)
 
 

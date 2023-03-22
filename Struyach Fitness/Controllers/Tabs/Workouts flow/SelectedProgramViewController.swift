@@ -180,7 +180,7 @@ class SelectedProgramViewController: UIViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "EE \n d MMMM \n yyyy"
             let dateString = formatter.string(from: date)
-            let workoutID = UUID().uuidString
+            let workoutID = "\(dateString)_\(UUID().uuidString)"
             let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 guard let self = self else {return}
@@ -310,9 +310,13 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
         selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout.description
         
         DatabaseManager.shared.getAllComments(workout: selectedWorkout) { [weak self] comments in
-            print("found\(comments.count) comments for selected workout")
+            print("found \(comments.count) comments for selected workout")
             DispatchQueue.main.async {
-                self?.commentsLabel.text = comments.count == 0 ? "No comments posted yet" : "Read all \(comments.count) comments"
+                switch comments.count {
+                case 0: self?.commentsLabel.text = "No comments posted yet"
+                case 1: self?.commentsLabel.text = "Read \(comments.count) comment "
+                default: self?.commentsLabel.text = "Read all \(comments.count) comments"
+                }
             }
         }
     }
