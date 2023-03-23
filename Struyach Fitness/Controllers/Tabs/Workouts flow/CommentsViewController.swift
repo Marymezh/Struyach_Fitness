@@ -71,6 +71,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         setupInputBar()
         setupNavbarAndView()
         loadComments(workout: self.workout)
+        setupGestureRecognizer()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -231,21 +232,88 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                  self.messagesCollectionView.reloadData()
          }
      }
+    //MARK: - Methods for editing and deleting comments from local array and Firestore
+    
+    private func setupGestureRecognizer() {
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
+        messagesCollectionView.addGestureRecognizer(longPress)
+    }
+    
+    @objc func handleLongPress(sender: UILongPressGestureRecognizer) {
+        print("Executing function: \(#function)")
+            let location = sender.location(in: messagesCollectionView)
+            if let indexPath = messagesCollectionView.indexPathForItem(at: location) {
+                let selectedMessage = self.commentsArray[indexPath.section]
+                if userName == selectedMessage.sender.displayName {
+                let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
+                
+                let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
+                    guard let self = self else {return}
+      //              let comment = self.commentsArray[indexPath.section]
+                    DatabaseManager.shared.deleteComment(comment: selectedMessage) { success in
+                        if success {
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.reloadData()
+                            }
+                            print("comment is deleted")
+                        } else {
+                            print ("can not delete comment")
+                        }
+                    }
+                }
+                let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
+                    guard let self = self else {return}
+                    let commentVC = CreateNewWorkoutViewController()
+                    commentVC.title = "Edit comment"
+//                    let selectedComment = self.commentsArray[indexPath.section]
+//
+                    switch selectedMessage.kind {
+                    case .text(let textToEdit): commentVC.text = textToEdit
+                    default: break
+                    }
+                    
+                    self.navigationController?.pushViewController(commentVC, animated: true)
+                    commentVC.onWorkoutSave = { text in
+                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text) { success in
+                            if success{
+                                print("Executing function: \(#function)")
+                            } else {
+                                self.showAlert(error: "Unable to update selected comment")
+                            }
+                        }
+                    }
+                }
+                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+                alertController.addAction(editAction)
+                alertController.addAction(deleteAction)
+                alertController.addAction(cancelAction)
+                alertController.view.tintColor = .darkGray
+                present(alertController, animated: true)
+            }
+        }
+    }
+    
+    private func showAlert (error: String) {
+        let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        alert.addAction(cancelAction)
+        
+        self.present(alert, animated: true, completion: nil)
+    }
 }
-
 //MARK: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate
 extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
-
+    
     var currentSender: SenderType {
-       return sender
+        return sender
     }
-
+    
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
-       return commentsArray[indexPath.section]
+        return commentsArray[indexPath.section]
     }
-
+    
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
-       return commentsArray.count
+        return commentsArray.count
     }
     
     func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
@@ -264,7 +332,7 @@ extension CommentsViewController: MessageCellDelegate {
         guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
         
         let comment = commentsArray[indexPath.section]
-  
+        
         switch comment.kind {
         case .photo(let media): guard let imageUrl = media.url else {return}
             let vc = PhotoPresenterViewController(url: imageUrl)
@@ -274,6 +342,9 @@ extension CommentsViewController: MessageCellDelegate {
         }
     }
 }
+
+
+
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         print("executing \(#function)")

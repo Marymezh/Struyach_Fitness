@@ -253,8 +253,7 @@ final class DatabaseManager {
             .collection("comments")
             .order(by: "timestamp", descending: false)
             .getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {print (error?.localizedDescription)
-                    return}
+                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
                 let comments: [Comment] = documents.compactMap { dictionary in
                     guard let senderId = dictionary["senderId"] as? String,
                           let senderName = dictionary["senderName"] as? String,
@@ -266,7 +265,7 @@ final class DatabaseManager {
                           let dateString = dictionary["sentDate"] as? String,
                           let date = self.formatter.date(from: dateString),
                           let workoutId = dictionary["workoutId"] as? String,
-                          let programId = dictionary["programId"] as? String else {print(error?.localizedDescription)
+                          let programId = dictionary["programId"] as? String else {print("unable to create comment")
                         return nil}
                     
                     var kind: MessageKind?
@@ -289,6 +288,56 @@ final class DatabaseManager {
                    completion(comments)
                }
        }
+    
+    public func updateComment(comment: Comment, newDescription: String, completion: @escaping (Bool)->()){
+        print("Executing function: \(#function)")
+        let documentID = comment.programId
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let dbRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(comment.workoutId)
+            .collection("comments")
+            .document(comment.messageId)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["contents"] = newDescription
+            dbRef.setData(data) { error in
+                completion(error == nil)
+            }
+        }
+    }
+    
+    public func deleteComment(comment: Comment, completion: @escaping (Bool)->()){
+        print("Executing function: \(#function)")
+        
+        let documentID = comment.programId
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let commentsRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(comment.workoutId)
+            .collection("comments")
+            .document(comment.messageId)
+        
+        commentsRef.delete() { error in
+            if let error = error {
+                print("Error deleting comment: \(error.localizedDescription)")
+                completion(false)
+            } else {
+                print("comment deleted successfully")
+                completion(true)
+            }
+        }
+    }
     
     public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
         print("Executing function: \(#function)")
