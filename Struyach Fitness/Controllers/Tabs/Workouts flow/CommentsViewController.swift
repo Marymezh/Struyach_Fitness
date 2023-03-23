@@ -9,6 +9,7 @@ import UIKit
 import FirebaseFirestore
 import MessageKit
 import InputBarAccessoryView
+import SDWebImage
 
 class CommentsViewController: MessagesViewController, UITextViewDelegate {
 
@@ -171,12 +172,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     private func postComment(text: String) {
         guard let name = userName else {return}
-        let formatter = DateFormatter()
-        formatter.locale = .current
-        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
-        let date = formatter.string(from: Date())
+//        let formatter = DateFormatter()
+//        formatter.locale = .current
+//        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
+//        let date = formatter.string(from: Date())
         
-        let messageId = "\(name)_\(date)"
+        let messageId = "\(name)_\(UUID().uuidString)"
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
@@ -192,24 +193,24 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         }
         messageInputBar.inputTextView.text = nil
     }
-    private func postPhotoComment(photoURL: String) {
+    private func postPhotoComment(photoUrl: URL) {
         guard let name = userName else {return}
-        let formatter = DateFormatter()
-        formatter.locale = .current
-        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
-        let date = formatter.string(from: Date())
+//        let formatter = DateFormatter()
+//        formatter.locale = .current
+//        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
+//        let date = formatter.string(from: Date())
         
-        let messageId = "\(name)_\(date)"
+        let messageId = "\(name)_\(UUID().uuidString)"
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
         
-        guard let url = URL(string: photoURL),
-        let placeholder = UIImage(systemName: "plus") else {return}
+//        guard let url = URL(string: photoURL),
+        guard let placeholder = UIImage(systemName: "photo") else {return}
         
-        let media = Media(url: url, image: nil, placeholderImage: placeholder, size: .zero)
+        let media = Media(url: photoUrl, image: nil, placeholderImage: placeholder, size: .zero)
         
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
-        
+        print ("new comment with photo is created and sent to the Firestore")
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
             guard let self = self else {return}
             if success {
@@ -248,6 +249,16 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
 
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
        return commentsArray.count
+    }
+    
+    func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        switch message.kind {
+        case .photo(let media):
+            guard let imageUrl = media.url else {return}
+            imageView.sd_setImage(with: imageUrl)
+            
+        default: break
+        }
     }
 //    func currentSender() -> SenderType {
 //        return sender
@@ -330,12 +341,18 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy_MM_dd_HH_mm_ss"
         let dateString = formatter.string(from: date)
-        let imageId = "\(sender.displayName)_\(dateString)"
+        let imageId = "\(sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(dateString)"
         
-        StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout) { [weak self] urlString in
+        StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout) { [weak self] ref in
             guard let self = self else {return}
-            if let safeURL = urlString {
-                self.postPhotoComment(photoURL: safeURL)
+            if let safeRef = ref {
+                StorageManager.shared.downloadUrlForCommentImage(path: safeRef) { url in
+                    guard let safeUrl = url else { print("unable to get safeURL")
+                        return}
+                    self.postPhotoComment(photoUrl: safeUrl)
+                    print("Image is saved to Storage")
+                }
+               
             } else {
                 print ("Error uploading image to Storage")
             }

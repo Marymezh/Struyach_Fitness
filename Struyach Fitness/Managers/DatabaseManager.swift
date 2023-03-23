@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import UIKit
 import MessageKit
 
 final class DatabaseManager {
@@ -189,11 +190,16 @@ final class DatabaseManager {
                .replacingOccurrences(of: "/", with: "_")
                .replacingOccurrences(of: " ", with: "_")
 
-        var commentText = ""
+        var commentContents = ""
 
         switch comment.kind {
-        case .text(let enteredText): commentText = enteredText
-            
+        case .text(let enteredText): commentContents = enteredText
+           
+        case .photo(let mediaItem):
+            if let mediaUrl = mediaItem.url?.absoluteString {
+                    commentContents = mediaUrl
+                print(mediaUrl)
+            }
         default : break
         }
        //for some reasons this lines result in a bug with fetching comments, will come back to this later
@@ -207,7 +213,8 @@ final class DatabaseManager {
             "senderName": comment.sender.displayName,
             "messageId": comment.messageId,
             "sentDate": dateString,
-            "text": commentText,
+            "contents": commentContents,
+            "type": comment.kind.messageKindString, 
 
             "userImage": comment.userImage,
             "programId": comment.programId,
@@ -252,7 +259,8 @@ final class DatabaseManager {
                           let senderName = dictionary["senderName"] as? String,
                           let userImage = dictionary["userImage"] as? Data,
                           let messageId = dictionary["messageId"] as? String,
-                          let text = dictionary["text"] as? String,
+                          let contents = dictionary["contents"] as? String,
+                          let type = dictionary["type"] as? String,
                           let timestamp = dictionary["timestamp"] as? TimeInterval,
                           let dateString = dictionary["sentDate"] as? String,
                           let date = self.formatter.date(from: dateString),
@@ -260,10 +268,21 @@ final class DatabaseManager {
                           let programId = dictionary["programId"] as? String else {print("unable to create comment")
                         return nil}
                     
+                    var kind: MessageKind?
+                    
+                    if type == "photo" {
+                        guard let imageURL = URL(string: contents),
+                        let placeholder = UIImage(systemName: "photo") else {return nil}
+                        let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
+                        kind = .photo(media)
+                    }  else {
+                        kind = .text(contents)
+                    }
+                    guard let finalKind = kind else {return nil}
                     
                     let sender = Sender(senderId: senderId, displayName: senderName)
                     
-                    let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: .text(text), userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
+                    let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
                     return comment
                 }
                    completion(comments)

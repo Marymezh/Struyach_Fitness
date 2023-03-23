@@ -180,7 +180,7 @@ class SelectedProgramViewController: UIViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "EE \n d MMMM \n yyyy"
             let dateString = formatter.string(from: date)
-            let workoutID = "\(dateString)_\(UUID().uuidString)"
+            let workoutID = "\(UUID().uuidString)"
             let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 guard let self = self else {return}

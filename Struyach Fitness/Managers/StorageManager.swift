@@ -25,7 +25,7 @@ final class StorageManager {
             .putData(pngData, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
                     completion(nil)
-                    print(error?.localizedDescription)
+           //         print(error?.localizedDescription)
                     return
                 }
                 completion(imageRef)

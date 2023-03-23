@@ -20,3 +20,15 @@ struct Comment: MessageType {
     let timestamp: TimeInterval
 }
 
+extension MessageKind {
+    var messageKindString: String {
+        switch self {
+        case .text(_): return "text"
+        case .attributedText(_): return "attributed_text"
+        case .photo(_): return "photo"
+        case .video(_): return "video"
+        default: return ""
+        }
+    }
+}
+
