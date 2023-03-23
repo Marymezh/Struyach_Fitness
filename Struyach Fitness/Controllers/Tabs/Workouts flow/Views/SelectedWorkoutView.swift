@@ -80,10 +80,10 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
             backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
-            workoutView.topAnchor.constraint(equalTo: backgroundView.topAnchor, constant: baseInset),
-            workoutView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor, constant: baseInset),
-            workoutView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor, constant: -baseInset),
-            workoutView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor, constant: -baseInset),
+            workoutView.topAnchor.constraint(equalTo: backgroundView.topAnchor, constant: innerInset),
+            workoutView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor, constant: innerInset),
+            workoutView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor, constant: -innerInset),
+            workoutView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor, constant: -innerInset),
 
             workoutDescriptionTextView.topAnchor.constraint(equalTo: workoutView.topAnchor, constant: innerInset),
             workoutDescriptionTextView.leadingAnchor.constraint(equalTo: workoutView.leadingAnchor, constant: innerInset),

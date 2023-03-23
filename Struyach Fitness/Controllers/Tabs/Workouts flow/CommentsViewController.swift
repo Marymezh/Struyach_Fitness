@@ -171,13 +171,13 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
     private func postComment(text: String) {
-        guard let name = userName else {return}
-//        let formatter = DateFormatter()
-//        formatter.locale = .current
-//        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
-//        let date = formatter.string(from: Date())
-        
-        let messageId = "\(name)_\(UUID().uuidString)"
+        let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
+        let date = formatter.string(from: Date())
+        let messageId = "\(senderName)_\(date)"
+//        let messageId = "\(UUID().uuidString)"
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
@@ -194,20 +194,18 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messageInputBar.inputTextView.text = nil
     }
     private func postPhotoComment(photoUrl: URL) {
-        guard let name = userName else {return}
-//        let formatter = DateFormatter()
-//        formatter.locale = .current
-//        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
-//        let date = formatter.string(from: Date())
-        
-        let messageId = "\(name)_\(UUID().uuidString)"
+        let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
+        let date = formatter.string(from: Date())
+        let messageId = "\(senderName)_\(date)"
+//        let messageId = "\(UUID().uuidString)"
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
-        
-//        guard let url = URL(string: photoURL),
+
         guard let placeholder = UIImage(systemName: "photo") else {return}
-        
-        let media = Media(url: photoUrl, image: nil, placeholderImage: placeholder, size: .zero)
+        let media = Media(url: photoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
         
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
         print ("new comment with photo is created and sent to the Firestore")
@@ -228,10 +226,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
              guard let self = self else {return}
              self.commentsArray = comments
              print ("loaded \(self.commentsArray.count) comments")
-             print (self.commentsArray)
-             DispatchQueue.main.async {
                  self.messagesCollectionView.reloadData()
-             }
          }
      }
 }
@@ -336,12 +331,12 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
         picker.dismiss(animated: true)
         
         guard let image = info[.editedImage] as? UIImage,
-        let imageData = image.jpegData(compressionQuality: 0.3) else { return }
-        let date = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy_MM_dd_HH_mm_ss"
-        let dateString = formatter.string(from: date)
-        let imageId = "\(sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(dateString)"
+        let imageData = image.jpegData(compressionQuality: 0.2) else { return }
+//        let date = Date()
+//        let formatter = DateFormatter()
+//        formatter.dateFormat = "yyyy_MM_dd_HH_mm_ss"
+//        let dateString = formatter.string(from: date)
+        let imageId = "\(sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
         
         StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout) { [weak self] ref in
             guard let self = self else {return}

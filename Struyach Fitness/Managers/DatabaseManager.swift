@@ -204,7 +204,7 @@ final class DatabaseManager {
         }
        //for some reasons this lines result in a bug with fetching comments, will come back to this later
 //        formatter.locale = .current
-//        formatter.dateFormat = "dd MM YYYY HH:mm"
+//        formatter.dateFormat = "dd MM YYYY HH:mm ss"
         let dateString = formatter.string(from: comment.sentDate)
 
 
@@ -253,7 +253,8 @@ final class DatabaseManager {
             .collection("comments")
             .order(by: "timestamp", descending: false)
             .getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {print (error?.localizedDescription)
+                    return}
                 let comments: [Comment] = documents.compactMap { dictionary in
                     guard let senderId = dictionary["senderId"] as? String,
                           let senderName = dictionary["senderName"] as? String,
@@ -265,7 +266,7 @@ final class DatabaseManager {
                           let dateString = dictionary["sentDate"] as? String,
                           let date = self.formatter.date(from: dateString),
                           let workoutId = dictionary["workoutId"] as? String,
-                          let programId = dictionary["programId"] as? String else {print("unable to create comment")
+                          let programId = dictionary["programId"] as? String else {print(error?.localizedDescription)
                         return nil}
                     
                     var kind: MessageKind?
@@ -309,7 +310,8 @@ final class DatabaseManager {
                               let senderName = dictionary["senderName"] as? String,
                               let userImage = dictionary["userImage"] as? Data,
                               let messageId = dictionary["messageId"] as? String,
-                              let text = dictionary["text"] as? String,
+                              let contents = dictionary["contents"] as? String,
+                              let type = dictionary["type"] as? String,
                               let timestamp = dictionary["timestamp"] as? TimeInterval,
                               let dateString = dictionary["sentDate"] as? String,
                               let date = self.formatter.date(from: dateString),
@@ -317,14 +319,24 @@ final class DatabaseManager {
                               let programId = dictionary["programId"] as? String else {print("unable to create comment")
                             return nil}
                         
+                        var kind: MessageKind?
+                        if type == "photo" {
+                            guard let imageURL = URL(string: contents),
+                            let placeholder = UIImage(systemName: "photo") else {return nil}
+                            let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
+                            kind = .photo(media)
+                        }  else {
+                            kind = .text(contents)
+                        }
+                        guard let finalKind = kind else {return nil}
                         
                         let sender = Sender(senderId: senderId, displayName: senderName)
                         
-                        let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: .text(text), userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
+                        let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
                         return comment
                     }
-                    completion(comments)
-                }
+                       completion(comments)
+           }
         return listener
         }
 //
