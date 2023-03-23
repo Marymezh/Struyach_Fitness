@@ -90,6 +90,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private func setupMessageCollectionView() {
         messagesCollectionView.toAutoLayout()
         messagesCollectionView.backgroundColor = .customMediumGray
+        messagesCollectionView.messageCellDelegate = self
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
@@ -125,13 +126,14 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         actionSheet.addAction(UIAlertAction(title: "Photo", style: .default, handler: { [weak self] _ in
             self?.showImagePickerController()
         }))
-//        actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
-//            <#code#>
-//        }))
-//        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: { [weak self] _ in
-//            <#code#>
-//        }))
+        actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
+            print ("to be implemented")
+        }))
+        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: { [weak self] _ in
+            print ("to be implemented")
+        }))
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        actionSheet.view.tintColor = .darkGray
         present(actionSheet, animated: true)
     }
     
@@ -177,9 +179,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         formatter.dateFormat = "dd MM YYYY HH:mm:ss"
         let date = formatter.string(from: Date())
         let messageId = "\(senderName)_\(date)"
-//        let messageId = "\(UUID().uuidString)"
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
+        
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
         
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
@@ -255,57 +257,23 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
         default: break
         }
     }
-//    func currentSender() -> SenderType {
-//        return sender
-//    }
-//
-//    func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
-//        let comment = commentsArray[indexPath.section]
-//        return comment
-//    }
-//
-//    func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
-//        return commentsArray.count
-//    }
-//
-//    func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-//        let comment = commentsArray[indexPath.section]
-//        let dateString = DateFormatter.localizedString(from: comment.sentDate, dateStyle: .medium, timeStyle: .short)
-//        let senderName = comment.sender.displayName
-//        let attributedString = NSAttributedString(string: "\(senderName) - \(dateString)", attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 12)])
-//        return attributedString
-//    }
-    
-//    func cellBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-//        return nil
-//    }
-//
-//    func messageTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-//        return nil
-//    }
-//
-//    func messageBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-//        return nil
-//    }
-//
-//    func messageStyle(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageStyle {
-//        let comment = commentsArray[indexPath.section]
-//        if comment.sender.senderId == userEmail {
-//            return .bubbleTail(.bottomRight, .curved)
-//        } else {
-//            return .bubbleTail(.bottomLeft, .curved)
-//        }
-//    }
-//
-//    func messageHeaderView(for indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageReusableView? {
-//        return nil
-//    }
-//
-//    func messageFooterView(for indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageReusableView? {
-//        return nil
-//    }
 }
 
+extension CommentsViewController: MessageCellDelegate {
+    func didTapImage(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
+        
+        let comment = commentsArray[indexPath.section]
+  
+        switch comment.kind {
+        case .photo(let media): guard let imageUrl = media.url else {return}
+            let vc = PhotoPresenterViewController(url: imageUrl)
+            self.navigationController?.present(vc, animated: true)
+        default:break
+            
+        }
+    }
+}
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         print("executing \(#function)")
