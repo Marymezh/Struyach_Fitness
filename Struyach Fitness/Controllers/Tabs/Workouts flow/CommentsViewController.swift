@@ -17,6 +17,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     var commentsArray: [Comment] = []
     private var commentsListener: ListenerRegistration?
     
+    var onImagePick:(([UIImagePickerController.InfoKey : Any])-> Void)?
+    
     private let userName = UserDefaults.standard.string(forKey: "userName")
     private let userImage = UserDefaults.standard.data(forKey: "userImage")
     private let userEmail = UserDefaults.standard.string(forKey: "email")
@@ -125,12 +127,36 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private func presentInputOptions() {
         let actionSheet = UIAlertController(title: "Attach media", message: nil, preferredStyle: .actionSheet)
         actionSheet.addAction(UIAlertAction(title: "Photo", style: .default, handler: { [weak self] _ in
-            self?.showImagePickerController()
+            guard let self = self else {return}
+            let picker = UIImagePickerController()
+            picker.allowsEditing = true
+            picker.delegate = self
+            picker.sourceType = .photoLibrary
+            self.present(picker, animated: true)
+            self.onImagePick = {info in
+                guard let image = info[.editedImage] as? UIImage,
+                let imageData = image.jpegData(compressionQuality: 0.2) else { return }
+                let imageId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
+                
+                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
+                    guard let self = self else {return}
+                    if let safeRef = ref {
+                        StorageManager.shared.downloadUrlForCommentImage(path: safeRef) { url in
+                            guard let safeUrl = url else { print("unable to get safeURL")
+                                return}
+                            self.postPhotoComment(photoUrl: safeUrl)
+                            print("Image is saved to Storage")
+                        }
+                    } else {
+                        print ("Error uploading image to Storage")
+                    }
+                }
+            }
         }))
-        actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
+        actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { _ in
             print ("to be implemented")
         }))
-        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: { [weak self] _ in
+        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: {  _ in
             print ("to be implemented")
         }))
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -217,11 +243,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             if success {
                 self.loadComments(workout: self.workout)
                 print ("successfully send photo message ")
+                self.messagesCollectionView.scrollToLastItem()
             } else {
                 print ("cant save comment")
             }
         }
-        messageInputBar.inputTextView.text = nil
     }
     
     private func loadComments(workout: Workout) {
@@ -229,7 +255,10 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
              guard let self = self else {return}
              self.commentsArray = comments
              print ("loaded \(self.commentsArray.count) comments")
+             DispatchQueue.main.async {
                  self.messagesCollectionView.reloadData()
+             }
+                 
          }
      }
     //MARK: - Methods for editing and deleting comments from local array and Firestore
@@ -249,7 +278,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 
                 let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
                     guard let self = self else {return}
-      //              let comment = self.commentsArray[indexPath.section]
                     DatabaseManager.shared.deleteComment(comment: selectedMessage) { success in
                         if success {
                             DispatchQueue.main.async {
@@ -263,34 +291,70 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 }
                 let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
                     guard let self = self else {return}
-                    let commentVC = CreateNewWorkoutViewController()
-                    commentVC.title = "Edit comment"
-//                    let selectedComment = self.commentsArray[indexPath.section]
-//
+ 
                     switch selectedMessage.kind {
-                    case .text(let textToEdit): commentVC.text = textToEdit
-                    default: break
-                    }
-                    
-                    self.navigationController?.pushViewController(commentVC, animated: true)
-                    commentVC.onWorkoutSave = { text in
-                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text) { success in
-                            if success{
-                                print("Executing function: \(#function)")
-                            } else {
-                                self.showAlert(error: "Unable to update selected comment")
+                    case .text(let textToEdit):
+                        let commentVC = CreateNewWorkoutViewController()
+                        commentVC.title = "Edit comment"
+                        commentVC.text = textToEdit
+                        self.navigationController?.pushViewController(commentVC, animated: true)
+                        commentVC.onWorkoutSave = { text in
+                            DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text) { success in
+                                if success{
+                                    DispatchQueue.main.async {
+                                        self.messagesCollectionView.reloadData()
+                                        print("text comment is updated successfully")
+                                    }
+                                } else {
+                                    self.showAlert(error: "Unable to update selected text comment")
+                                }
                             }
                         }
+                        
+                    case .photo(_):
+                        let picker = UIImagePickerController()
+                        picker.allowsEditing = true
+                        picker.delegate = self
+                        picker.sourceType = .photoLibrary
+                        self.present(picker, animated: true)
+                        
+                        self.onImagePick = { [weak self] info in
+                            guard let self = self, let image = info[.editedImage] as? UIImage else { return }
+                            
+                            guard let imageData = image.jpegData(compressionQuality: 0.2) else { return }
+                            let imageId = "\(selectedMessage.messageId)_\(UUID().uuidString)"
+                            
+                            StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
+                                guard let self = self, let safeRef = ref else { return }
+                                
+                                StorageManager.shared.downloadUrlForCommentImage(path: safeRef) { url in
+                                    guard let safeUrl = url else {return}
+                                    
+                                    let mediaUrl = safeUrl.absoluteString
+                                    DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                        if success {
+                                            DispatchQueue.main.async {
+                                                self.messagesCollectionView.reloadData()
+                                            }
+                                            print("photo comment is updated successfully")
+                                        } else {
+                                            self.showAlert(error: "Unable to update selected photo comment")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    default: break
                     }
                 }
-                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-                alertController.addAction(editAction)
-                alertController.addAction(deleteAction)
-                alertController.addAction(cancelAction)
-                alertController.view.tintColor = .darkGray
-                present(alertController, animated: true)
+                    let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+                    alertController.addAction(editAction)
+                    alertController.addAction(deleteAction)
+                    alertController.addAction(cancelAction)
+                    alertController.view.tintColor = .darkGray
+                    present(alertController, animated: true)
+                }
             }
-        }
     }
     
     private func showAlert (error: String) {
@@ -354,13 +418,6 @@ extension CommentsViewController: InputBarAccessoryViewDelegate {
 
 //MARK: - UIImagePickerControllerDelegate methods
 extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    private func showImagePickerController() {
-        let picker = UIImagePickerController()
-        picker.allowsEditing = true
-        picker.delegate = self
-        picker.sourceType = .photoLibrary
-        self.present(picker, animated: true)
-    }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
@@ -368,29 +425,7 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true)
-        
-        guard let image = info[.editedImage] as? UIImage,
-        let imageData = image.jpegData(compressionQuality: 0.2) else { return }
-//        let date = Date()
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "yyyy_MM_dd_HH_mm_ss"
-//        let dateString = formatter.string(from: date)
-        let imageId = "\(sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
-        
-        StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout) { [weak self] ref in
-            guard let self = self else {return}
-            if let safeRef = ref {
-                StorageManager.shared.downloadUrlForCommentImage(path: safeRef) { url in
-                    guard let safeUrl = url else { print("unable to get safeURL")
-                        return}
-                    self.postPhotoComment(photoUrl: safeUrl)
-                    print("Image is saved to Storage")
-                }
-               
-            } else {
-                print ("Error uploading image to Storage")
-            }
-        }
+        self.onImagePick?(info)
     }
 }
 

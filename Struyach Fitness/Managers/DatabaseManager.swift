@@ -182,7 +182,7 @@ final class DatabaseManager {
         return listener
     }
     
-    //MARK: - Adding, fetching and listen to the changes in comments
+    //MARK: - Adding, fetching, editing, deleting and listen to the changes in comments
     public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
         print("posting comment to Firestore")
 
@@ -279,9 +279,7 @@ final class DatabaseManager {
                         kind = .text(contents)
                     }
                     guard let finalKind = kind else {return nil}
-                    
                     let sender = Sender(senderId: senderId, displayName: senderName)
-                    
                     let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
                     return comment
                 }

@@ -56,8 +56,6 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     
     private func setupTextView() {
         if text != "" {
-//            let beginning = workoutDescriptionTextView.beginningOfDocument
-//            workoutDescriptionTextView.selectedTextRange = workoutDescriptionTextView.textRange(from: beginning, to: beginning)
             workoutDescriptionTextView.text = text
             workoutDescriptionTextView.linkTextAttributes = [.foregroundColor: UIColor.systemBlue]
             workoutDescriptionTextView.isSelectable = true
