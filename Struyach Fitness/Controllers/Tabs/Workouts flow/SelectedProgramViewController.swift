@@ -384,8 +384,12 @@ extension SelectedProgramViewController: UISearchBarDelegate {
             filteredWorkouts = listOfWorkouts
             selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout?.description
         } else {
-            filteredWorkouts = listOfWorkouts.filter { $0.description.contains(searchQuery)}
-            selectedWorkoutView.workoutDescriptionTextView.text = "Select from search result"
+            filteredWorkouts = listOfWorkouts.filter { $0.description.localizedCaseInsensitiveContains(searchQuery)}
+            if filteredWorkouts.isEmpty == true {
+                selectedWorkoutView.workoutDescriptionTextView.text = "Ooops! No workouts were found! Change your query and try again."
+            } else {
+            selectedWorkoutView.workoutDescriptionTextView.text = "Select workout from search results."
+            }
         }
         workoutsCollection.reloadData()
         
