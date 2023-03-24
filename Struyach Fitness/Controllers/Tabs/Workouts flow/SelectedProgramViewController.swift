@@ -60,10 +60,12 @@ class SelectedProgramViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        guard let title = title else {return}
         searchBar.delegate = self
         setupNavigationAndTabBar()
         setupCollectionView()
         setupSubviews()
+        loadListOfWorkouts(for: title)
        
 #if Admin
         setupAdminFunctionality()
@@ -75,7 +77,6 @@ class SelectedProgramViewController: UIViewController {
         print("Executing function: \(#function)")
         guard let title = title else {return}
         navigationController?.navigationBar.prefersLargeTitles = true
-        loadListOfWorkouts(for: title)
         listener = DatabaseManager.shared.addWorkoutsListener(for: title) { [weak self] workouts in
             guard let self = self else { return }
             self.listOfWorkouts = workouts
@@ -119,8 +120,7 @@ class SelectedProgramViewController: UIViewController {
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
             searchBar.heightAnchor.constraint(equalToConstant: 44),
-            
-            
+        
             workoutsCollection.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 15),
             workoutsCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             workoutsCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -183,7 +183,7 @@ class SelectedProgramViewController: UIViewController {
         }
     }
     
-    // MARK: - Adding new workout
+    // MARK: - Adding new workout and loading list of workouts
     // only Admin user can add new workout
     @objc private func addNewWorkout() {
         print("Executing function: \(#function)")
@@ -202,6 +202,8 @@ class SelectedProgramViewController: UIViewController {
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 guard let self = self else {return}
                 if success {
+                    self.loadListOfWorkouts(for: self.title!)
+  //                  self.workoutsCollection.reloadData()
                     print("workout is added to database - \(newWorkout)")
                     print("Executing function: \(#function)")
                 } else {
@@ -269,6 +271,9 @@ class SelectedProgramViewController: UIViewController {
                 workoutVC.onWorkoutSave = { text in
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { success in
                         if success{
+                            self.workoutsCollection.reloadData()
+                            self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+                            self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
                             print("Executing function: \(#function)")
                         } else {
                             self.showAlert(error: "Unable to update selected workout")
