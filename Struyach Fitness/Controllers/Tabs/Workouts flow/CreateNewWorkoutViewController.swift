@@ -55,25 +55,16 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     }
     
     private func setupTextView() {
-        #if Admin
         if text != "" {
-            workoutDescriptionTextView.text = text
-            workoutDescriptionTextView.isEditable = true
-            let beginning = workoutDescriptionTextView.beginningOfDocument
-            workoutDescriptionTextView.selectedTextRange = workoutDescriptionTextView.textRange(from: beginning, to: beginning)
-            
-        }
-        #else
-        if text != "" {
+//            let beginning = workoutDescriptionTextView.beginningOfDocument
+//            workoutDescriptionTextView.selectedTextRange = workoutDescriptionTextView.textRange(from: beginning, to: beginning)
             workoutDescriptionTextView.text = text
             workoutDescriptionTextView.linkTextAttributes = [.foregroundColor: UIColor.systemBlue]
             workoutDescriptionTextView.isSelectable = true
-            workoutDescriptionTextView.isEditable = false
+            workoutDescriptionTextView.isEditable = true
             workoutDescriptionTextView.isUserInteractionEnabled = true
             workoutDescriptionTextView.dataDetectorTypes = .link
-
         }
-        #endif
     }
     
     private func setupSubviews() {
