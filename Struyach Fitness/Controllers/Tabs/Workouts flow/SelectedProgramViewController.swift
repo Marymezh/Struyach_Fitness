@@ -20,6 +20,7 @@ class SelectedProgramViewController: UIViewController {
     private var listener: ListenerRegistration?
     private var baseInset: CGFloat { return 15 }
     private var selectedWorkout: Workout?
+    private var searchBarConstraint: NSLayoutConstraint?
    
     
     private lazy var addCommentButton: UIButton = {
@@ -39,21 +40,21 @@ class SelectedProgramViewController: UIViewController {
         return label
     }()
     
-    private let searchBar: UISearchBar = {
+    private lazy var searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.placeholder = "Search for workouts"
         searchBar.searchBarStyle = .minimal
         searchBar.backgroundColor = .customDarkGray
-        searchBar.searchTextField.textColor = .white
-        searchBar.barTintColor = .white
-        searchBar.tintColor = .white
+        searchBar.searchTextField.textColor = .customDarkGray
+        searchBar.searchTextField.backgroundColor = .white
+        searchBar.barTintColor = .customDarkGray
+        searchBar.tintColor = .customDarkGray
         searchBar.clipsToBounds = true
         searchBar.showsSearchResultsButton = true
         searchBar.isHidden = true
         searchBar.toAutoLayout()
         return searchBar
     }()
-
     
     //TODO: - Access data offline - when is not connected to the WEB, first give a notification, cache all the data to a copy of Firestore database and sincronize when the device is online again. read here https://firebase.google.com/docs/firestore/manage-data/enable-offline
     
@@ -102,6 +103,7 @@ class SelectedProgramViewController: UIViewController {
     
     private func setupNavigationAndTabBar() {
         navigationController?.navigationBar.tintColor = .systemGreen
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(toggleSearchBar))
         tabBarController?.tabBar.isHidden = true
     }
     
@@ -110,11 +112,14 @@ class SelectedProgramViewController: UIViewController {
         selectedWorkoutView.toAutoLayout()
         view.addSubviews(searchBar, workoutsCollection, selectedWorkoutView, addCommentButton, commentsLabel)
         
+        searchBarConstraint = searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -44)
+        
         let constraints = [
-            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchBarConstraint!,
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            searchBar.heightAnchor.constraint(lessThanOrEqualToConstant: 44),
+            searchBar.heightAnchor.constraint(equalToConstant: 44),
+            
             
             workoutsCollection.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 15),
             workoutsCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -155,15 +160,27 @@ class SelectedProgramViewController: UIViewController {
     
     private func setupAdminFunctionality (){
         setupGuestureRecognizer()
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewWorkout))
+        self.navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewWorkout)),
+            UIBarButtonItem(image: UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(toggleSearchBar))
+        ]
     }
-    
     
     @objc private func pushCommentsVC() {
         guard let selectedWorkout = selectedWorkout else { print("workout is not selected")
             return }
         let commentsVC = CommentsViewController(workout: selectedWorkout)
         navigationController?.pushViewController(commentsVC, animated: true)
+    }
+    
+    @objc private func toggleSearchBar() {
+        searchBar.isHidden = !searchBar.isHidden
+        
+        if searchBar.isHidden {
+            searchBarConstraint?.constant = -searchBar.frame.size.height
+        } else {
+            searchBarConstraint?.constant = 0
+        }
     }
     
     // MARK: - Adding new workout
