@@ -17,7 +17,6 @@ class SelectedProgramViewController: UIViewController {
     private let selectedWorkoutView = SelectedWorkoutView()
     private let workoutsCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var selectedIndexPath: IndexPath?
-    private var listener: ListenerRegistration?
     private var baseInset: CGFloat { return 15 }
     private var selectedWorkout: Workout?
     private var searchBarConstraint: NSLayoutConstraint?
@@ -60,13 +59,11 @@ class SelectedProgramViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        guard let title = title else {return}
+
         searchBar.delegate = self
         setupNavigationAndTabBar()
         setupCollectionView()
         setupSubviews()
-        loadListOfWorkouts(for: title)
-       
 #if Admin
         setupAdminFunctionality()
 #endif
@@ -75,29 +72,16 @@ class SelectedProgramViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("Executing function: \(#function)")
+        
         guard let title = title else {return}
-        navigationController?.navigationBar.prefersLargeTitles = true
-        listener = DatabaseManager.shared.addWorkoutsListener(for: title) { [weak self] workouts in
-            guard let self = self else { return }
-            self.listOfWorkouts = workouts
-            self.filteredWorkouts = self.listOfWorkouts
-            DispatchQueue.main.async {
-                self.workoutsCollection.reloadData()
-                if let selectedIndexPath = self.selectedIndexPath {
-                       self.workoutsCollection.reloadItems(at: [selectedIndexPath])
-                   }
-            }
-        }
+        loadListOfWorkouts(for: title)
+
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         print("Executing function: \(#function)")
-        listener?.remove()
-        print ("listener is removed")
         searchBarCancelButtonClicked(searchBar)
-        
-        
     }
     
     //MARK: - Methods to setup Navigation Bar, TableView and load workout data
@@ -200,12 +184,10 @@ class SelectedProgramViewController: UIViewController {
             let workoutID = "\(UUID().uuidString)"
             let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
+                print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
-                    self.loadListOfWorkouts(for: self.title!)
-  //                  self.workoutsCollection.reloadData()
                     print("workout is added to database - \(newWorkout)")
-                    print("Executing function: \(#function)")
                 } else {
                     self.showAlert(error: "Unable to add new workout for \(title)")
                 }
@@ -220,16 +202,25 @@ class SelectedProgramViewController: UIViewController {
             guard let self = self else {return}
             self.listOfWorkouts = workouts
             self.filteredWorkouts = self.listOfWorkouts
+         
             DispatchQueue.main.async {
                 if self.listOfWorkouts.isEmpty {
-                    print("no workouts")
-                    self.selectedWorkoutView.workoutDescriptionTextView.text = "NO WORKOUTS ADDED YET"
-                } else {
                     self.workoutsCollection.reloadData()
-                    let indexPath = IndexPath(row: 0, section: 0)
-                    self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
-                    self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-                    print("workouts loaded")
+                    print("no workouts")
+                    self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
+                } else {
+                    if self.selectedIndexPath != nil {
+                        self.workoutsCollection.reloadData()
+                        self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
+                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
+                        print("select workout at selected indexPath")
+                    } else {
+                        self.workoutsCollection.reloadData()
+                        let indexPath = IndexPath(row: 0, section: 0)
+                        self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
+                        print("select first item in collection")
+                    }
                 }
             }
         }
@@ -251,9 +242,18 @@ class SelectedProgramViewController: UIViewController {
                 let workout = self.listOfWorkouts[indexPath.item]
                 DatabaseManager.shared.deleteWorkout(workout: workout) { success in
                     if success {
-                        DispatchQueue.main.async {
+                        DatabaseManager.shared.getAllWorkouts(for: workout.programID) { [weak self] workouts in
+                            print("Executing function: \(#function)")
+                            guard let self = self else {return}
+                            self.listOfWorkouts = workouts
+                            self.filteredWorkouts = self.listOfWorkouts
                             self.workoutsCollection.reloadData()
-                            self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout is successfully deleted"
+                            
+                            if self.listOfWorkouts.isEmpty {
+                                self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
+                            } else {
+                                self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout successfully deleted"
+                            }
                         }
                         print("workout is deleted")
                     } else {
@@ -271,10 +271,9 @@ class SelectedProgramViewController: UIViewController {
                 workoutVC.onWorkoutSave = { text in
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { success in
                         if success{
-                            self.workoutsCollection.reloadData()
-                            self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
-                            self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-                            print("Executing function: \(#function)")
+                            print("workout is successfully updated")
+                            self.selectedWorkoutView.workoutDescriptionTextView.text = text
+                          //  self.loadListOfWorkouts(for: selectedWorkout.programID)
                         } else {
                             self.showAlert(error: "Unable to update selected workout")
                         }
@@ -326,7 +325,10 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
         }
         
         //   let selectedWorkout = listOfWorkouts[indexPath.item]
-        let selectedWorkout = filteredWorkouts[selectedIndexPath!.item]
+        guard let safeIndexPath = selectedIndexPath else {print ("no index path")
+            return
+        }
+        let selectedWorkout = filteredWorkouts[safeIndexPath.item]
         self.selectedWorkout = selectedWorkout
         selectedWorkoutView.randomizeBackgroungImages()
         selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout.description
