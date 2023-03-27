@@ -152,35 +152,35 @@ final class DatabaseManager {
         }
     }
     
-    func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
-        print("Executing function: \(#function)")
-        
-        let documentID = programName
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: " ", with: "_")
-        
-        let listener = database
-            .collection("programs")
-            .document(documentID)
-            .collection("workouts")
-            .order(by: "timestamp", descending: true)
-            .addSnapshotListener { (snapshot, error) in
-            guard let snapshot = snapshot else {
-                print("Error fetching workouts: \(error?.localizedDescription ?? "unknown error")")
-                return
-            }
-            do {
-                let workouts = try snapshot.documents.compactMap { document -> Workout? in
-                    let workout = try document.data(as: Workout.self)
-                    return workout
-                }
-                completion(workouts)
-            } catch {
-                print("Error decoding workouts: \(error.localizedDescription)")
-            }
-        }
-        return listener
-    }
+//    func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
+//        print("Executing function: \(#function)")
+//
+//        let documentID = programName
+//            .replacingOccurrences(of: "/", with: "_")
+//            .replacingOccurrences(of: " ", with: "_")
+//
+//        let listener = database
+//            .collection("programs")
+//            .document(documentID)
+//            .collection("workouts")
+//            .order(by: "timestamp", descending: true)
+//            .addSnapshotListener { (snapshot, error) in
+//            guard let snapshot = snapshot else {
+//                print("Error fetching workouts: \(error?.localizedDescription ?? "unknown error")")
+//                return
+//            }
+//            do {
+//                let workouts = try snapshot.documents.compactMap { document -> Workout? in
+//                    let workout = try document.data(as: Workout.self)
+//                    return workout
+//                }
+//                completion(workouts)
+//            } catch {
+//                print("Error decoding workouts: \(error.localizedDescription)")
+//            }
+//        }
+//        return listener
+//    }
     
     //MARK: - Adding, fetching, editing, deleting and listen to the changes in comments
     public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
@@ -199,6 +199,10 @@ final class DatabaseManager {
             if let mediaUrl = mediaItem.url?.absoluteString {
                     commentContents = mediaUrl
                 print(mediaUrl)
+            }
+        case .video(let mediaItem):
+            if let mediaUrl = mediaItem.url?.absoluteString {
+                commentContents = mediaUrl
             }
         default : break
         }
@@ -270,14 +274,21 @@ final class DatabaseManager {
                     
                     var kind: MessageKind?
                     
-                    if type == "photo" {
+                    switch type {
+                    case "photo":
                         guard let imageURL = URL(string: contents),
                         let placeholder = UIImage(systemName: "photo") else {return nil}
                         let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
                         kind = .photo(media)
-                    }  else {
-                        kind = .text(contents)
+                    case "video":
+                        guard let videoURL = URL(string: contents),
+                        let placeholder = UIImage(systemName: "video.fill") else {return nil}
+                        let media = Media(url: videoURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
+                        kind = .video(media)
+                    case "text": kind = .text(contents)
+                    default: break
                     }
+
                     guard let finalKind = kind else {return nil}
                     let sender = Sender(senderId: senderId, displayName: senderName)
                     let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)

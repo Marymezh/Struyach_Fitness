@@ -126,12 +126,22 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     private func presentInputOptions() {
         let actionSheet = UIAlertController(title: "Attach media", message: nil, preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self]_ in
+            guard let self = self else {return}
+            let picker = UIImagePickerController()
+            picker.allowsEditing = true
+            picker.delegate = self
+            picker.sourceType = .camera
+            picker.mediaTypes = ["public.image", "public.movie"]
+            self.present(picker, animated: true)
+        }))
         actionSheet.addAction(UIAlertAction(title: "Photo", style: .default, handler: { [weak self] _ in
             guard let self = self else {return}
             let picker = UIImagePickerController()
             picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .photoLibrary
+            picker.mediaTypes = ["public.image"]
             self.present(picker, animated: true)
             self.onImagePick = {info in
                 guard let image = info[.editedImage] as? UIImage,
@@ -141,7 +151,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
                     guard let self = self else {return}
                     if let safeRef = ref {
-                        StorageManager.shared.downloadUrlForCommentImage(path: safeRef) { url in
+                        StorageManager.shared.downloadUrl(path: safeRef) { url in
                             guard let safeUrl = url else { print("unable to get safeURL")
                                 return}
                             self.postPhotoComment(photoUrl: safeUrl)
@@ -153,8 +163,33 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 }
             }
         }))
-        actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { _ in
-            print ("to be implemented")
+        actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
+            guard let self = self else {return}
+            let picker = UIImagePickerController()
+            picker.allowsEditing = true
+            picker.delegate = self
+            picker.sourceType = .photoLibrary
+            picker.mediaTypes = ["public.movie"]
+            picker.videoQuality = .typeMedium
+            self.present(picker, animated: true)
+            self.onImagePick = { info in
+                guard let videoURL = info[.mediaURL] as? URL else {return}
+                let videoId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
+                StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoURL: videoURL, workout: self.workout) { [weak self] ref in
+                    guard let self = self else {return}
+                    if let safeRef = ref {
+                        StorageManager.shared.downloadUrl(path: safeRef) { url in
+                            guard let safeUrl = url else { print("unable to get safeURL")
+                                return}
+                            self.postVideoComment(videoUrl: safeUrl)
+                            print("Video is saved to Storage")
+                        }
+                    } else {
+                        print ("Error uploading image to Storage")
+                    }
+                }
+                
+            }
         }))
         actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: {  _ in
             print ("to be implemented")
@@ -242,7 +277,33 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             guard let self = self else {return}
             if success {
                 self.loadComments(workout: self.workout)
-                print ("successfully send photo message ")
+                print ("successfully load photo comment")
+                self.messagesCollectionView.scrollToLastItem()
+            } else {
+                print ("cant save comment")
+            }
+        }
+    }
+    private func postVideoComment(videoUrl: URL) {
+        let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "dd MM YYYY HH:mm:ss"
+        let date = formatter.string(from: Date())
+        let messageId = "\(senderName)_\(date)"
+        guard let userImage = self.userImage else {return}
+        let timestamp = Date().timeIntervalSince1970
+
+        guard let placeholder = UIImage(systemName: "video.fill") else {return}
+        let media = Media(url: videoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
+        
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
+        print ("new comment with video is created and sent to the Firestore")
+        DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+            guard let self = self else {return}
+            if success {
+                self.loadComments(workout: self.workout)
+                print ("successfully upload video message ")
                 self.messagesCollectionView.scrollToLastItem()
             } else {
                 print ("cant save comment")
@@ -327,7 +388,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
                                 guard let self = self, let safeRef = ref else { return }
                                 
-                                StorageManager.shared.downloadUrlForCommentImage(path: safeRef) { url in
+                                StorageManager.shared.downloadUrl(path: safeRef) { url in
                                     guard let safeUrl = url else {return}
                                     
                                     let mediaUrl = safeUrl.absoluteString

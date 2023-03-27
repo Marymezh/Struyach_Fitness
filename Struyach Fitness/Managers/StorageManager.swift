@@ -25,30 +25,28 @@ final class StorageManager {
             .putData(pngData, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
                     completion(nil)
-           //         print(error?.localizedDescription)
+                    //         print(error?.localizedDescription)
                     return
                 }
                 completion(imageRef)
             }
     }
     
-    public func uploadVideoURLForComment(email: String, video: URL?, completion: @escaping (Bool)->()) {
-        
-    }
-    
-    public func downloadUrlForCommentImage(path: String, completion: @escaping (URL?)->()){
-        container.reference(withPath: path)
-            .downloadURL { url, _ in
-                completion(url)
+    public func uploadVideoURLForComment(videoID: String, videoURL: URL?, workout: Workout, completion: @escaping (String?)->()) {
+        guard let safeURL = videoURL else {return}
+        let videoRef = "comments_video/\(workout.programID)/\(videoID)_video.mov"
+        container
+            .reference(withPath: videoRef)
+            .putFile(from: safeURL, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(nil)
+                    //         print(error?.localizedDescription)
+                    return
+                }
+                completion(videoRef)
             }
     }
     
-    public func downloadUrlForCommentVideo(path: String, completion: @escaping (URL?)->()){
-        container.reference(withPath: path)
-            .downloadURL { url, _ in
-                completion(url)
-            }
-    }
     
     public func uploadUserProfilePicture(email: String, image: Data?, completion: @escaping (Bool)->()) {
         let path = email
@@ -67,13 +65,6 @@ final class StorageManager {
             }
     }
     
-    public func downloadUrlForProfilePicture(path: String, completion: @escaping (URL?)->()){
-        container.reference(withPath: path)
-            .downloadURL { url, _ in
-                completion(url)
-            }
-    }
-
     public func uploadUserPersonalRecords(email: String, weights: [String]?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
@@ -92,7 +83,7 @@ final class StorageManager {
             }
     }
     
-    public func downloadUrlForUserRecords(path: String, completion: @escaping (URL?)->()){
+    public func downloadUrl(path: String, completion: @escaping (URL?)->()){
         container.reference(withPath: path)
             .downloadURL { url, _ in
                 completion(url)

@@ -70,7 +70,7 @@ class ProfileTableViewController: UITableViewController {
                 UserDefaults.standard.set(user.name, forKey: "userName")
                 self?.headerView.userEmailLabel.text = user.email
                 guard let ref = user.profilePictureRef else {return}
-                StorageManager.shared.downloadUrlForProfilePicture(path: ref) { url in
+                StorageManager.shared.downloadUrl(path: ref) { url in
                     guard let url = url else {return}
                     let task = URLSession.shared.dataTask(with: url) { data, _, _ in
                         guard let data = data else {return}
@@ -91,7 +91,7 @@ class ProfileTableViewController: UITableViewController {
         DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
             guard let user = user, let self = self else {return}
             guard let ref = user.personalRecords else {return}
-            StorageManager.shared.downloadUrlForUserRecords(path: ref) { url in
+            StorageManager.shared.downloadUrl(path: ref) { url in
                 guard let url = url else {return}
                 let task = URLSession.shared.dataTask(with: url) { data, _, _ in
                     guard let data = data else {return}
