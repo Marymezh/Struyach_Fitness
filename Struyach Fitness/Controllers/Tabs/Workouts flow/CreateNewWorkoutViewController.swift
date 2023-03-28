@@ -16,7 +16,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     var onWorkoutSave: ((String) -> Void)?
     let workoutDescriptionTextView: UITextView = {
         let textView = UITextView()
-        textView.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        textView.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         textView.textColor = .black
         textView.tintColor = .black
         textView.isScrollEnabled = true 

@@ -41,7 +41,7 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
     let workoutDescriptionTextView: UITextView = {
         let textView = UITextView()
         textView.sizeToFit()
-        textView.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        textView.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         textView.textColor = .black
         textView.textAlignment = .left
         textView.isEditable = false
