@@ -282,7 +282,7 @@ final class DatabaseManager {
                         kind = .photo(media)
                     case "video":
                         guard let videoURL = URL(string: contents),
-                        let placeholder = UIImage(systemName: "video.fill") else {return nil}
+                              let placeholder = UIImage(named: "general") else {return nil}
                         let media = Media(url: videoURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
                         kind = .video(media)
                     case "text": kind = .text(contents)

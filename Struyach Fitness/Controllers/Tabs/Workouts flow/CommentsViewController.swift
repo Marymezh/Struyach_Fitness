@@ -10,6 +10,9 @@ import FirebaseFirestore
 import MessageKit
 import InputBarAccessoryView
 import SDWebImage
+import AVFoundation
+import AVKit
+
 
 class CommentsViewController: MessagesViewController, UITextViewDelegate {
 
@@ -476,6 +479,9 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
         case .photo(let media):
             guard let imageUrl = media.url else {return}
             imageView.sd_setImage(with: imageUrl)
+        case .video(let media):
+            guard let videoUrl = media.url else {return}
+            imageView.sd_setImage(with: videoUrl)
             
         default: break
         }
@@ -489,16 +495,22 @@ extension CommentsViewController: MessageCellDelegate {
         let comment = commentsArray[indexPath.section]
         
         switch comment.kind {
+            
         case .photo(let media): guard let imageUrl = media.url else {return}
             let vc = PhotoPresenterViewController(url: imageUrl)
             self.navigationController?.present(vc, animated: true)
+            
+        case .video(let media): guard let videoUrl = media.url else {return}
+            let vc = AVPlayerViewController()
+            vc.player = AVPlayer(url: videoUrl)
+            vc.player?.play()
+            self.present(vc, animated: true)
+
         default:break
             
         }
     }
 }
-
-
 
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
