@@ -377,20 +377,18 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         picker.allowsEditing = true
                         picker.delegate = self
                         picker.sourceType = .photoLibrary
+                        picker.mediaTypes = ["public.image"]
                         self.present(picker, animated: true)
                         
                         self.onImagePick = { [weak self] info in
                             guard let self = self, let image = info[.editedImage] as? UIImage else { return }
-                            
                             guard let imageData = image.jpegData(compressionQuality: 0.2) else { return }
                             let imageId = "\(selectedMessage.messageId)_\(UUID().uuidString)"
                             
                             StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
                                 guard let self = self, let safeRef = ref else { return }
-                                
                                 StorageManager.shared.downloadUrl(path: safeRef) { url in
                                     guard let safeUrl = url else {return}
-                                    
                                     let mediaUrl = safeUrl.absoluteString
                                     DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
                                         if success {
@@ -400,6 +398,38 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                             print("photo comment is updated successfully")
                                         } else {
                                             self.showAlert(error: "Unable to update selected photo comment")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    case .video(_):
+                        let picker = UIImagePickerController()
+                        picker.allowsEditing = true
+                        picker.delegate = self
+                        picker.sourceType = .photoLibrary
+                        picker.mediaTypes = ["public.movie"]
+                        picker.videoQuality = .typeMedium
+                        self.present(picker, animated: true)
+                        
+                        self.onImagePick = { [weak self] info in
+                            guard let self = self, let videoURL = info[.mediaURL] as? URL else {return}
+                            let videoId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
+                            
+                            StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoURL: videoURL, workout: self.workout) { [weak self] ref in
+                                guard let self = self, let safeRef = ref else {return}
+                                StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                    guard let safeUrl = url else { print("unable to get safeURL")
+                                        return}
+                                    let mediaUrl = safeUrl.absoluteString
+                                    DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                        if success {
+                                            DispatchQueue.main.async {
+                                                self.messagesCollectionView.reloadData()
+                                            }
+                                            print("video comment is updated successfully")
+                                        } else {
+                                            self.showAlert(error: "Unable to update selected video comment")
                                         }
                                     }
                                 }
