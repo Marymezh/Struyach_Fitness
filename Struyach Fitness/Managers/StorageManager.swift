@@ -32,19 +32,34 @@ final class StorageManager {
             }
     }
     
-    public func uploadVideoURLForComment(videoID: String, videoURL: URL?, workout: Workout, completion: @escaping (String?)->()) {
-        guard let safeURL = videoURL else {return}
-        let videoRef = "comments_video/\(workout.programID)/\(videoID)_video.mov"
-        container
-            .reference(withPath: videoRef)
-            .putFile(from: safeURL, metadata: nil) { metadata, error in
-                guard metadata != nil, error == nil else {
-                    completion(nil)
-                    //         print(error?.localizedDescription)
-                    return
-                }
-                completion(videoRef)
+    public func uploadVideoURLForComment(videoID: String, videoData: Data, workout: Workout, completion: @escaping (String?)->()) {
+        
+        let videoRef = "comments_video/\(workout.programID)/\(videoID)"
+        print(videoData)
+        let storageRef = container.reference(withPath: videoRef)
+           let uploadTask = storageRef.putData(videoData, metadata: nil) { metadata, error in
+               if let error = error {
+                   print("Error uploading video to Storage: \(error.localizedDescription)")
+                   completion(nil)
+                   return
+               }
+               completion(videoRef)
+           }
+        uploadTask.observe(.progress) { snapshot in
+                guard let progress = snapshot.progress else { return }
+                let percentComplete = Float(progress.completedUnitCount) / Float(progress.totalUnitCount)
+                print("Upload progress: \(percentComplete)")
             }
+//        container
+//            .reference(withPath: videoRef)
+//            .putFile(from: videoURL, metadata: nil) { metadata, error in
+//                guard metadata != nil, error == nil else {
+//                    print(error?.localizedDescription)
+//                    completion(nil)
+//                    return
+//                }
+//                completion(videoRef)
+//            }
     }
     
     

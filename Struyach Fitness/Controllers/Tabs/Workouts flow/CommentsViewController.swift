@@ -15,7 +15,7 @@ import AVKit
 
 
 class CommentsViewController: MessagesViewController, UITextViewDelegate {
-
+    
     private let workout: Workout
     var commentsArray: [Comment] = []
     private var commentsListener: ListenerRegistration?
@@ -31,8 +31,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         textView.isScrollEnabled = true
         textView.isUserInteractionEnabled = true
         textView.isEditable = false
+        textView.font = UIFont.systemFont(ofSize: 16)
         textView.layer.cornerRadius = 10
-
+        
         textView.toAutoLayout()
         return textView
     }()
@@ -58,9 +59,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         view.alpha = 0.8
         return view
     }()
-       
+    
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
-
+    
     init (workout: Workout) {
         self.workout = workout
         super.init(nibName: nil, bundle: nil)
@@ -81,6 +82,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        navigationController?.navigationBar.prefersLargeTitles = false
+  
         commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: workout) {[weak self] comments in
             guard let self = self else {return}
             self.commentsArray = comments
@@ -90,6 +94,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = true
         commentsListener?.remove()
     }
     
@@ -136,7 +141,27 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             picker.delegate = self
             picker.sourceType = .camera
             picker.mediaTypes = ["public.image", "public.movie"]
+            picker.toolbar.tintColor = .systemGreen
             self.present(picker, animated: true)
+            self.onImagePick = {info in
+                guard let image = info[.editedImage] as? UIImage,
+                      let imageData = image.jpegData(compressionQuality: 0.2) else { return }
+                let imageId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
+                
+                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
+                    guard let self = self else {return}
+                    if let safeRef = ref {
+                        StorageManager.shared.downloadUrl(path: safeRef) { url in
+                            guard let safeUrl = url else { print("unable to get safeURL")
+                                return}
+                            self.postPhotoComment(photoUrl: safeUrl)
+                            print("Image is saved to Storage")
+                        }
+                    } else {
+                        print ("Error uploading image to Storage")
+                    }
+                }
+            }
         }))
         actionSheet.addAction(UIAlertAction(title: "Photo", style: .default, handler: { [weak self] _ in
             guard let self = self else {return}
@@ -145,10 +170,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             picker.delegate = self
             picker.sourceType = .photoLibrary
             picker.mediaTypes = ["public.image"]
+            
             self.present(picker, animated: true)
             self.onImagePick = {info in
                 guard let image = info[.editedImage] as? UIImage,
-                let imageData = image.jpegData(compressionQuality: 0.2) else { return }
+                      let imageData = image.jpegData(compressionQuality: 0.5) else { return }
                 let imageId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
                 
                 StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
@@ -167,31 +193,39 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             }
         }))
         actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
-            guard let self = self else {return}
+            guard let self = self else { return }
             let picker = UIImagePickerController()
             picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .photoLibrary
             picker.mediaTypes = ["public.movie"]
-            picker.videoQuality = .typeMedium
+            picker.videoQuality = .typeLow
+            picker.toolbar.tintColor = .systemGreen
             self.present(picker, animated: true)
             self.onImagePick = { info in
-                guard let videoURL = info[.mediaURL] as? URL else {return}
-                let videoId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
-                StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoURL: videoURL, workout: self.workout) { [weak self] ref in
-                    guard let self = self else {return}
+                guard let videoUrl = info[.mediaURL] as? URL else {
+                    print("couldn't get mediaURL from image picker")
+                    return
+                }
+                let videoData = try! Data(contentsOf: videoUrl)
+                
+                let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
+                StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout) { [weak self] ref in
+                    guard let self = self else { return }
                     if let safeRef = ref {
                         StorageManager.shared.downloadUrl(path: safeRef) { url in
-                            guard let safeUrl = url else { print("unable to get safeURL")
-                                return}
+                            guard let safeUrl = url else {
+                                print("unable to get safeURL and download it")
+                                return
+                            }
                             self.postVideoComment(videoUrl: safeUrl)
                             print("Video is saved to Storage")
                         }
                     } else {
-                        print ("Error uploading image to Storage")
+                        print("Error uploading video to Storage")
                     }
                 }
-                
+
             }
         }))
         actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: {  _ in
@@ -206,16 +240,17 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         title = "Comments"
         navigationController?.navigationBar.prefersLargeTitles = false
         self.view.backgroundColor = .customDarkGray
-
+        UIBarButtonItem.appearance(whenContainedInInstancesOf: [UIImagePickerController.self]).tintColor = .systemGreen
+        
         workoutView.text = workout.description
         view.addSubview(containerView)
         containerView.addSubview(secondContainerView)
         secondContainerView.addSubview(workoutView)
         
         messagesCollectionView.contentInset.top = 180
-      
+        
         messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
-
+        
         let constraints = [
             containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -267,10 +302,10 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         formatter.dateFormat = "dd MM YYYY HH:mm:ss"
         let date = formatter.string(from: Date())
         let messageId = "\(senderName)_\(date)"
-//        let messageId = "\(UUID().uuidString)"
+        //        let messageId = "\(UUID().uuidString)"
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
-
+        
         guard let placeholder = UIImage(systemName: "photo") else {return}
         let media = Media(url: photoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
         
@@ -296,7 +331,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let messageId = "\(senderName)_\(date)"
         guard let userImage = self.userImage else {return}
         let timestamp = Date().timeIntervalSince1970
-
+        
         guard let placeholder = UIImage(systemName: "video.fill") else {return}
         let media = Media(url: videoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
         
@@ -315,16 +350,16 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     }
     
     private func loadComments(workout: Workout) {
-         DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
-             guard let self = self else {return}
-             self.commentsArray = comments
-             print ("loaded \(self.commentsArray.count) comments")
-             DispatchQueue.main.async {
-                 self.messagesCollectionView.reloadData()
-             }
-                 
-         }
-     }
+        DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
+            guard let self = self else {return}
+            self.commentsArray = comments
+            print ("loaded \(self.commentsArray.count) comments")
+            DispatchQueue.main.async {
+                self.messagesCollectionView.reloadData()
+            }
+            
+        }
+    }
     //MARK: - Methods for editing and deleting comments from local array and Firestore
     
     private func setupGestureRecognizer() {
@@ -334,10 +369,10 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     @objc func handleLongPress(sender: UILongPressGestureRecognizer) {
         print("Executing function: \(#function)")
-            let location = sender.location(in: messagesCollectionView)
-            if let indexPath = messagesCollectionView.indexPathForItem(at: location) {
-                let selectedMessage = self.commentsArray[indexPath.section]
-                if userName == selectedMessage.sender.displayName {
+        let location = sender.location(in: messagesCollectionView)
+        if let indexPath = messagesCollectionView.indexPathForItem(at: location) {
+            let selectedMessage = self.commentsArray[indexPath.section]
+            if userName == selectedMessage.sender.displayName {
                 let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
                 
                 let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
@@ -355,7 +390,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 }
                 let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
                     guard let self = self else {return}
- 
+                    
                     switch selectedMessage.kind {
                     case .text(let textToEdit):
                         let commentVC = CreateNewWorkoutViewController()
@@ -381,11 +416,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         picker.delegate = self
                         picker.sourceType = .photoLibrary
                         picker.mediaTypes = ["public.image"]
+                        picker.toolbar.tintColor = .systemGreen
                         self.present(picker, animated: true)
                         
                         self.onImagePick = { [weak self] info in
                             guard let self = self, let image = info[.editedImage] as? UIImage else { return }
-                            guard let imageData = image.jpegData(compressionQuality: 0.2) else { return }
+                            guard let imageData = image.jpegData(compressionQuality: 0.5) else { return }
                             let imageId = "\(selectedMessage.messageId)_\(UUID().uuidString)"
                             
                             StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
@@ -412,14 +448,16 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         picker.delegate = self
                         picker.sourceType = .photoLibrary
                         picker.mediaTypes = ["public.movie"]
-                        picker.videoQuality = .typeMedium
+                        picker.videoQuality = .typeLow
+                        picker.toolbar.tintColor = .systemGreen
                         self.present(picker, animated: true)
                         
                         self.onImagePick = { [weak self] info in
-                            guard let self = self, let videoURL = info[.mediaURL] as? URL else {return}
-                            let videoId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
+                            guard let self = self, let videoUrl = info[.mediaURL] as? URL else {return}
+                            let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
+                            let videoData = try! Data(contentsOf: videoUrl)
                             
-                            StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoURL: videoURL, workout: self.workout) { [weak self] ref in
+                            StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout) { [weak self] ref in
                                 guard let self = self, let safeRef = ref else {return}
                                 StorageManager.shared.downloadUrl(path: safeRef) { url in
                                     guard let safeUrl = url else { print("unable to get safeURL")
@@ -441,14 +479,14 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     default: break
                     }
                 }
-                    let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-                    alertController.addAction(editAction)
-                    alertController.addAction(deleteAction)
-                    alertController.addAction(cancelAction)
-                    alertController.view.tintColor = .darkGray
-                    present(alertController, animated: true)
-                }
+                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+                alertController.addAction(editAction)
+                alertController.addAction(deleteAction)
+                alertController.addAction(cancelAction)
+                alertController.view.tintColor = .darkGray
+                present(alertController, animated: true)
             }
+        }
     }
     
     private func showAlert (error: String) {
@@ -475,14 +513,15 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
     }
     
     func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        
         switch message.kind {
         case .photo(let media):
             guard let imageUrl = media.url else {return}
             imageView.sd_setImage(with: imageUrl)
-        case .video(let media):
-            guard let videoUrl = media.url else {return}
-            imageView.sd_setImage(with: videoUrl)
             
+        case .video(_):
+            imageView.image = UIImage(named: "general")
+
         default: break
         }
     }
@@ -505,7 +544,7 @@ extension CommentsViewController: MessageCellDelegate {
             vc.player = AVPlayer(url: videoUrl)
             vc.player?.play()
             self.present(vc, animated: true)
-
+            
         default:break
             
         }
@@ -527,8 +566,8 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        picker.dismiss(animated: true)
         self.onImagePick?(info)
+        picker.dismiss(animated: true)
     }
 }
 

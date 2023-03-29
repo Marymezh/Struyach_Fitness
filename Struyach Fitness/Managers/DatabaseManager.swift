@@ -10,6 +10,7 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 import UIKit
 import MessageKit
+import AVKit
 
 final class DatabaseManager {
     
@@ -278,12 +279,11 @@ final class DatabaseManager {
                     case "photo":
                         guard let imageURL = URL(string: contents),
                         let placeholder = UIImage(systemName: "photo") else {return nil}
-                        let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
+                        let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 300))
                         kind = .photo(media)
                     case "video":
-                        guard let videoURL = URL(string: contents),
-                              let placeholder = UIImage(named: "general") else {return nil}
-                        let media = Media(url: videoURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
+                        guard let videoUrl = URL(string: contents), let placeholder = UIImage(named: "general") else {return nil}
+                        let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 100, height: 100))
                         kind = .video(media)
                     case "text": kind = .text(contents)
                     default: break
@@ -378,23 +378,28 @@ final class DatabaseManager {
                             return nil}
                         
                         var kind: MessageKind?
-                        if type == "photo" {
+                        
+                        switch type {
+                        case "photo":
                             guard let imageURL = URL(string: contents),
                             let placeholder = UIImage(systemName: "photo") else {return nil}
-                            let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
+                            let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 300))
                             kind = .photo(media)
-                        }  else {
-                            kind = .text(contents)
+                        case "video":
+                            guard let videoUrl = URL(string: contents), let placeholder = UIImage(named: "general") else {return nil}
+                            let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 100, height: 100))
+                            kind = .video(media)
+                        case "text": kind = .text(contents)
+                        default: break
                         }
+
                         guard let finalKind = kind else {return nil}
-                        
                         let sender = Sender(senderId: senderId, displayName: senderName)
-                        
                         let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
                         return comment
                     }
                        completion(comments)
-           }
+                   }
         return listener
         }
 //

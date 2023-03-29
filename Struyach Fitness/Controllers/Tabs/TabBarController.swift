@@ -12,9 +12,13 @@ class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupControllers()
-        setupTabBarAppearance()
+        tabBar.tintColor = .systemGreen
+        tabBar.unselectedItemTintColor = .darkGray
+        tabBar.backgroundColor = .darkText
+//        setupTabBarAppearance()
     }
     
+    @available(iOS 15.0, *)
     private func setupTabBarAppearance() {
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
