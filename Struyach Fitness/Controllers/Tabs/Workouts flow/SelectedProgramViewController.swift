@@ -72,7 +72,7 @@ class SelectedProgramViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("Executing function: \(#function)")
-        
+        navigationController?.navigationBar.prefersLargeTitles = true
         guard let title = title else {return}
         loadListOfWorkouts(for: title)
 
@@ -154,6 +154,8 @@ class SelectedProgramViewController: UIViewController {
         guard let selectedWorkout = selectedWorkout else { print("workout is not selected")
             return }
         let commentsVC = CommentsViewController(workout: selectedWorkout)
+        commentsVC.title = "Comments"
+    
         navigationController?.pushViewController(commentsVC, animated: true)
     }
     

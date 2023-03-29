@@ -28,6 +28,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     let workoutView: UITextView = {
         let textView = UITextView()
+        textView.backgroundColor = .white
+        textView.textColor = .black
         textView.isScrollEnabled = true
         textView.isUserInteractionEnabled = true
         textView.isEditable = false
@@ -41,7 +43,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     let containerView: UIView = {
         let view = UIView()
         view.toAutoLayout()
-        view.backgroundColor = .customMediumGray
+        view.backgroundColor = .customDarkGray
         return view
     }()
     
@@ -82,9 +84,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        navigationController?.navigationBar.prefersLargeTitles = false
-  
+        navigationController?.navigationBar.prefersLargeTitles = true
         commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: workout) {[weak self] comments in
             guard let self = self else {return}
             self.commentsArray = comments
@@ -94,13 +94,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.navigationBar.prefersLargeTitles = true
         commentsListener?.remove()
     }
     
     private func setupMessageCollectionView() {
         messagesCollectionView.toAutoLayout()
-        messagesCollectionView.backgroundColor = .customMediumGray
+        messagesCollectionView.backgroundColor = .customDarkGray
         messagesCollectionView.messageCellDelegate = self
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
@@ -130,6 +129,38 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messageInputBar.setStackViewItems([attachButton], forStack: .left, animated: false)
         messageInputBar.sendButton.setTitle(nil, for: .normal)
         messageInputBar.sendButton.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)), for: .normal)
+    }
+    
+    private func setupNavbarAndView() {
+        self.view.backgroundColor = .customDarkGray
+        UIBarButtonItem.appearance(whenContainedInInstancesOf: [UIImagePickerController.self]).tintColor = .systemGreen
+        
+        workoutView.text = workout.description
+        view.addSubview(containerView)
+        containerView.addSubview(secondContainerView)
+        secondContainerView.addSubview(workoutView)
+        
+        messagesCollectionView.contentInset.top = 180
+        
+        messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
+        
+        let constraints = [
+            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            secondContainerView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            secondContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
+            secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
+            secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+            
+            workoutView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
+            workoutView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
+            workoutView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
+            workoutView.heightAnchor.constraint(equalToConstant: 130),
+            workoutView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
+        ]
+        NSLayoutConstraint.activate(constraints)
     }
     
     private func presentInputOptions() {
@@ -236,40 +267,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         present(actionSheet, animated: true)
     }
     
-    private func setupNavbarAndView() {
-        title = "Comments"
-        navigationController?.navigationBar.prefersLargeTitles = false
-        self.view.backgroundColor = .customDarkGray
-        UIBarButtonItem.appearance(whenContainedInInstancesOf: [UIImagePickerController.self]).tintColor = .systemGreen
-        
-        workoutView.text = workout.description
-        view.addSubview(containerView)
-        containerView.addSubview(secondContainerView)
-        secondContainerView.addSubview(workoutView)
-        
-        messagesCollectionView.contentInset.top = 180
-        
-        messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
-        
-        let constraints = [
-            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
-            secondContainerView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
-            secondContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
-            secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
-            secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
-            
-            workoutView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
-            workoutView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
-            workoutView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
-            workoutView.heightAnchor.constraint(equalToConstant: 130),
-            workoutView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
-        ]
-        NSLayoutConstraint.activate(constraints)
-    }
-    
+  
     //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
     private func postComment(text: String) {
