@@ -32,7 +32,7 @@ final class StorageManager {
             }
     }
     
-    public func uploadVideoURLForComment(videoID: String, videoData: Data, workout: Workout, completion: @escaping (String?)->()) {
+    public func uploadVideoURLForComment(videoID: String, videoData: Data, workout: Workout, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
         
         let videoRef = "comments_video/\(workout.programID)/\(videoID)"
         print(videoData)
@@ -46,20 +46,9 @@ final class StorageManager {
                completion(videoRef)
            }
         uploadTask.observe(.progress) { snapshot in
-                guard let progress = snapshot.progress else { return }
-                let percentComplete = Float(progress.completedUnitCount) / Float(progress.totalUnitCount)
-                print("Upload progress: \(percentComplete)")
-            }
-//        container
-//            .reference(withPath: videoRef)
-//            .putFile(from: videoURL, metadata: nil) { metadata, error in
-//                guard metadata != nil, error == nil else {
-//                    print(error?.localizedDescription)
-//                    completion(nil)
-//                    return
-//                }
-//                completion(videoRef)
-//            }
+                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
+                    progress(Float(percentComplete))
+                }
     }
     
     

@@ -19,6 +19,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private let workout: Workout
     var commentsArray: [Comment] = []
     private var commentsListener: ListenerRegistration?
+    private var progressView: UIProgressView!
+    private var progressLabel: UILabel!
     
     var onImagePick:(([UIImagePickerController.InfoKey : Any])-> Void)?
     
@@ -78,6 +80,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         setupMessageCollectionView()
         setupInputBar()
         setupNavbarAndView()
+        setupProgress()
         loadComments(workout: self.workout)
         setupGestureRecognizer()
     }
@@ -141,7 +144,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         secondContainerView.addSubview(workoutView)
         
         messagesCollectionView.contentInset.top = 180
-        
         messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
         
         let constraints = [
@@ -163,6 +165,38 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         NSLayoutConstraint.activate(constraints)
     }
     
+    private func setupProgress() {
+
+        self.progressView = UIProgressView(progressViewStyle: .default)
+        self.progressView.progress = 0
+        self.progressView.progressTintColor = .systemGreen
+        self.progressView.trackTintColor = .white
+        self.progressView.toAutoLayout()
+        self.progressView.layer.cornerRadius = 5
+        self.progressView.layer.masksToBounds = true
+        self.progressView.isHidden = true
+        self.view.addSubview(self.progressView)
+        
+        self.progressLabel = UILabel()
+        self.progressLabel.text = "Uploading video"
+        self.progressLabel.textColor = .white
+        self.progressLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        self.progressLabel.isHidden = true
+        self.progressLabel.toAutoLayout()
+        self.view.addSubview(self.progressLabel)
+                
+                let constraints = [
+                    self.progressView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+                    self.progressView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+                    self.progressView.widthAnchor.constraint(equalToConstant: 200),
+                    self.progressView.heightAnchor.constraint(equalToConstant: 12),
+                    self.progressLabel.centerXAnchor.constraint(equalTo: self.progressView.centerXAnchor),
+                    self.progressLabel.bottomAnchor.constraint(equalTo: self.progressView.topAnchor, constant: -10)
+                ]
+        
+        NSLayoutConstraint.activate(constraints)
+    }
+    
     private func presentInputOptions() {
         let actionSheet = UIAlertController(title: "Attach media", message: nil, preferredStyle: .actionSheet)
         actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self]_ in
@@ -171,7 +205,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .camera
-            picker.mediaTypes = ["public.image", "public.movie"]
+            picker.mediaTypes = ["public.image"]
+//            picker.mediaTypes = ["public.image", "public.movie"]
             picker.toolbar.tintColor = .systemGreen
             self.present(picker, animated: true)
             self.onImagePick = {info in
@@ -230,9 +265,10 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             picker.delegate = self
             picker.sourceType = .photoLibrary
             picker.mediaTypes = ["public.movie"]
-            picker.videoQuality = .typeLow
+            picker.videoQuality = .typeMedium
             picker.toolbar.tintColor = .systemGreen
             self.present(picker, animated: true)
+            
             self.onImagePick = { info in
                 guard let videoUrl = info[.mediaURL] as? URL else {
                     print("couldn't get mediaURL from image picker")
@@ -241,7 +277,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 let videoData = try! Data(contentsOf: videoUrl)
                 
                 let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
-                StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout) { [weak self] ref in
+                StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout, progressHandler: { [weak self] percentComplete in
+                    self?.progressView.isHidden = false
+                    self?.progressLabel.isHidden = false
+                            self?.progressView.progress = percentComplete
+                            self?.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
+                        })  { [weak self] ref in
                     guard let self = self else { return }
                     if let safeRef = ref {
                         StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -255,8 +296,10 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     } else {
                         print("Error uploading video to Storage")
                     }
+                    
+                            self.progressView.isHidden = true
+                            self.progressLabel.isHidden = true
                 }
-
             }
         }))
         actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: {  _ in
@@ -446,7 +489,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         picker.delegate = self
                         picker.sourceType = .photoLibrary
                         picker.mediaTypes = ["public.movie"]
-                        picker.videoQuality = .typeLow
+                        picker.videoQuality = .typeMedium
                         picker.toolbar.tintColor = .systemGreen
                         self.present(picker, animated: true)
                         
@@ -455,7 +498,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
                             let videoData = try! Data(contentsOf: videoUrl)
                             
-                            StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout) { [weak self] ref in
+                            StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout, progressHandler: { [weak self] percentComplete in
+                                self?.progressView.isHidden = false
+                                self?.progressLabel.isHidden = false
+                                        self?.progressView.progress = percentComplete
+                                        self?.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
+                                    })  { [weak self] ref in
                                 guard let self = self, let safeRef = ref else {return}
                                 StorageManager.shared.downloadUrl(path: safeRef) { url in
                                     guard let safeUrl = url else { print("unable to get safeURL")
@@ -472,6 +520,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                         }
                                     }
                                 }
+                                        self.progressView.isHidden = true
+                                        self.progressLabel.isHidden = true
                             }
                         }
                     default: break
