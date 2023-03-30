@@ -567,9 +567,35 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
             guard let imageUrl = media.url else {return}
             imageView.sd_setImage(with: imageUrl)
             
-        case .video(_):
-            imageView.image = UIImage(named: "general")
-
+        case .video(let media):
+                guard let videoUrl = media.url else { return }
+                
+                // Check if thumbnail image is already cached
+                let thumbnailCacheKey = "\(videoUrl.absoluteString)_thumbnail"
+                if let cachedThumbnailImage = SDImageCache.shared.imageFromCache(forKey: thumbnailCacheKey) {
+                    imageView.image = cachedThumbnailImage
+                    return
+                }
+                
+                // Create AVAsset from the video url
+                let asset = AVAsset(url: videoUrl)
+                
+                // Create an AVAssetImageGenerator
+                let imageGenerator = AVAssetImageGenerator(asset: asset)
+                imageGenerator.appliesPreferredTrackTransform = true
+                
+                // Get the first frame of the video
+                let time = CMTime(seconds: 0.0, preferredTimescale: 1)
+                guard let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) else { return }
+                
+                // Resize the image to a thumbnail size
+                let thumbnailSize = CGSize(width: 80, height: 80)
+                let thumbnailImage = UIImage(cgImage: cgImage).sd_resizedImage(with: thumbnailSize, scaleMode: .aspectFill)
+                
+                // Cache the thumbnail image
+                SDImageCache.shared.store(thumbnailImage, forKey: thumbnailCacheKey, completion: nil)
+                
+                imageView.image = thumbnailImage
         default: break
         }
     }

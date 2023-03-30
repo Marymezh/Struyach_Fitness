@@ -279,11 +279,11 @@ final class DatabaseManager {
                     case "photo":
                         guard let imageURL = URL(string: contents),
                         let placeholder = UIImage(systemName: "photo") else {return nil}
-                        let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 300))
+                        let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 250, height: 250))
                         kind = .photo(media)
                     case "video":
                         guard let videoUrl = URL(string: contents), let placeholder = UIImage(named: "general") else {return nil}
-                        let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 100, height: 100))
+                        let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 80, height: 80))
                         kind = .video(media)
                     case "text": kind = .text(contents)
                     default: break
@@ -383,11 +383,11 @@ final class DatabaseManager {
                         case "photo":
                             guard let imageURL = URL(string: contents),
                             let placeholder = UIImage(systemName: "photo") else {return nil}
-                            let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 300))
+                            let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 250, height: 250))
                             kind = .photo(media)
                         case "video":
                             guard let videoUrl = URL(string: contents), let placeholder = UIImage(named: "general") else {return nil}
-                            let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 100, height: 100))
+                            let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 80, height: 80))
                             kind = .video(media)
                         case "text": kind = .text(contents)
                         default: break
@@ -402,96 +402,6 @@ final class DatabaseManager {
                    }
         return listener
         }
-//
-//    public func postComment(comment: Comment,
-//                           completion: @escaping (Bool) ->()){
-//        print("Executing function: \(#function)")
-//        let program = comment.programID
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        do {
-//            let commentData = try Firestore.Encoder().encode(comment)
-//            database
-//                .collection("programs")
-//                .document(program)
-//                .collection("workouts")
-//                .document(comment.workoutID)
-//                .collection("comments")
-//                .document(comment.id)
-//                .setData(commentData) { error in
-//                    completion(error == nil)
-//                }
-//        } catch {
-//            print("Error encoding workout: \(error)")
-//            completion(false)
-//        }
-//    }
-//
-//    public func getAllComments(programID: String, workoutID: String, completion: @escaping([Comment])->()){
-//        print("Executing function: \(#function)")
-//        let program = programID
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        database
-//            .collection("programs")
-//            .document(program)
-//            .collection("workouts")
-//            .document(workoutID)
-//            .collection("comments")
-//            .order(by: "timestamp", descending: true)
-//            .getDocuments{ snapshot, error in
-//                guard let documents = snapshot?.documents, error == nil else {
-//                    print("Error fetching documents: \(error!)")
-//                return}
-//
-//                let comments: [Comment] = documents.compactMap { document in
-//                    do {
-//                        print("start decoding comments")
-//                        let comment = try Firestore.Decoder().decode(Comment.self, from: document.data())
-//                        print ("comments decoded from database")
-//                        return comment
-//                    } catch {
-//                        print("cant fetch comments from database")
-//                        return nil
-//                    }
-//                }
-//                completion(comments)
-//            }
-//    }
-
-//    public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
-//        print("Executing function: \(#function)")
-//
-//        let program = workout.programID
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        let listener = database
-//            .collection("programs")
-//            .document(program)
-//            .collection("workouts")
-//            .document(workout.id)
-//            .collection("comments")
-//            .order(by: "timestamp", descending: true)
-//            .addSnapshotListener { (snapshot, error) in
-//            guard let snapshot = snapshot else {
-//                print("Error fetching comments: \(error?.localizedDescription ?? "unknown error")")
-//                return
-//            }
-//            do {
-//                let comments = try snapshot.documents.compactMap { document -> Comment? in
-//                    let comment = try document.data(as: Comment.self)
-//                    return comment
-//                }
-//                completion(comments)
-//            } catch {
-//                print("Error decoding workouts: \(error.localizedDescription)")
-//            }
-//        }
-//        return listener
-//    }
     
     //MARK: - Adding, fetching and editing users
     
