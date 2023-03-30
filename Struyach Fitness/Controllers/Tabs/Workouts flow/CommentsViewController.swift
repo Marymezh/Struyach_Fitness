@@ -65,6 +65,15 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         return view
     }()
     
+    private let activityIndicator: UIActivityIndicatorView = {
+            let indicator = UIActivityIndicatorView(style: .large)
+            indicator.toAutoLayout()
+            indicator.isHidden = true
+            indicator.color = .systemGreen
+            return indicator
+        }()
+
+    
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
     
     init (workout: Workout) {
@@ -88,7 +97,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.navigationBar.prefersLargeTitles = false
+        navigationController?.navigationBar.prefersLargeTitles = true
 //        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: workout) {[weak self] comments in
 //            guard let self = self else {return}
 //            self.commentsArray = comments
@@ -145,6 +154,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         view.addSubview(containerView)
         containerView.addSubview(secondContainerView)
         secondContainerView.addSubview(workoutView)
+        view.addSubview(activityIndicator)
         
         messagesCollectionView.contentInset.top = 180
         messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
@@ -163,13 +173,15 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             workoutView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
             workoutView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
             workoutView.heightAnchor.constraint(equalToConstant: 130),
-            workoutView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
+            workoutView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ]
         NSLayoutConstraint.activate(constraints)
     }
     
     private func setupProgress() {
-        
         self.progressBackgroundView = UIView()
         self.progressBackgroundView.backgroundColor = .black
         self.progressBackgroundView.alpha = 0.7
@@ -423,15 +435,22 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     }
     
     private func loadComments(workout: Workout) {
-        DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
-            guard let self = self else {return}
-            self.commentsArray = comments
-            print ("loaded \(self.commentsArray.count) comments")
-            DispatchQueue.main.async {
-                self.messagesCollectionView.reloadData()
+            self.progressBackgroundView.isHidden = false
+            self.activityIndicator.isHidden = false
+            self.activityIndicator.startAnimating()
+            DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
+                guard let self = self else {return}
+                self.commentsArray = comments
+                print ("loaded \(self.commentsArray.count) comments")
+                DispatchQueue.main.async {
+                    self.messagesCollectionView.reloadData()
+                    self.progressBackgroundView.isHidden = true
+                    self.activityIndicator.isHidden = true
+                    self.activityIndicator.stopAnimating()
+                }
             }
         }
-    }
+
     //MARK: - Methods for editing and deleting comments from local array and Firestore
     
     private func setupGestureRecognizer() {
