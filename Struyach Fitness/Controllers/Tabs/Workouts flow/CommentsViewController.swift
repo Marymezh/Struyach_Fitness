@@ -19,6 +19,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private let workout: Workout
     var commentsArray: [Comment] = []
     private var commentsListener: ListenerRegistration?
+    private var progressBackgroundView: UIView!
     private var progressView: UIProgressView!
     private var progressLabel: UILabel!
     
@@ -87,12 +88,14 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.navigationBar.prefersLargeTitles = true
-        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: workout) {[weak self] comments in
-            guard let self = self else {return}
-            self.commentsArray = comments
-            self.messagesCollectionView.reloadData()
-        }
+        navigationController?.navigationBar.prefersLargeTitles = false
+//        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: workout) {[weak self] comments in
+//            guard let self = self else {return}
+//            self.commentsArray = comments
+//            DispatchQueue.main.async {
+//                self.messagesCollectionView.reloadData()
+//            }
+//        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -166,6 +169,13 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     }
     
     private func setupProgress() {
+        
+        self.progressBackgroundView = UIView()
+        self.progressBackgroundView.backgroundColor = .black
+        self.progressBackgroundView.alpha = 0.7
+        self.progressBackgroundView.isHidden = true
+        self.progressBackgroundView.toAutoLayout()
+        self.view.addSubview(self.progressBackgroundView)
 
         self.progressView = UIProgressView(progressViewStyle: .default)
         self.progressView.progress = 0
@@ -186,6 +196,10 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         self.view.addSubview(self.progressLabel)
                 
                 let constraints = [
+                    self.progressBackgroundView.topAnchor.constraint(equalTo: self.view.topAnchor),
+                    self.progressBackgroundView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+                    self.progressBackgroundView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+                    self.progressBackgroundView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
                     self.progressView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
                     self.progressView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
                     self.progressView.widthAnchor.constraint(equalToConstant: 200),
@@ -202,19 +216,23 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self]_ in
             guard let self = self else {return}
             let picker = UIImagePickerController()
-            picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .camera
             picker.mediaTypes = ["public.image"]
-//            picker.mediaTypes = ["public.image", "public.movie"]
             picker.toolbar.tintColor = .systemGreen
             self.present(picker, animated: true)
             self.onImagePick = {info in
-                guard let image = info[.editedImage] as? UIImage,
+                guard let image = info[.originalImage] as? UIImage,
                       let imageData = image.jpegData(compressionQuality: 0.2) else { return }
-                let imageId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
+                let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
                 
-                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
+                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout, progressHandler: { [weak self] percentComplete in
+                    self?.progressBackgroundView.isHidden = false
+                    self?.progressView.isHidden = false
+                    self?.progressLabel.isHidden = false
+                    self?.progressView.progress = percentComplete
+                    self?.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
+                }) { [weak self] ref in
                     guard let self = self else {return}
                     if let safeRef = ref {
                         StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -226,24 +244,33 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     } else {
                         print ("Error uploading image to Storage")
                     }
+                    self.progressBackgroundView.isHidden = true
+                    self.progressView.isHidden = true
+                    self.progressLabel.isHidden = true
                 }
             }
         }))
         actionSheet.addAction(UIAlertAction(title: "Photo", style: .default, handler: { [weak self] _ in
             guard let self = self else {return}
             let picker = UIImagePickerController()
-            picker.allowsEditing = true
+//            picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .photoLibrary
             picker.mediaTypes = ["public.image"]
             
             self.present(picker, animated: true)
             self.onImagePick = {info in
-                guard let image = info[.editedImage] as? UIImage,
-                      let imageData = image.jpegData(compressionQuality: 0.5) else { return }
-                let imageId = "\(self.sender.displayName.replacingOccurrences(of: " ", with: "_"))_\(UUID().uuidString)"
+                guard let image = info[.originalImage] as? UIImage,
+                      let imageData = image.jpegData(compressionQuality: 0.6) else { return }
+                let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
                 
-                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
+                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout, progressHandler: { [weak self] percentComplete in
+                    self?.progressBackgroundView.isHidden = false
+                    self?.progressView.isHidden = false
+                    self?.progressLabel.isHidden = false
+                    self?.progressView.progress = percentComplete
+                    self?.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
+                }) { [weak self] ref in
                     guard let self = self else {return}
                     if let safeRef = ref {
                         StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -255,6 +282,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     } else {
                         print ("Error uploading image to Storage")
                     }
+                    self.progressBackgroundView.isHidden = true
+                    self.progressView.isHidden = true
+                    self.progressLabel.isHidden = true
                 }
             }
         }))
@@ -278,10 +308,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 
                 let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
                 StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout, progressHandler: { [weak self] percentComplete in
+                    self?.progressBackgroundView.isHidden = false
                     self?.progressView.isHidden = false
                     self?.progressLabel.isHidden = false
-                            self?.progressView.progress = percentComplete
-                            self?.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
+                    self?.progressView.progress = percentComplete
+                    self?.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
                         })  { [weak self] ref in
                     guard let self = self else { return }
                     if let safeRef = ref {
@@ -296,7 +327,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     } else {
                         print("Error uploading video to Storage")
                     }
-                    
+                            self.progressBackgroundView.isHidden = true
                             self.progressView.isHidden = true
                             self.progressLabel.isHidden = true
                 }
@@ -329,7 +360,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             guard let self = self else {return}
             if success {
                 self.loadComments(workout: self.workout)
-                print ("comments loaded")
+                print ("text comment is posted successfully")
+                self.messagesCollectionView.scrollToLastItem()
             } else {
                 print ("cant save comment")
             }
@@ -398,7 +430,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             DispatchQueue.main.async {
                 self.messagesCollectionView.reloadData()
             }
-            
         }
     }
     //MARK: - Methods for editing and deleting comments from local array and Firestore
@@ -420,9 +451,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     guard let self = self else {return}
                     DatabaseManager.shared.deleteComment(comment: selectedMessage) { success in
                         if success {
-                            DispatchQueue.main.async {
-                                self.messagesCollectionView.reloadData()
-                            }
+                            self.loadComments(workout: self.workout)
                             print("comment is deleted")
                         } else {
                             print ("can not delete comment")
@@ -441,10 +470,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         commentVC.onWorkoutSave = { text in
                             DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text) { success in
                                 if success{
-                                    DispatchQueue.main.async {
-                                        self.messagesCollectionView.reloadData()
-                                        print("text comment is updated successfully")
-                                    }
+                                    self.loadComments(workout: self.workout)
+                                    print("text comment is updated successfully")
                                 } else {
                                     self.showAlert(error: "Unable to update selected text comment")
                                 }
@@ -453,7 +480,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         
                     case .photo(_):
                         let picker = UIImagePickerController()
-                        picker.allowsEditing = true
+//                        picker.allowsEditing = true
                         picker.delegate = self
                         picker.sourceType = .photoLibrary
                         picker.mediaTypes = ["public.image"]
@@ -461,24 +488,31 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         self.present(picker, animated: true)
                         
                         self.onImagePick = { [weak self] info in
-                            guard let self = self, let image = info[.editedImage] as? UIImage else { return }
-                            guard let imageData = image.jpegData(compressionQuality: 0.5) else { return }
-                            let imageId = "\(selectedMessage.messageId)_\(UUID().uuidString)"
+                            guard let self = self, let image = info[.originalImage] as? UIImage else { return }
+                            guard let imageData = image.jpegData(compressionQuality: 0.6) else { return }
+                            let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
                             
-                            StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout) { [weak self] ref in
+                            StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout, progressHandler: { [weak self] percentComplete in
+                                self?.progressBackgroundView.isHidden = false
+                                self?.progressView.isHidden = false
+                                self?.progressLabel.isHidden = false
+                                self?.progressView.progress = percentComplete
+                                self?.progressLabel.text = String(format: "Updating photo (%d%%)", Int(percentComplete * 100))
+                            }) { [weak self] ref in
                                 guard let self = self, let safeRef = ref else { return }
                                 StorageManager.shared.downloadUrl(path: safeRef) { url in
                                     guard let safeUrl = url else {return}
                                     let mediaUrl = safeUrl.absoluteString
                                     DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
                                         if success {
-                                            DispatchQueue.main.async {
-                                                self.messagesCollectionView.reloadData()
-                                            }
+                                            self.loadComments(workout: self.workout)
                                             print("photo comment is updated successfully")
                                         } else {
                                             self.showAlert(error: "Unable to update selected photo comment")
                                         }
+                                        self.progressBackgroundView.isHidden = true
+                                        self.progressView.isHidden = true
+                                        self.progressLabel.isHidden = true
                                     }
                                 }
                             }
@@ -499,10 +533,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             let videoData = try! Data(contentsOf: videoUrl)
                             
                             StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout, progressHandler: { [weak self] percentComplete in
+                                self?.progressBackgroundView.isHidden = false
                                 self?.progressView.isHidden = false
                                 self?.progressLabel.isHidden = false
                                         self?.progressView.progress = percentComplete
-                                        self?.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
+                                        self?.progressLabel.text = String(format: "Updating video (%d%%)", Int(percentComplete * 100))
                                     })  { [weak self] ref in
                                 guard let self = self, let safeRef = ref else {return}
                                 StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -511,17 +546,16 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                     let mediaUrl = safeUrl.absoluteString
                                     DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
                                         if success {
-                                            DispatchQueue.main.async {
-                                                self.messagesCollectionView.reloadData()
-                                            }
+                                            self.loadComments(workout: self.workout)
                                             print("video comment is updated successfully")
                                         } else {
                                             self.showAlert(error: "Unable to update selected video comment")
                                         }
-                                    }
-                                }
+                                        self.progressBackgroundView.isHidden = true
                                         self.progressView.isHidden = true
                                         self.progressLabel.isHidden = true
+                                    }
+                                }
                             }
                         }
                     default: break
@@ -563,39 +597,40 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
     func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
         
         switch message.kind {
+            
         case .photo(let media):
             guard let imageUrl = media.url else {return}
             imageView.sd_setImage(with: imageUrl)
             
         case .video(let media):
                 guard let videoUrl = media.url else { return }
-                
                 // Check if thumbnail image is already cached
                 let thumbnailCacheKey = "\(videoUrl.absoluteString)_thumbnail"
                 if let cachedThumbnailImage = SDImageCache.shared.imageFromCache(forKey: thumbnailCacheKey) {
                     imageView.image = cachedThumbnailImage
                     return
                 }
-                
+
                 // Create AVAsset from the video url
                 let asset = AVAsset(url: videoUrl)
-                
+
                 // Create an AVAssetImageGenerator
                 let imageGenerator = AVAssetImageGenerator(asset: asset)
                 imageGenerator.appliesPreferredTrackTransform = true
-                
+
                 // Get the first frame of the video
                 let time = CMTime(seconds: 0.0, preferredTimescale: 1)
                 guard let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) else { return }
-                
+
                 // Resize the image to a thumbnail size
                 let thumbnailSize = CGSize(width: 80, height: 80)
                 let thumbnailImage = UIImage(cgImage: cgImage).sd_resizedImage(with: thumbnailSize, scaleMode: .aspectFill)
-                
+
                 // Cache the thumbnail image
                 SDImageCache.shared.store(thumbnailImage, forKey: thumbnailCacheKey, completion: nil)
-                
+
                 imageView.image = thumbnailImage
+            
         default: break
         }
     }
