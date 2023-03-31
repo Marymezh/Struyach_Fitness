@@ -8,6 +8,12 @@
 import Foundation
 import FirebaseAuth
 
+enum AuthError: Error {
+    case emailAlreadyExists
+    case passwordTooShort
+    case unknownError
+}
+
 final class AuthManager {
     static let shared = AuthManager()
     
@@ -23,20 +29,34 @@ final class AuthManager {
         
         email: String,
         password: String,
-        completion: @escaping (Bool) -> ()) {
+        completion: @escaping (Result<Void, AuthError>) -> Void) {
             
-            guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
-                  !password.trimmingCharacters(in: .whitespaces).isEmpty,
-                  password.count >= 6 else {return}
-            
-            auth.createUser(withEmail: email, password: password) { result, error in
-                guard result != nil, error == nil else {
-                    completion(false)
+            auth.fetchSignInMethods(forEmail: email) { signInMethods, error in
+                if error != nil {
+                    completion(.failure(.unknownError))
                     return
                 }
-                completion(true)
+                
+                if let signInMethods = signInMethods, !signInMethods.isEmpty {
+                    completion(.failure(.emailAlreadyExists))
+                    return
+                }
             }
-        }
+
+                if password.count < 6 {
+                    completion(.failure(.passwordTooShort))
+                    return
+                }
+            
+                self.auth.createUser(withEmail: email, password: password) { (authResult, error) in
+                 if let error = error {
+                     print("Failed to sign up user: \(error.localizedDescription)")
+                     completion(.failure(.unknownError))
+                 } else {
+                     completion(.success(()))
+                 }
+             }
+         }
     
     public func signIn(
         

@@ -17,10 +17,10 @@ class ProfileHeaderView: UIView {
         let image = UIImageView()
         image.image = UIImage(named: "general")
         image.clipsToBounds = true
-        image.layer.cornerRadius = 40
+        image.layer.cornerRadius = 50
         image.contentMode = .scaleAspectFill
         image.layer.borderColor = UIColor.darkGray.cgColor 
-        image.layer.borderWidth = 3
+        image.layer.borderWidth = 1
         image.toAutoLayout()
         return image
     }()
@@ -64,7 +64,7 @@ class ProfileHeaderView: UIView {
         let constraints = [
             userPhotoImage.topAnchor.constraint(equalTo: self.topAnchor, constant: baseInset),
             userPhotoImage.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
-            userPhotoImage.heightAnchor.constraint(equalToConstant: 80),
+            userPhotoImage.heightAnchor.constraint(equalToConstant: 100),
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),
             userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset),
             

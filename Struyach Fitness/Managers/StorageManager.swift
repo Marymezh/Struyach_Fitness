@@ -71,6 +71,28 @@ final class StorageManager {
             }
     }
     
+    public func setUserProfilePicture(email: String, image: Data?, completion: @escaping (String?)->()) {
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        guard let pngData = image else {
+            print("no png data available")
+            return}
+        let imageRef = "profile_pictures/\(path)/photo.png"
+        container
+            .reference(withPath: imageRef)
+            .putData(pngData, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(nil)
+                    print ("can't set user profile image")
+                    return
+                }
+                completion(imageRef)
+                print ("profile picture is set with this path: \(imageRef)")
+            }
+    }
+    
     public func uploadUserPersonalRecords(email: String, weights: [String]?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")

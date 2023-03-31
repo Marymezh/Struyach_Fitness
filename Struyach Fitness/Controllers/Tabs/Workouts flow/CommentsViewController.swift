@@ -26,8 +26,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     var onImagePick:(([UIImagePickerController.InfoKey : Any])-> Void)?
     
     private let userName = UserDefaults.standard.string(forKey: "userName")
-    private let userImage = UserDefaults.standard.data(forKey: "userImage")
     private let userEmail = UserDefaults.standard.string(forKey: "email")
+    private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+
     
     let workoutView: UITextView = {
         let textView = UITextView()
@@ -363,10 +364,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         formatter.dateFormat = "dd MM YYYY HH:mm:ss"
         let date = formatter.string(from: Date())
         let messageId = "\(senderName)_\(date)"
-        guard let userImage = self.userImage else {return}
+        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
+        let userImage = UIImage(contentsOfFile: fileURL.path)
+        guard let imageData = userImage?.jpegData(compressionQuality: 1) else {return}
         let timestamp = Date().timeIntervalSince1970
         
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
         
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
             guard let self = self else {return}
@@ -380,6 +383,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         }
         messageInputBar.inputTextView.text = nil
     }
+    
     private func postPhotoComment(photoUrl: URL) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
         let formatter = DateFormatter()
@@ -388,13 +392,15 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let date = formatter.string(from: Date())
         let messageId = "\(senderName)_\(date)"
         //        let messageId = "\(UUID().uuidString)"
-        guard let userImage = self.userImage else {return}
+        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
+        let userImage = UIImage(contentsOfFile: fileURL.path)
+        guard let imageData = userImage?.jpegData(compressionQuality: 1) else {return}
         let timestamp = Date().timeIntervalSince1970
         
         guard let placeholder = UIImage(systemName: "photo") else {return}
         let media = Media(url: photoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
         
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
         print ("new comment with photo is created and sent to the Firestore")
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
             guard let self = self else {return}
@@ -414,13 +420,15 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         formatter.dateFormat = "dd MM YYYY HH:mm:ss"
         let date = formatter.string(from: Date())
         let messageId = "\(senderName)_\(date)"
-        guard let userImage = self.userImage else {return}
+        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
+        let userImage = UIImage(contentsOfFile: fileURL.path)
+        guard let imageData = userImage?.jpegData(compressionQuality: 1) else {return}
         let timestamp = Date().timeIntervalSince1970
         
         guard let placeholder = UIImage(systemName: "video.fill") else {return}
         let media = Media(url: videoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
         
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: userImage, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: imageData, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
         print ("new comment with video is created and sent to the Firestore")
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
             guard let self = self else {return}
@@ -613,6 +621,15 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
         return commentsArray.count
     }
     
+    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        let comment = commentsArray[indexPath.section]
+            
+            let imageData = comment.userImage
+            let image = UIImage(data: imageData)
+            let avatar = Avatar(image: image, initials: "")
+            avatarView.set(avatar: avatar)
+    }
+          
     func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
         
         switch message.kind {
@@ -623,29 +640,20 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
             
         case .video(let media):
                 guard let videoUrl = media.url else { return }
-                // Check if thumbnail image is already cached
+                // Generate thumbnail for video comments
                 let thumbnailCacheKey = "\(videoUrl.absoluteString)_thumbnail"
                 if let cachedThumbnailImage = SDImageCache.shared.imageFromCache(forKey: thumbnailCacheKey) {
                     imageView.image = cachedThumbnailImage
                     return
                 }
-
-                // Create AVAsset from the video url
                 let asset = AVAsset(url: videoUrl)
-
-                // Create an AVAssetImageGenerator
                 let imageGenerator = AVAssetImageGenerator(asset: asset)
                 imageGenerator.appliesPreferredTrackTransform = true
-
-                // Get the first frame of the video
                 let time = CMTime(seconds: 0.0, preferredTimescale: 1)
                 guard let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) else { return }
-
-                // Resize the image to a thumbnail size
                 let thumbnailSize = CGSize(width: 80, height: 80)
                 let thumbnailImage = UIImage(cgImage: cgImage).sd_resizedImage(with: thumbnailSize, scaleMode: .aspectFill)
 
-                // Cache the thumbnail image
                 SDImageCache.shared.store(thumbnailImage, forKey: thumbnailCacheKey, completion: nil)
 
                 imageView.image = thumbnailImage

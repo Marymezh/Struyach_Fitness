@@ -417,7 +417,8 @@ final class DatabaseManager {
         
         let data = [
             "email": user.email,
-            "name": user.name
+            "name": user.name,
+            "profile_photo": user.profilePictureRef
         ]
         
         database
@@ -441,9 +442,9 @@ final class DatabaseManager {
             .getDocument { snapshot, error in
                 guard let data = snapshot?.data() as? [String: String],
                       let name = data["name"],
+                      let imageRef = data["profile_photo"],
                       error == nil else {return}
                 
-                let imageRef = data["profile_photo"]
                 let records = data["user_records"]
                 let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: records)
                 completion(user)

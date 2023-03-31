@@ -131,6 +131,7 @@ class LoginViewController: UIViewController {
         createAccountVC.title = "Create Account"
         createAccountVC.navigationItem.largeTitleDisplayMode = .never
 //        createAccountVC.navigationItem.hidesBackButton = true
+        navigationController?.navigationBar.tintColor = .systemGreen
         navigationController?.pushViewController(createAccountVC, animated: true)
     }
     

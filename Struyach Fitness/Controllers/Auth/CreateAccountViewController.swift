@@ -8,15 +8,30 @@
 import UIKit
 
 class CreateAccountViewController: UIViewController {
-
-    private let logoImageView: UIImageView = {
-        #if Admin
-        let imageView = UIImageView(image: UIImage(named: "struyach-eng-black"))
-        #else
-        let imageView = UIImageView(image: UIImage(named: "struyach-eng-white"))
-        #endif
-        
+    
+    private let activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.toAutoLayout()
+        indicator.isHidden = true
+        indicator.color = .systemGreen
+        return indicator
+    }()
+    
+    private let backgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black
+        view.alpha = 0.7
+        view.isHidden = true
+        view.toAutoLayout()
+        return view
+    }()
+    
+    private let avatarImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(systemName: "person.circle"))
+        imageView.layer.cornerRadius = 160/2
         imageView.clipsToBounds = true
+        imageView.isUserInteractionEnabled = true
+        imageView.tintColor = .systemGreen
         imageView.contentMode = .scaleAspectFill
         imageView.toAutoLayout()
         return imageView
@@ -113,69 +128,40 @@ class CreateAccountViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        #if Admin
+#if Admin
         view.backgroundColor = .black
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
-        #else
+#else
         view.backgroundColor = .white
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
-        #endif
+#endif
         
         setupSubviews()
+        setupGuestureRecognizer()
         userNameTextField.delegate = self
         emailTextField.delegate = self
         passwordTextField.delegate = self
         confirmPasswordTextField.delegate = self
     }
     
-    @objc private func signUpTapped() {
-        guard let email = emailTextField.text, !email.isEmpty,
-              let password = confirmPasswordTextField.text, !password.isEmpty,
-              password == passwordTextField.text,
-              let name = userNameTextField.text, !name.isEmpty else {return
-   //         showErrorAlert(text: "Passwords are not matching")
-        }
-        
-        //create User
-        AuthManager.shared.signUp(email: email, password: password) { [weak self] success in
-            if success {
-                let newUser = User(name: name, email: email, profilePictureRef: nil, personalRecords: nil)
-                DatabaseManager.shared.insertUser(user: newUser) { inserted in
-                    guard inserted else {return}
-                    
-                    UserDefaults.standard.set(name, forKey: "userName")
-                    UserDefaults.standard.set(email, forKey: "email")
-                    DispatchQueue.main.async {
-                        let vc = TabBarController()
-                        vc.modalPresentationStyle = .fullScreen
-                        self?.present(vc, animated: true)
-                    }
-                }
-            } else {
-                self?.showErrorAlert(text: "Can't create new account")
-            }
-        }
-        //Update database
-        
-        
-    }
-    
     private func setupSubviews() {
-        view.addSubviews(logoImageView,
+        view.addSubviews(avatarImageView,
                          autorizationView,
-                         signUpButton)
+                         signUpButton, backgroundView, activityIndicator)
         autorizationView.addSubviews(userNameTextField,
                                      emailTextField,
                                      passwordTextField,
                                      confirmPasswordTextField)
+        view.bringSubviewToFront(backgroundView)
+        view.bringSubviewToFront(activityIndicator)
         
         let constraints = [
-            logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
-            logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            logoImageView.widthAnchor.constraint(equalToConstant: 274),
-            logoImageView.heightAnchor.constraint(equalToConstant: 261),
+            avatarImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            avatarImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            avatarImageView.widthAnchor.constraint(equalToConstant: 160),
+            avatarImageView.heightAnchor.constraint(equalToConstant: 160),
             
-            autorizationView.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 10),
+            autorizationView.topAnchor.constraint(equalTo: avatarImageView.bottomAnchor, constant: 20),
             autorizationView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             autorizationView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             autorizationView.heightAnchor.constraint(equalToConstant: 200),
@@ -204,10 +190,101 @@ class CreateAccountViewController: UIViewController {
             signUpButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             signUpButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             signUpButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            backgroundView.topAnchor.constraint(equalTo: self.view.topAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)
     }
+    
+    private func setupGuestureRecognizer() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(avatarImageViewTapped))
+        avatarImageView.addGestureRecognizer(tap)
+    }
+    
+    @objc private func avatarImageViewTapped() {
+        
+        backgroundView.isHidden = false
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+        print ("avatar tapped")
+        showImagePickerController()
+    }
+    
+    @objc private func signUpTapped() {
+        guard let email = emailTextField.text, !email.isEmpty,
+              let password = confirmPasswordTextField.text, !password.isEmpty,
+              password == passwordTextField.text,
+              let name = userNameTextField.text, !name.isEmpty,
+              let imageData = self.avatarImageView.image?.jpegData(compressionQuality: 0.5) else {return
+        }
+        
+        //create User
+        AuthManager.shared.signUp(email: email, password: password) { [weak self] result in
+       
+            guard let self = self else {return}
+            self.backgroundView.isHidden = false
+            self.activityIndicator.isHidden = false
+            self.activityIndicator.startAnimating()
+            
+            switch result {
+            case .success:
+                StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
+                    guard let imageRef = imageRef else {return}
+                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil)
+                    DatabaseManager.shared.insertUser(user: newUser) { inserted in
+                        guard inserted else {
+                            print ("cant insert new user")
+                            return}
+                        UserDefaults.standard.set(name, forKey: "userName")
+                        UserDefaults.standard.set(email, forKey: "email")
+                        
+                        StorageManager.shared.downloadUrl(path: imageRef) { url in
+                            guard let url = url else {return}
+                            let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+                                guard let data = data, error == nil else { return }
+                                let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                                let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
+                                do {
+                                    try data.write(to: fileURL)
+                                } catch {
+                                    self.showErrorAlert(text: error.localizedDescription)
+                                }
+                            }
+                            task.resume()
+                        }
+                        
+                        DispatchQueue.main.async {
+                            let vc = TabBarController()
+                            vc.modalPresentationStyle = .fullScreen
+                            self.present(vc, animated: true)
+                            self.backgroundView.isHidden = true
+                            self.activityIndicator.isHidden = true
+                            self.activityIndicator.stopAnimating()
+                        }
+                    }
+                }
+            case .failure(let error):
+                var errorMessage = "Unable to create new user."
+                switch error {
+                case .emailAlreadyExists:
+                    errorMessage = "A user with this email already exists."
+                case .passwordTooShort:
+                    errorMessage = "Password is too short. Use at least 6 symbols"
+                case .unknownError:
+                    errorMessage = "An unknown error occurred."
+                }
+                self.showErrorAlert(text: errorMessage)
+            }
+        }
+    }
+
     
     private func showErrorAlert(text: String) {
         let alert = UIAlertController(title: "Error", message: text, preferredStyle: .alert)
@@ -226,5 +303,32 @@ extension CreateAccountViewController: UITextFieldDelegate {
                 textField.text = ""
             }
         }
+    }
+}
+
+extension CreateAccountViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    private func showImagePickerController() {
+        let picker = UIImagePickerController()
+        picker.allowsEditing = true
+        picker.delegate = self
+        picker.sourceType = .photoLibrary
+        navigationController?.present(picker, animated: true)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        navigationController?.dismiss(animated: true)
+        backgroundView.isHidden = true
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        navigationController?.dismiss(animated: true)
+        backgroundView.isHidden = true
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+        guard let image = info[.editedImage] as? UIImage else {return}
+        self.avatarImageView.image = image
+        
     }
 }

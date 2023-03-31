@@ -14,7 +14,7 @@ class ProfileTableViewController: UITableViewController {
     
     private var weights = ["", "00", "00", "00", "00", "00", "00", "00"]
     private let headerView = ProfileHeaderView()
-
+    private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     
     let currentEmail: String
 
@@ -64,25 +64,15 @@ class ProfileTableViewController: UITableViewController {
     
     func fetchProfileData() {
         DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
-            guard let user = user else {return}
+            guard let self = self, let user = user else { return }
+            
             DispatchQueue.main.async {
-                self?.headerView.userNameLabel.text = user.name
+                self.headerView.userNameLabel.text = user.name
                 UserDefaults.standard.set(user.name, forKey: "userName")
-                self?.headerView.userEmailLabel.text = user.email
-                guard let ref = user.profilePictureRef else {return}
-                StorageManager.shared.downloadUrl(path: ref) { url in
-                    guard let url = url else {return}
-                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-                        guard let data = data else {return}
-                        let encoded = try! PropertyListEncoder().encode(data)
-                        UserDefaults.standard.set(encoded, forKey: "userImage")
-                        DispatchQueue.main.async {
-                            self?.headerView.userPhotoImage.image = UIImage(data: data)
-                            
-                        }
-                    }
-                    task.resume()
-                }
+                self.headerView.userEmailLabel.text = user.email
+                let fileURL = self.documentsDirectory.appendingPathComponent("userImage.jpg")
+                let userImage = UIImage(contentsOfFile: fileURL.path)
+                self.headerView.userPhotoImage.image = userImage
             }
         }
     }
@@ -215,20 +205,31 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
         navigationController?.dismiss(animated: true)
         
         guard let image = info[.editedImage] as? UIImage,
-        let imageData = image.jpegData(compressionQuality: 0.3) else { return }
+        let imageData = image.jpegData(compressionQuality: 0.5) else { return }
         
         self.headerView.userPhotoImage.image = image
         
-        StorageManager.shared.uploadUserProfilePicture(email: currentEmail, image: imageData) { [weak self] success in
-            guard let self = self else {return}
-            if success {
+        StorageManager.shared.setUserProfilePicture(email: currentEmail, image: imageData) { [weak self] imageRef in
+            guard let self = self, let imageRef = imageRef else {return}
                 DatabaseManager.shared.updateProfilePhoto(email: self.currentEmail) { success in
                     guard success else {return}
-                    DispatchQueue.main.async {
-                        self.fetchProfileData()
+                    StorageManager.shared.downloadUrl(path: imageRef) { url in
+                        guard let url = url else { return }
+                        
+                        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+                            guard let data = data, error == nil else { return }
+                            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                            let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
+                            do {
+                                try data.write(to: fileURL)
+                                print ("New user image is uploaded to Storage and saved to filemanager")
+                            } catch {
+                                print(error.localizedDescription)
+                            }
+                        }
+                        task.resume()
                     }
                 }
-            }
         }
     }
 }
