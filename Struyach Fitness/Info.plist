@@ -2,20 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Just allow, trust me </string>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Please, allow access to your media library to select photo and video for comments</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Please, allow access to your Photo Library to select photo and video for comments</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Please, allow access to your camera to take photo and video</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Please, allow access to your microphone to send audio and video comments</string>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleLightContent</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -33,5 +19,9 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 </dict>
 </plist>

@@ -188,7 +188,7 @@ class ProfileTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
-        return UITableView.automaticDimension
+        return 130
     }
 }
 //MARK: - UIImagePickerControllerDelegate methods

@@ -226,8 +226,13 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     private func presentInputOptions() {
         let actionSheet = UIAlertController(title: "Attach media", message: nil, preferredStyle: .actionSheet)
-        actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self]_ in
+        actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self] _ in
             guard let self = self else {return}
+            
+            self.progressBackgroundView.isHidden = false
+            self.activityIndicator.isHidden = false
+            self.activityIndicator.startAnimating()
+            
             let picker = UIImagePickerController()
             picker.delegate = self
             picker.sourceType = .camera
@@ -265,12 +270,15 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         }))
         actionSheet.addAction(UIAlertAction(title: "Photo", style: .default, handler: { [weak self] _ in
             guard let self = self else {return}
+            
+            self.progressBackgroundView.isHidden = false
+            self.activityIndicator.isHidden = false
+            self.activityIndicator.startAnimating()
+            
             let picker = UIImagePickerController()
-//            picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .photoLibrary
             picker.mediaTypes = ["public.image"]
-            
             self.present(picker, animated: true)
             self.onImagePick = {info in
                 guard let image = info[.originalImage] as? UIImage,
@@ -278,11 +286,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
                 
                 StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout, progressHandler: { [weak self] percentComplete in
-                    self?.progressBackgroundView.isHidden = false
-                    self?.progressView.isHidden = false
-                    self?.progressLabel.isHidden = false
-                    self?.progressView.progress = percentComplete
-                    self?.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
+                    guard let self = self else {return}
+                    self.progressBackgroundView.isHidden = false
+                    self.progressView.isHidden = false
+                    self.progressLabel.isHidden = false
+                    self.progressView.progress = percentComplete
+                    self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
                 }) { [weak self] ref in
                     guard let self = self else {return}
                     if let safeRef = ref {
@@ -303,6 +312,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         }))
         actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
             guard let self = self else { return }
+            
+            self.progressBackgroundView.isHidden = false
+            self.activityIndicator.isHidden = false
+            self.activityIndicator.startAnimating()
+            
             let picker = UIImagePickerController()
             picker.allowsEditing = true
             picker.delegate = self
@@ -366,7 +380,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let messageId = "\(senderName)_\(date)"
         let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
         let userImage = UIImage(contentsOfFile: fileURL.path)
-        guard let imageData = userImage?.jpegData(compressionQuality: 1) else {return}
+        guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else {return}
         let timestamp = Date().timeIntervalSince1970
         
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
@@ -623,11 +637,20 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
     
     func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
         let comment = commentsArray[indexPath.section]
-            
-            let imageData = comment.userImage
-            let image = UIImage(data: imageData)
-            let avatar = Avatar(image: image, initials: "")
-            avatarView.set(avatar: avatar)
+        
+        let imageData = comment.userImage
+        let image = UIImage(data: imageData)
+        let avatar = Avatar(image: image, initials: "")
+        avatarView.set(avatar: avatar)
+//        
+//        
+//        avatarView.frame.size = CGSize(width: 50, height: 50)
+//        
+//        
+//        avatarView.layer.borderWidth = 1
+//        avatarView.layer.borderColor = UIColor.gray.cgColor
+//        avatarView.layer.cornerRadius = avatarView.frame.width / 2
+//        avatarView.clipsToBounds = true
     }
           
     func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
@@ -699,11 +722,17 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
+        self.progressBackgroundView.isHidden = true
+        self.activityIndicator.isHidden = true
+        self.activityIndicator.stopAnimating()
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         self.onImagePick?(info)
         picker.dismiss(animated: true)
+        self.progressBackgroundView.isHidden = true
+        self.activityIndicator.isHidden = true
+        self.activityIndicator.stopAnimating()
     }
 }
 

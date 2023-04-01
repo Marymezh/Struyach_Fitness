@@ -8,7 +8,7 @@
 import UIKit
 
 class LoginViewController: UIViewController {
-    
+
     private let logoImageView: UIImageView = {
         #if Admin
         let imageView = UIImageView(image: UIImage(named: "struyach-eng-black"))
@@ -107,34 +107,6 @@ class LoginViewController: UIViewController {
         setupSubviews()
     }
     
-    @objc private func loginTapped() {
-        guard let email = emailTextField.text, !email.isEmpty,
-              let password = passwordTextField.text, !password.isEmpty else {return}
-        
-        AuthManager.shared.signIn(email: email, password: password) { [weak self] success in
-            if success {
-            
-            DispatchQueue.main.async {
-                UserDefaults.standard.set(email, forKey: "email")
-                let vc = TabBarController()
-                vc.modalPresentationStyle = .fullScreen
-                self?.present(vc, animated: true)
-            }
-            } else {
-                self?.showAlert(error: "Unable to log in")
-            }
-        }
-    }
-    
-    @objc private func createAccountTapped() {
-        let createAccountVC = CreateAccountViewController()
-        createAccountVC.title = "Create Account"
-        createAccountVC.navigationItem.largeTitleDisplayMode = .never
-//        createAccountVC.navigationItem.hidesBackButton = true
-        navigationController?.navigationBar.tintColor = .systemGreen
-        navigationController?.pushViewController(createAccountVC, animated: true)
-    }
-    
     private func setupSubviews() {
         view.addSubviews(logoImageView, autorizationView, logInButton, createAccountButton)
         autorizationView.addSubviews(emailTextField, passwordTextField)
@@ -174,13 +146,42 @@ class LoginViewController: UIViewController {
         NSLayoutConstraint.activate(constraints)
     }
     
+    @objc private func loginTapped() {
+        guard let email = emailTextField.text, !email.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty else {return}
+        
+        AuthManager.shared.signIn(email: email, password: password) { [weak self] success in
+            guard let self = self else {return}
+            
+            if success {
+                DispatchQueue.main.async {
+                    UserDefaults.standard.set(email, forKey: "email")
+                    let vc = TabBarController()
+                    vc.modalPresentationStyle = .fullScreen
+                    self.present(vc, animated: true)
+                }
+            } else {
+                self.showAlert(error: "Unable to log in")
+            }
+        }
+    }
+    
+    @objc private func createAccountTapped() {
+        let createAccountVC = CreateAccountViewController()
+        createAccountVC.title = "Create Account"
+        createAccountVC.navigationItem.largeTitleDisplayMode = .never
+//        createAccountVC.navigationItem.hidesBackButton = true
+        navigationController?.navigationBar.tintColor = .systemGreen
+        navigationController?.pushViewController(createAccountVC, animated: true)
+    }
+    
     private func showAlert (error: String) {
         let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Retry", style: .cancel) { _ in
             print("retry entry")
         }
         alert.addAction(cancelAction)
-        
+        alert.editButtonItem.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
     }
 }

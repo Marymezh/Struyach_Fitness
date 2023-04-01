@@ -229,12 +229,12 @@ class CreateAccountViewController: UIViewController {
         AuthManager.shared.signUp(email: email, password: password) { [weak self] result in
        
             guard let self = self else {return}
-            self.backgroundView.isHidden = false
-            self.activityIndicator.isHidden = false
-            self.activityIndicator.startAnimating()
-            
+
             switch result {
             case .success:
+                self.backgroundView.isHidden = false
+                self.activityIndicator.isHidden = false
+                self.activityIndicator.startAnimating()
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
                     let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil)
