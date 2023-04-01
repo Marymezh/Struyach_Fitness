@@ -207,24 +207,20 @@ final class DatabaseManager {
             }
         default : break
         }
-       //for some reasons this lines result in a bug with fetching comments, will come back to this later
-//        formatter.locale = .current
-//        formatter.dateFormat = "dd MM YYYY HH:mm ss"
-        let dateString = formatter.string(from: comment.sentDate)
+
 
 
         let commentData: [String: Any] = [
             "senderId": comment.sender.senderId,
             "senderName": comment.sender.displayName,
             "messageId": comment.messageId,
-            "sentDate": dateString,
+            "sentDate": FieldValue.serverTimestamp(),
             "contents": commentContents,
             "type": comment.kind.messageKindString, 
 
             "userImage": comment.userImage,
             "programId": comment.programId,
-            "workoutId": comment.workoutId,
-            "timestamp": comment.timestamp
+            "workoutId": comment.workoutId
         ]
 
            database
@@ -256,7 +252,7 @@ final class DatabaseManager {
             .collection("workouts")
             .document(workout.id)
             .collection("comments")
-            .order(by: "timestamp", descending: false)
+            .order(by: "sentDate", descending: false)
             .getDocuments { snapshot, error in
                 guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
                 let comments: [Comment] = documents.compactMap { dictionary in
@@ -266,12 +262,12 @@ final class DatabaseManager {
                           let messageId = dictionary["messageId"] as? String,
                           let contents = dictionary["contents"] as? String,
                           let type = dictionary["type"] as? String,
-                          let timestamp = dictionary["timestamp"] as? TimeInterval,
-                          let dateString = dictionary["sentDate"] as? String,
-                          let date = self.formatter.date(from: dateString),
+                          let date = dictionary["sentDate"] as? Timestamp,
                           let workoutId = dictionary["workoutId"] as? String,
                           let programId = dictionary["programId"] as? String else {print("unable to create comment")
                         return nil}
+                    
+                    let sentDate = date.dateValue()
                     
                     var kind: MessageKind?
                     
@@ -279,7 +275,7 @@ final class DatabaseManager {
                     case "photo":
                         guard let imageURL = URL(string: contents),
                         let placeholder = UIImage(systemName: "photo") else {return nil}
-                        let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 250, height: 250))
+                        let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
                         kind = .photo(media)
                     case "video":
                         guard let videoUrl = URL(string: contents),
@@ -292,7 +288,7 @@ final class DatabaseManager {
 
                     guard let finalKind = kind else {return nil}
                     let sender = Sender(senderId: senderId, displayName: senderName)
-                    let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
+                    let comment = Comment(sender: sender, messageId: messageId, sentDate: sentDate, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId)
                     return comment
                 }
                    completion(comments)
@@ -349,61 +345,61 @@ final class DatabaseManager {
         }
     }
     
-    public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
-        print("Executing function: \(#function)")
-        let documentID = workout.programID
-                .replacingOccurrences(of: "/", with: "_")
-                .replacingOccurrences(of: " ", with: "_")
-            
-           let listener = database
-                .collection("programs")
-                .document(documentID)
-                .collection("workouts")
-                .document(workout.id)
-                .collection("comments")
-                .order(by: "timestamp", descending: false)
-                .addSnapshotListener { snapshot, error in
-                    guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
-                    let comments: [Comment] = documents.compactMap { dictionary in
-                        guard let senderId = dictionary["senderId"] as? String,
-                              let senderName = dictionary["senderName"] as? String,
-                              let userImage = dictionary["userImage"] as? Data,
-                              let messageId = dictionary["messageId"] as? String,
-                              let contents = dictionary["contents"] as? String,
-                              let type = dictionary["type"] as? String,
-                              let timestamp = dictionary["timestamp"] as? TimeInterval,
-                              let dateString = dictionary["sentDate"] as? String,
-                              let date = self.formatter.date(from: dateString),
-                              let workoutId = dictionary["workoutId"] as? String,
-                              let programId = dictionary["programId"] as? String else {print("unable to create comment")
-                            return nil}
-                        
-                        var kind: MessageKind?
-                        
-                        switch type {
-                        case "photo":
-                            guard let imageURL = URL(string: contents),
-                            let placeholder = UIImage(systemName: "photo") else {return nil}
-                            let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 250, height: 250))
-                            kind = .photo(media)
-                        case "video":
-                            guard let videoUrl = URL(string: contents),
-                            let placeholder = UIImage(named: "general") else {return nil}
-                            let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 90, height: 90))
-                            kind = .video(media)
-                        case "text": kind = .text(contents)
-                        default: break
-                        }
-
-                        guard let finalKind = kind else {return nil}
-                        let sender = Sender(senderId: senderId, displayName: senderName)
-                        let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
-                        return comment
-                    }
-                       completion(comments)
-                   }
-        return listener
-        }
+//    public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
+//        print("Executing function: \(#function)")
+//        let documentID = workout.programID
+//                .replacingOccurrences(of: "/", with: "_")
+//                .replacingOccurrences(of: " ", with: "_")
+//
+//           let listener = database
+//                .collection("programs")
+//                .document(documentID)
+//                .collection("workouts")
+//                .document(workout.id)
+//                .collection("comments")
+//                .order(by: "timestamp", descending: false)
+//                .addSnapshotListener { snapshot, error in
+//                    guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+//                    let comments: [Comment] = documents.compactMap { dictionary in
+//                        guard let senderId = dictionary["senderId"] as? String,
+//                              let senderName = dictionary["senderName"] as? String,
+//                              let userImage = dictionary["userImage"] as? Data,
+//                              let messageId = dictionary["messageId"] as? String,
+//                              let contents = dictionary["contents"] as? String,
+//                              let type = dictionary["type"] as? String,
+//                              let timestamp = dictionary["timestamp"] as? TimeInterval,
+//                              let dateString = dictionary["sentDate"] as? String,
+//                              let date = self.formatter.date(from: dateString),
+//                              let workoutId = dictionary["workoutId"] as? String,
+//                              let programId = dictionary["programId"] as? String else {print("unable to create comment")
+//                            return nil}
+//
+//                        var kind: MessageKind?
+//
+//                        switch type {
+//                        case "photo":
+//                            guard let imageURL = URL(string: contents),
+//                            let placeholder = UIImage(systemName: "photo") else {return nil}
+//                            let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 250, height: 250))
+//                            kind = .photo(media)
+//                        case "video":
+//                            guard let videoUrl = URL(string: contents),
+//                            let placeholder = UIImage(named: "general") else {return nil}
+//                            let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 90, height: 90))
+//                            kind = .video(media)
+//                        case "text": kind = .text(contents)
+//                        default: break
+//                        }
+//
+//                        guard let finalKind = kind else {return nil}
+//                        let sender = Sender(senderId: senderId, displayName: senderName)
+//                        let comment = Comment(sender: sender, messageId: messageId, sentDate: date, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, timestamp: timestamp)
+//                        return comment
+//                    }
+//                       completion(comments)
+//                   }
+//        return listener
+//        }
     
     //MARK: - Adding, fetching and editing users
     

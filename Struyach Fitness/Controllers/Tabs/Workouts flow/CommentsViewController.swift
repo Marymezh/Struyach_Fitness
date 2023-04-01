@@ -99,18 +99,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = true
-//        commentsListener = DatabaseManager.shared.addNewCommentsListener(workout: workout) {[weak self] comments in
-//            guard let self = self else {return}
-//            self.commentsArray = comments
-//            DispatchQueue.main.async {
-//                self.messagesCollectionView.reloadData()
-//            }
-//        }
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        commentsListener?.remove()
     }
     
     private func setupMessageCollectionView() {
@@ -120,6 +108,19 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
+        
+        let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
+        layout?.setMessageOutgoingAvatarSize(CGSize(width: 40, height: 40))
+        layout?.setMessageIncomingAvatarSize(CGSize(width: 40, height: 40))
+        layout?.setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 5, left: 0, bottom: 10, right: 50)))
+        layout?.setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 10, left: 0, bottom: 5, right: 50)))
+        
+        layout?.setMessageIncomingMessageTopLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 5, left: 50, bottom: 10, right: 0)))
+        layout?.setMessageIncomingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 10, left: 50, bottom: 5, right: 0)))
+        
+        layout?.setMessageOutgoingAvatarPosition(AvatarPosition(vertical: .messageBottom))
+        layout?.setMessageIncomingAvatarPosition(AvatarPosition(vertical: .messageBottom))
+        
     }
     
     private func setupInputBar() {
@@ -335,11 +336,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 
                 let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
                 StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout, progressHandler: { [weak self] percentComplete in
-                    self?.progressBackgroundView.isHidden = false
-                    self?.progressView.isHidden = false
-                    self?.progressLabel.isHidden = false
-                    self?.progressView.progress = percentComplete
-                    self?.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
+                    guard let self = self else {return}
+                    self.progressBackgroundView.isHidden = false
+                    self.progressView.isHidden = false
+                    self.progressLabel.isHidden = false
+                    self.progressView.progress = percentComplete
+                    self.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
                         })  { [weak self] ref in
                     guard let self = self else { return }
                     if let safeRef = ref {
@@ -381,16 +383,23 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
         let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else {return}
-        let timestamp = Date().timeIntervalSince1970
+    
         
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout.id, programId: workout.programID)
         
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
             guard let self = self else {return}
             if success {
-                self.loadComments(workout: self.workout)
+                self.loadComments(workout: self.workout) { success in
+                    if success {
+                        DispatchQueue.main.async {
+                            self.messagesCollectionView.scrollToLastItem()
+                        }
+                    }
+                    
+                }
+
                 print ("text comment is posted successfully")
-                self.messagesCollectionView.scrollToLastItem()
             } else {
                 print ("cant save comment")
             }
@@ -405,21 +414,26 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         formatter.dateFormat = "dd MM YYYY HH:mm:ss"
         let date = formatter.string(from: Date())
         let messageId = "\(senderName)_\(date)"
-        //        let messageId = "\(UUID().uuidString)"
         let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
         let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 1) else {return}
-        let timestamp = Date().timeIntervalSince1970
         
         guard let placeholder = UIImage(systemName: "photo") else {return}
         let media = Media(url: photoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
         
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout.id, programId: workout.programID)
         print ("new comment with photo is created and sent to the Firestore")
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
             guard let self = self else {return}
             if success {
-                self.loadComments(workout: self.workout)
+                self.loadComments(workout: self.workout){ success in
+                    if success {
+                        DispatchQueue.main.async {
+                            self.messagesCollectionView.scrollToLastItem()
+                        }
+                    }
+                    
+                }
                 print ("successfully load photo comment")
                 self.messagesCollectionView.scrollToLastItem()
             } else {
@@ -437,17 +451,23 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
         let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 1) else {return}
-        let timestamp = Date().timeIntervalSince1970
         
         guard let placeholder = UIImage(systemName: "video.fill") else {return}
         let media = Media(url: videoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
         
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: imageData, workoutId: workout.id, programId: workout.programID, timestamp: timestamp)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: imageData, workoutId: workout.id, programId: workout.programID)
         print ("new comment with video is created and sent to the Firestore")
         DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
             guard let self = self else {return}
             if success {
-                self.loadComments(workout: self.workout)
+                self.loadComments(workout: self.workout){ success in
+                    if success {
+                        DispatchQueue.main.async {
+                            self.messagesCollectionView.scrollToLastItem()
+                        }
+                    }
+                    
+                }
                 print ("successfully upload video message ")
                 self.messagesCollectionView.scrollToLastItem()
             } else {
@@ -456,7 +476,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         }
     }
     
-    private func loadComments(workout: Workout) {
+    private func loadComments(workout: Workout, completion: ((Bool) -> Void)? = nil){
             self.progressBackgroundView.isHidden = false
             self.activityIndicator.isHidden = false
             self.activityIndicator.startAnimating()
@@ -470,6 +490,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     self.activityIndicator.isHidden = true
                     self.activityIndicator.stopAnimating()
                 }
+                completion?(true)
             }
         }
 
@@ -642,15 +663,34 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
         let image = UIImage(data: imageData)
         let avatar = Avatar(image: image, initials: "")
         avatarView.set(avatar: avatar)
-//        
-//        
-//        avatarView.frame.size = CGSize(width: 50, height: 50)
-//        
-//        
-//        avatarView.layer.borderWidth = 1
-//        avatarView.layer.borderColor = UIColor.gray.cgColor
-//        avatarView.layer.cornerRadius = avatarView.frame.width / 2
-//        avatarView.clipsToBounds = true
+    }
+    
+    func messageTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        let sender = message.sender
+        return NSAttributedString(
+            string: sender.displayName,
+            attributes: [.font: UIFont.preferredFont(forTextStyle: .caption1),.foregroundColor: UIColor.white]
+        )
+    }
+    
+    func messageTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGFloat {
+        return 30
+    }
+
+    func messageBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
+        let sentDate = message.sentDate
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMM YYYY HH:mm"
+        dateFormatter.locale = .current
+        let dateString = dateFormatter.string(from: sentDate)
+        return NSAttributedString(
+            string: dateString,
+            attributes: [.font: UIFont.preferredFont(forTextStyle: .caption2),.foregroundColor: UIColor.white]
+        )
+    }
+    
+    func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGFloat {
+        return 30
     }
           
     func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {

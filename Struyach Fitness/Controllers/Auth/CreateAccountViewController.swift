@@ -91,7 +91,7 @@ class CreateAccountViewController: UIViewController {
         textField.autocorrectionType = .no
         textField.backgroundColor = .systemGray6
         textField.clipsToBounds = true
-        textField.placeholder = "Password"
+        textField.placeholder = "Password (minimum 6 symbols)"
         textField.isSecureTextEntry = true
         textField.toAutoLayout()
         return textField

@@ -17,7 +17,6 @@ struct Comment: MessageType {
     let userImage: Data
     let workoutId: String
     let programId: String
-    let timestamp: TimeInterval
 }
 
 extension MessageKind {
