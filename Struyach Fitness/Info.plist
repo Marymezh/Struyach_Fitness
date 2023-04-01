@@ -2,6 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Please. allow access to your microphone</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Please, allow access to your Photo Lybrary to save photos and videos</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Please, allow access to your Photo Lybrary to choose from photos and videos</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Please, allow access to your Medai Lybrary</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Please, allow access to your camera to thake photos</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
