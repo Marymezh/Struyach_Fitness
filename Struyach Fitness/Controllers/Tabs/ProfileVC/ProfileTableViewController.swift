@@ -16,6 +16,14 @@ class ProfileTableViewController: UITableViewController {
     private let headerView = ProfileHeaderView()
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     
+    private let activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.toAutoLayout()
+        indicator.isHidden = true
+        indicator.color = .white
+        return indicator
+    }()
+    
     let currentEmail: String
 
     init(currentEmail: String) {
@@ -32,11 +40,22 @@ class ProfileTableViewController: UITableViewController {
         setupNavigationBar()
         setupTableView()
         setupHeaderView()
+        setupSubviews()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         uploadUserRecords()
+    }
+    
+    private func setupSubviews() {
+        view.addSubview(activityIndicator)
+        let constraints = [
+            activityIndicator.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 74),
+            activityIndicator.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 58)
+        ]
+        
+        NSLayoutConstraint.activate(constraints)
     }
     
     private func setupTableView() {
@@ -57,8 +76,11 @@ class ProfileTableViewController: UITableViewController {
     }
     
     @objc private func userPhotoImageTapped() {
-       guard let myEmail = UserDefaults.standard.string(forKey: "email"),
-             myEmail == currentEmail else {return}
+        view.bringSubviewToFront(activityIndicator)
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+        guard let myEmail = UserDefaults.standard.string(forKey: "email"),
+              myEmail == currentEmail else {return}
         showImagePickerController()
     }
     
@@ -201,9 +223,16 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
         navigationController?.present(picker, animated: true)
     }
     
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        navigationController?.dismiss(animated: true)
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         navigationController?.dismiss(animated: true)
-        
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
         guard let image = info[.editedImage] as? UIImage,
         let imageData = image.jpegData(compressionQuality: 0.5) else { return }
         
@@ -211,25 +240,25 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
         
         StorageManager.shared.setUserProfilePicture(email: currentEmail, image: imageData) { [weak self] imageRef in
             guard let self = self, let imageRef = imageRef else {return}
-                DatabaseManager.shared.updateProfilePhoto(email: self.currentEmail) { success in
-                    guard success else {return}
-                    StorageManager.shared.downloadUrl(path: imageRef) { url in
-                        guard let url = url else { return }
-                        
-                        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-                            guard let data = data, error == nil else { return }
-                            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                            let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
-                            do {
-                                try data.write(to: fileURL)
-                                print ("New user image is uploaded to Storage and saved to filemanager")
-                            } catch {
-                                print(error.localizedDescription)
-                            }
+            DatabaseManager.shared.updateProfilePhoto(email: self.currentEmail) { success in
+                guard success else {return}
+                StorageManager.shared.downloadUrl(path: imageRef) { url in
+                    guard let url = url else { return }
+                    
+                    let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+                        guard let data = data, error == nil else { return }
+                        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
+                        do {
+                            try data.write(to: fileURL)
+                            print ("New user image is uploaded to Storage and saved to filemanager")
+                        } catch {
+                            print(error.localizedDescription)
                         }
-                        task.resume()
                     }
+                    task.resume()
                 }
+            }
         }
     }
 }
