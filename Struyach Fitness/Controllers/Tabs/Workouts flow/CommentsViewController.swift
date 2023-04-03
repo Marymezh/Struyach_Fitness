@@ -18,7 +18,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     private let workout: Workout
     var commentsArray: [Comment] = []
-    private var commentsListener: ListenerRegistration?
     private var progressBackgroundView: UIView!
     private var progressView: UIProgressView!
     private var progressLabel: UILabel!
@@ -29,17 +28,14 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private let userEmail = UserDefaults.standard.string(forKey: "email")
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 
-    
     let workoutView: UITextView = {
         let textView = UITextView()
-        textView.backgroundColor = .white
-        textView.textColor = .black
+        textView.backgroundColor = .systemGray6
         textView.isScrollEnabled = true
         textView.isUserInteractionEnabled = true
         textView.isEditable = false
         textView.font = UIFont.systemFont(ofSize: 16)
         textView.layer.cornerRadius = 10
-        
         textView.toAutoLayout()
         return textView
     }()
@@ -47,14 +43,14 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     let containerView: UIView = {
         let view = UIView()
         view.toAutoLayout()
-        view.backgroundColor = .customDarkGray
+        view.backgroundColor = .customDarkComments
         return view
     }()
     
     let secondContainerView: UIView = {
         let view = UIView()
         view.toAutoLayout()
-        view.backgroundColor = .white
+        view.backgroundColor = .systemGray6
         view.layer.borderWidth = 0.5
         view.layer.borderColor = UIColor.black.cgColor
         view.layer.cornerRadius = 10
@@ -74,7 +70,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             return indicator
         }()
 
-    
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
     
     init (workout: Workout) {
@@ -103,7 +98,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     private func setupMessageCollectionView() {
         messagesCollectionView.toAutoLayout()
-        messagesCollectionView.backgroundColor = .customDarkGray
+        messagesCollectionView.backgroundColor = .customDarkComments
         messagesCollectionView.messageCellDelegate = self
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
@@ -112,11 +107,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
         layout?.setMessageOutgoingAvatarSize(CGSize(width: 40, height: 40))
         layout?.setMessageIncomingAvatarSize(CGSize(width: 40, height: 40))
-        layout?.setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 5, left: 0, bottom: 10, right: 50)))
-        layout?.setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 10, left: 0, bottom: 5, right: 50)))
+        layout?.setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 5, left: 0, bottom: 5, right: 50)))
+        layout?.setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 5, left: 0, bottom: 5, right: 50)))
         
-        layout?.setMessageIncomingMessageTopLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 5, left: 50, bottom: 10, right: 0)))
-        layout?.setMessageIncomingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 10, left: 50, bottom: 5, right: 0)))
+        layout?.setMessageIncomingMessageTopLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 5, left: 50, bottom: 5, right: 0)))
+        layout?.setMessageIncomingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 5, left: 50, bottom: 5, right: 0)))
         
         layout?.setMessageOutgoingAvatarPosition(AvatarPosition(vertical: .messageBottom))
         layout?.setMessageIncomingAvatarPosition(AvatarPosition(vertical: .messageBottom))
@@ -130,10 +125,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messageInputBar.inputTextView.delegate = self
         messageInputBar.inputTextView.placeholder = " Write a comment..."
         messageInputBar.inputTextView.placeholderTextColor = .gray
-        messageInputBar.inputTextView.backgroundColor = .white
+        messageInputBar.inputTextView.backgroundColor = .systemGray6
         messageInputBar.inputTextView.layer.cornerRadius = 10
-        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 5, bottom: 5, right: 5)
-        messageInputBar.inputTextView.tintColor = .customDarkGray
+        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 5, bottom: 5, right: 0)
         messageInputBar.tintColor = .systemGray
         
         let attachButton = InputBarButtonItem()
@@ -149,8 +143,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     }
     
     private func setupNavbarAndView() {
-        self.view.backgroundColor = .customDarkGray
-        UIBarButtonItem.appearance(whenContainedInInstancesOf: [UIImagePickerController.self]).tintColor = .systemGreen
+        self.view.backgroundColor = .customDarkComments
         
         workoutView.text = workout.description
         view.addSubview(containerView)
@@ -490,7 +483,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     self.activityIndicator.isHidden = true
                     self.activityIndicator.stopAnimating()
                 }
-                completion?(true)
+                
             }
         }
 
@@ -753,6 +746,7 @@ extension CommentsViewController: MessageCellDelegate {
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         print("executing \(#function)")
+        inputBar.inputTextView.resignFirstResponder()
         postComment(text: text)
     }
 }

@@ -51,7 +51,6 @@ class CreateAccountViewController: UIViewController {
     private let userNameTextField: UITextField = {
         let textField = UITextField()
         textField.font = UIFont.systemFont(ofSize: 16)
-        textField.textColor = .black
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
         textField.leftViewMode = .always
         textField.tintColor = .systemGray
@@ -66,7 +65,6 @@ class CreateAccountViewController: UIViewController {
     private let emailTextField: UITextField = {
         let textField = UITextField()
         textField.font = UIFont.systemFont(ofSize: 16)
-        textField.textColor = .black
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
         textField.leftViewMode = .always
         textField.tintColor = .systemGray
@@ -83,7 +81,6 @@ class CreateAccountViewController: UIViewController {
     private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.font = UIFont.systemFont(ofSize: 16)
-        textField.textColor = .black
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
         textField.leftViewMode = .always
         textField.tintColor = .systemGray
@@ -100,7 +97,6 @@ class CreateAccountViewController: UIViewController {
     private let confirmPasswordTextField: UITextField = {
         let textField = UITextField()
         textField.font = UIFont.systemFont(ofSize: 16)
-        textField.textColor = .black
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
         textField.leftViewMode = .always
         textField.tintColor = .systemGray
@@ -130,12 +126,15 @@ class CreateAccountViewController: UIViewController {
         super.viewDidLoad()
 #if Admin
         view.backgroundColor = .black
+        navigationController?.navigationBar.backgroundColor = .black
+        navigationController?.navigationBar.barTintColor = .black
+        navigationController?.navigationBar.alpha = 0.9
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
 #else
         view.backgroundColor = .white
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
 #endif
-        
+
         setupSubviews()
         setupGuestureRecognizer()
         userNameTextField.delegate = self

@@ -41,6 +41,8 @@ class ProfileTableViewController: UITableViewController {
         setupTableView()
         setupHeaderView()
         setupSubviews()
+        fetchUserRecords()
+        fetchProfileData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -133,9 +135,9 @@ class ProfileTableViewController: UITableViewController {
 
    private func setupNavigationBar () {
        navigationController?.navigationBar.tintColor = .systemRed
-       navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
-       navigationController?.navigationBar.barTintColor = .customTabBar
-       navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
+//       navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
+//       navigationController?.navigationBar.barTintColor = .customTabBar
+//       navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Sign Out",
             style: .done,
@@ -179,6 +181,7 @@ class ProfileTableViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
             cell.backgroundColor = .customLightGray
             cell.textLabel?.text = "PERSONAL RECORDS"
+            cell.textLabel?.textColor = .customDarkGray
             cell.textLabel?.textAlignment = .center
             cell.textLabel?.font = UIFont.systemFont(ofSize: 22, weight: .bold)
             return cell

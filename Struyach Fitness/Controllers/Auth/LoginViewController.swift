@@ -36,7 +36,6 @@ class LoginViewController: UIViewController {
     private let emailTextField: UITextField = {
         let textField = UITextField()
         textField.font = UIFont.systemFont(ofSize: 16)
-        textField.textColor = .black
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
         textField.leftViewMode = .always
         textField.tintColor = .systemGray
@@ -53,7 +52,6 @@ class LoginViewController: UIViewController {
     private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.font = UIFont.systemFont(ofSize: 16)
-        textField.textColor = .black
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
         textField.leftViewMode = .always
         textField.tintColor = .systemGray
@@ -98,15 +96,21 @@ class LoginViewController: UIViewController {
 
         #if Admin
         view.backgroundColor = .black
-        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+                navigationController?.navigationBar.backgroundColor = .black
+                navigationController?.navigationBar.barTintColor = .black
+                navigationController?.navigationBar.alpha = 0.9
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         #else
         view.backgroundColor = .white
-        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
+        navigationController?.navigationBar.backgroundColor = .white
+        navigationController?.navigationBar.barTintColor = .white
+        navigationController?.navigationBar.alpha = 0.9
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
         #endif
         
         setupSubviews()
     }
-    
+
     private func setupSubviews() {
         view.addSubviews(logoImageView, autorizationView, logInButton, createAccountButton)
         autorizationView.addSubviews(emailTextField, passwordTextField)

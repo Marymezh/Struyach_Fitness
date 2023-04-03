@@ -13,6 +13,7 @@ extension UIColor {
     static let customLightGray =  UIColor(named: "lightGray")
     static let customMediumGray = UIColor(named: "mediumGray")
     static let customDarkGray = UIColor(named: "darkBackground")
+    static let customDarkComments = UIColor(named: "darkBackgroundComments")
     static let customTabBar = UIColor(named: "tabbar")
     static let customKeyboard = UIColor(named: "customKeyboardColor" )
 }

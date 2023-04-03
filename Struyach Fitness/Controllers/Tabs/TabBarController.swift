@@ -13,6 +13,7 @@ class TabBarController: UITabBarController {
         super.viewDidLoad()
         setupControllers()
         setupTabBarAppearance()
+        setupNavBarAppearance()
     }
     
     private func setupTabBarAppearance() {
@@ -24,7 +25,21 @@ class TabBarController: UITabBarController {
         tabBar.tintColor = .systemGreen
         tabBar.unselectedItemTintColor = .darkGray
         tabBar.backgroundColor = .customDarkGray
-
+    }
+    
+    private func setupNavBarAppearance() {
+        UINavigationBar.appearance().tintColor = .white
+        UINavigationBar.appearance().barTintColor = .black
+        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white]
+        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+ //       if #available(iOS 15.0, *) {
+           let appearance = UINavigationBarAppearance()
+           appearance.configureWithDefaultBackground()
+           appearance.backgroundColor = .black
+           appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+           appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+           UINavigationBar.appearance().standardAppearance = appearance
+      //     UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
 
     private func setupControllers() {
@@ -33,9 +48,6 @@ class TabBarController: UITabBarController {
         programsVC.title = "Programs"
         let profileVC = ProfileTableViewController(currentEmail: currentUserEmail)
         profileVC.title = "Profile"
-        profileVC.fetchUserRecords()
-        profileVC.fetchProfileData()
-        
         programsVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always
         
@@ -44,6 +56,9 @@ class TabBarController: UITabBarController {
         
         nav1.navigationBar.prefersLargeTitles = true
         nav2.navigationBar.prefersLargeTitles = true
+        
+//        nav1.overrideUserInterfaceStyle = .dark
+//        nav2.overrideUserInterfaceStyle = .dark
         
         nav1.tabBarItem = UITabBarItem(title: "Programs", image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
         nav2.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 2)
