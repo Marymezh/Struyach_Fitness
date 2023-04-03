@@ -64,7 +64,7 @@ class ProfileTableViewController: UITableViewController {
         showImagePickerController()
     }
     
-    func fetchOtherUserData() {
+    func fetchOtherUserData(completion: @escaping (Bool)->()) {
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
             let imageRef = user.profilePictureRef
@@ -84,6 +84,7 @@ class ProfileTableViewController: UITableViewController {
                             self.headerView.userPhotoImage.image = image
                             self.headerView.userNameLabel.text = user.name
                             self.headerView.userEmailLabel.text = user.email
+                            completion(true)
                         }
                     } else {
                         print("Error creating image from data")

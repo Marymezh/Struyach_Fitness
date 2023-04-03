@@ -728,9 +728,15 @@ extension CommentsViewController: MessageCellDelegate {
         let comment = commentsArray[indexPath.section]
         guard comment.sender.senderId != userEmail else {return}
         let profileVC = ProfileTableViewController(email: comment.sender.senderId)
-        profileVC.fetchOtherUserData()
         profileVC.fetchUserRecords()
-        navigationController?.present(profileVC, animated: true)
+        profileVC.fetchOtherUserData { [weak self] success in
+            guard let self = self else {return}
+            if success {
+                self.navigationController?.present(profileVC, animated: true)
+            }
+        }
+        
+     
     }
     
     func didTapImage(in cell: MessageCollectionViewCell) {
