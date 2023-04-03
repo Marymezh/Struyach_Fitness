@@ -50,15 +50,14 @@ class TabBarController: UITabBarController {
         profileVC.title = "Profile"
         programsVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always
+        profileVC.fetchUserRecords()
+        profileVC.fetchProfileData()
         
         let nav1 = UINavigationController(rootViewController: programsVC)
         let nav2 = UINavigationController(rootViewController: profileVC)
         
         nav1.navigationBar.prefersLargeTitles = true
         nav2.navigationBar.prefersLargeTitles = true
-        
-//        nav1.overrideUserInterfaceStyle = .dark
-//        nav2.overrideUserInterfaceStyle = .dark
         
         nav1.tabBarItem = UITabBarItem(title: "Programs", image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
         nav2.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 2)

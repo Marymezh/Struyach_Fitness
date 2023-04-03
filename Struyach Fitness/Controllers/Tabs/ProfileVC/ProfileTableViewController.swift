@@ -41,8 +41,6 @@ class ProfileTableViewController: UITableViewController {
         setupTableView()
         setupHeaderView()
         setupSubviews()
-        fetchUserRecords()
-        fetchProfileData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -89,14 +87,32 @@ class ProfileTableViewController: UITableViewController {
     func fetchProfileData() {
         DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
             guard let self = self, let user = user else { return }
-            
+            let imageRef = user.profilePictureRef
+            StorageManager.shared.downloadUrl(path: imageRef) { url in
+                guard let url = url else {return}
+                let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+                    guard let data = data, error == nil else { return }
+                    let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                    let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
+                    do {
+                        try data.write(to: fileURL)
+                        let userImage = UIImage(contentsOfFile: fileURL.path)
+                        DispatchQueue.main.async {
+                            self.headerView.userPhotoImage.image = userImage
+                        }
+                    } catch {
+                        print(error.localizedDescription)
+                    }
+                }
+                task.resume()
+            }
             DispatchQueue.main.async {
                 self.headerView.userNameLabel.text = user.name
                 UserDefaults.standard.set(user.name, forKey: "userName")
                 self.headerView.userEmailLabel.text = user.email
-                let fileURL = self.documentsDirectory.appendingPathComponent("userImage.jpg")
-                let userImage = UIImage(contentsOfFile: fileURL.path)
-                self.headerView.userPhotoImage.image = userImage
+//                let fileURL = self.documentsDirectory.appendingPathComponent("userImage.jpg")
+//                let userImage = UIImage(contentsOfFile: fileURL.path)
+//                self.headerView.userPhotoImage.image = userImage
             }
         }
     }
@@ -135,9 +151,6 @@ class ProfileTableViewController: UITableViewController {
 
    private func setupNavigationBar () {
        navigationController?.navigationBar.tintColor = .systemRed
-//       navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
-//       navigationController?.navigationBar.barTintColor = .customTabBar
-//       navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Sign Out",
             style: .done,
@@ -157,9 +170,9 @@ class ProfileTableViewController: UITableViewController {
                         UserDefaults.standard.set(nil, forKey: "email")
                         UserDefaults.standard.set(nil, forKey: "userImage")
                         let signInVC = LoginViewController()
-                        signInVC.navigationItem.largeTitleDisplayMode = .always
+                        signInVC.navigationItem.largeTitleDisplayMode = .never
                         let navVC = UINavigationController(rootViewController: signInVC)
-                        navVC.navigationBar.prefersLargeTitles = true
+                        navVC.navigationBar.prefersLargeTitles = false
                         navVC.modalPresentationStyle = .fullScreen
                         self?.present(navVC, animated: true)
                     }

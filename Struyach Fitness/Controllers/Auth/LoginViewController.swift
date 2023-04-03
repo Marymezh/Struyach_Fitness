@@ -10,12 +10,7 @@ import UIKit
 class LoginViewController: UIViewController {
 
     private let logoImageView: UIImageView = {
-        #if Admin
         let imageView = UIImageView(image: UIImage(named: "struyach-eng-black"))
-        #else
-        let imageView = UIImageView(image: UIImage(named: "struyach-eng-white"))
-        #endif
-        
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
         imageView.toAutoLayout()
@@ -91,27 +86,21 @@ class LoginViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-  
-        title = "Log In"
-
-        #if Admin
-        view.backgroundColor = .black
-                navigationController?.navigationBar.backgroundColor = .black
-                navigationController?.navigationBar.barTintColor = .black
-                navigationController?.navigationBar.alpha = 0.9
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
-        #else
-        view.backgroundColor = .white
-        navigationController?.navigationBar.backgroundColor = .white
-        navigationController?.navigationBar.barTintColor = .white
-        navigationController?.navigationBar.alpha = 0.9
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
-        #endif
         
+        setupNavBar()
         setupSubviews()
+    }
+    
+    private func setupNavBar () {
+        title = "Log In"
+        navigationController?.navigationBar.backgroundColor = .black
+        navigationController?.navigationBar.barTintColor = .black
+        navigationController?.navigationBar.alpha = 0.9
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
     }
 
     private func setupSubviews() {
+        view.backgroundColor = .black
         view.addSubviews(logoImageView, autorizationView, logInButton, createAccountButton)
         autorizationView.addSubviews(emailTextField, passwordTextField)
         

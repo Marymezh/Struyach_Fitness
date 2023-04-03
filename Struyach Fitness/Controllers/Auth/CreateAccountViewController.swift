@@ -124,17 +124,7 @@ class CreateAccountViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-#if Admin
-        view.backgroundColor = .black
-        navigationController?.navigationBar.backgroundColor = .black
-        navigationController?.navigationBar.barTintColor = .black
-        navigationController?.navigationBar.alpha = 0.9
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
-#else
-        view.backgroundColor = .white
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.black]
-#endif
-
+        setupNavbar()
         setupSubviews()
         setupGuestureRecognizer()
         userNameTextField.delegate = self
@@ -143,7 +133,15 @@ class CreateAccountViewController: UIViewController {
         confirmPasswordTextField.delegate = self
     }
     
+    private func setupNavbar() {
+        navigationController?.navigationBar.backgroundColor = .black
+        navigationController?.navigationBar.barTintColor = .black
+        navigationController?.navigationBar.alpha = 0.9
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+    }
+    
     private func setupSubviews() {
+        view.backgroundColor = .black
         view.addSubviews(avatarImageView,
                          autorizationView,
                          signUpButton, backgroundView, activityIndicator)
@@ -275,15 +273,14 @@ class CreateAccountViewController: UIViewController {
                 case .emailAlreadyExists:
                     errorMessage = "A user with this email already exists."
                 case .passwordTooShort:
-                    errorMessage = "Password is too short. Use at least 6 symbols"
+                    errorMessage = "Password is too short. Use at least 6 symbols."
                 case .unknownError:
-                    errorMessage = "An unknown error occurred."
+                    errorMessage = "Please check your Internet connection."
                 }
                 self.showErrorAlert(text: errorMessage)
             }
         }
     }
-
     
     private func showErrorAlert(text: String) {
         let alert = UIAlertController(title: "Error", message: text, preferredStyle: .alert)
@@ -328,6 +325,5 @@ extension CreateAccountViewController: UIImagePickerControllerDelegate, UINaviga
         activityIndicator.stopAnimating()
         guard let image = info[.editedImage] as? UIImage else {return}
         self.avatarImageView.image = image
-        
     }
 }
