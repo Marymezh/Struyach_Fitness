@@ -64,6 +64,36 @@ class ProfileTableViewController: UITableViewController {
         showImagePickerController()
     }
     
+    func fetchOtherUserData() {
+        DatabaseManager.shared.getUser(email: email) { [weak self] user in
+            guard let self = self, let user = user else { return }
+            let imageRef = user.profilePictureRef
+            StorageManager.shared.downloadUrl(path: imageRef) { url in
+                guard let url = url else { return }
+
+                // Download the image data from the URL
+                let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                    guard let data = data, error == nil else {
+                        print("Error downloading image: \(error?.localizedDescription ?? "unknown error")")
+                        return
+                    }
+
+                    // Create the UIImage object from the downloaded data
+                    if let image = UIImage(data: data) {
+                        DispatchQueue.main.async {
+                            self.headerView.userPhotoImage.image = image
+                            self.headerView.userNameLabel.text = user.name
+                            self.headerView.userEmailLabel.text = user.email
+                        }
+                    } else {
+                        print("Error creating image from data")
+                    }
+                }
+                task.resume()
+            }
+        }
+    }
+    
     func fetchProfileData() {
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }

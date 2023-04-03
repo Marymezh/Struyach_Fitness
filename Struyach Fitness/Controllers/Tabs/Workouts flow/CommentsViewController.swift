@@ -728,7 +728,7 @@ extension CommentsViewController: MessageCellDelegate {
         let comment = commentsArray[indexPath.section]
         guard comment.sender.senderId != userEmail else {return}
         let profileVC = ProfileTableViewController(email: comment.sender.senderId)
-        profileVC.fetchProfileData()
+        profileVC.fetchOtherUserData()
         profileVC.fetchUserRecords()
         navigationController?.present(profileVC, animated: true)
     }
