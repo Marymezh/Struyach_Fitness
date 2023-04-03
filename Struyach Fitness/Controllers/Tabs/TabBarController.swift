@@ -46,7 +46,7 @@ class TabBarController: UITabBarController {
         guard let currentUserEmail = UserDefaults.standard.string(forKey: "email") else {return}
         let programsVC = ProgramsViewController()
         programsVC.title = "Programs"
-        let profileVC = ProfileTableViewController(currentEmail: currentUserEmail)
+        let profileVC = ProfileTableViewController(email: currentUserEmail)
         profileVC.title = "Profile"
         programsVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always

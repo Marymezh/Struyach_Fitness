@@ -387,6 +387,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     if success {
                         DispatchQueue.main.async {
                             self.messagesCollectionView.scrollToLastItem()
+                            print ("scroll to bottom")
                         }
                     }
                     
@@ -483,7 +484,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     self.activityIndicator.isHidden = true
                     self.activityIndicator.stopAnimating()
                 }
-                
+                completion?(true)
             }
         }
 
@@ -720,6 +721,18 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
 }
 
 extension CommentsViewController: MessageCellDelegate {
+    
+    func didTapAvatar(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
+        
+        let comment = commentsArray[indexPath.section]
+        guard comment.sender.senderId != userEmail else {return}
+        let profileVC = ProfileTableViewController(email: comment.sender.senderId)
+        profileVC.fetchProfileData()
+        profileVC.fetchUserRecords()
+        navigationController?.present(profileVC, animated: true)
+    }
+    
     func didTapImage(in cell: MessageCollectionViewCell) {
         guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
         

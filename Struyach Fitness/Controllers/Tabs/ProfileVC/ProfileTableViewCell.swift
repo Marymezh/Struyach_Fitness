@@ -30,7 +30,7 @@ class ProfileTableViewCell: UITableViewCell {
         return label
     }()
     
-    private let weightTextField: UITextField = {
+    let weightTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "00 kg"
         textField.tintColor = .black
@@ -44,7 +44,7 @@ class ProfileTableViewCell: UITableViewCell {
         return textField
     }()
     
-    private lazy var saveButton: UIButton = {
+    lazy var saveButton: UIButton = {
         let button = UIButton()
         button.setBackgroundImage(UIImage(systemName: "checkmark.circle", withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)), for: .normal)
         button.tintColor = .systemGreen
@@ -94,7 +94,7 @@ class ProfileTableViewCell: UITableViewCell {
         
         let constraints = [
             movementLabel.widthAnchor.constraint(equalToConstant: 130),
-            weightLabel.widthAnchor.constraint(equalToConstant: 60),
+            weightLabel.widthAnchor.constraint(equalToConstant: 70),
             weightTextField.widthAnchor.constraint(equalTo: weightLabel.widthAnchor),
             saveButton.widthAnchor.constraint(equalToConstant: 20),
             saveButton.heightAnchor.constraint(equalTo: saveButton.widthAnchor),

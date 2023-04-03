@@ -16,18 +16,11 @@ class ProfileTableViewController: UITableViewController {
     private let headerView = ProfileHeaderView()
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     
-    private let activityIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView(style: .medium)
-        indicator.toAutoLayout()
-        indicator.isHidden = true
-        indicator.color = .white
-        return indicator
-    }()
-    
-    let currentEmail: String
+    let email: String
+    let currentUserEmail = UserDefaults.standard.string(forKey: "email")
 
-    init(currentEmail: String) {
-        self.currentEmail = currentEmail
+    init(email: String) {
+        self.email = email
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -40,22 +33,13 @@ class ProfileTableViewController: UITableViewController {
         setupNavigationBar()
         setupTableView()
         setupHeaderView()
-        setupSubviews()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        uploadUserRecords()
-    }
-    
-    private func setupSubviews() {
-        view.addSubview(activityIndicator)
-        let constraints = [
-            activityIndicator.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 74),
-            activityIndicator.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 58)
-        ]
-        
-        NSLayoutConstraint.activate(constraints)
+        if currentUserEmail == email {
+            uploadUserRecords()
+        }
     }
     
     private func setupTableView() {
@@ -76,16 +60,12 @@ class ProfileTableViewController: UITableViewController {
     }
     
     @objc private func userPhotoImageTapped() {
-        view.bringSubviewToFront(activityIndicator)
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-        guard let myEmail = UserDefaults.standard.string(forKey: "email"),
-              myEmail == currentEmail else {return}
+        guard currentUserEmail == email else {return}
         showImagePickerController()
     }
     
     func fetchProfileData() {
-        DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
+        DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
             let imageRef = user.profilePictureRef
             StorageManager.shared.downloadUrl(path: imageRef) { url in
@@ -110,19 +90,17 @@ class ProfileTableViewController: UITableViewController {
                 self.headerView.userNameLabel.text = user.name
                 UserDefaults.standard.set(user.name, forKey: "userName")
                 self.headerView.userEmailLabel.text = user.email
-//                let fileURL = self.documentsDirectory.appendingPathComponent("userImage.jpg")
-//                let userImage = UIImage(contentsOfFile: fileURL.path)
-//                self.headerView.userPhotoImage.image = userImage
             }
         }
     }
     
     func fetchUserRecords() {
-        DatabaseManager.shared.getUser(email: currentEmail) { [weak self] user in
+        DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user, let self = self else {return}
             guard let ref = user.personalRecords else {return}
             StorageManager.shared.downloadUrl(path: ref) { url in
                 guard let url = url else {return}
+                
                 let task = URLSession.shared.dataTask(with: url) { data, _, _ in
                     guard let data = data else {return}
                     self.weights = try! JSONDecoder().decode([String].self, from: data)
@@ -138,10 +116,10 @@ class ProfileTableViewController: UITableViewController {
     
     private func uploadUserRecords() {
         // upload saved weights array to Firebase
-        StorageManager.shared.uploadUserPersonalRecords(email: self.currentEmail, weights: self.weights) { [weak self] success in
+        StorageManager.shared.uploadUserPersonalRecords(email: self.email, weights: self.weights) { [weak self] success in
             guard let self = self else {return}
             if success {
-                DatabaseManager.shared.updateUserPersonalRecords(email: self.currentEmail) { success in
+                DatabaseManager.shared.updateUserPersonalRecords(email: self.email) { success in
                     guard success else {return}
                     print ("Records are updated")
                 }
@@ -200,16 +178,22 @@ class ProfileTableViewController: UITableViewController {
             return cell
         default:
             let cell: ProfileTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProfileTableViewCell.self), for: indexPath) as! ProfileTableViewCell
-            
             cell.backgroundColor = .customLightGray
-            cell.movementLabel.text = movements[indexPath.row]
-            cell.weightLabel.text = "\(weights[indexPath.row]) kg"
-            cell.weightIsSet = { [weak self] text in
-                guard let self = self else {return}
-                self.weights.remove(at: indexPath.row)
-                self.weights.insert(text, at: indexPath.row)
-                self.tableView.reloadData()
-
+            if email == currentUserEmail {
+                cell.movementLabel.text = movements[indexPath.row]
+                cell.weightLabel.text = "\(weights[indexPath.row]) kg"
+                cell.weightIsSet = { [weak self] text in
+                    guard let self = self else {return}
+                    self.weights.remove(at: indexPath.row)
+                    self.weights.insert(text, at: indexPath.row)
+                    self.tableView.reloadData()
+                    
+                }
+            } else {
+                cell.movementLabel.text = movements[indexPath.row]
+                cell.weightLabel.text = "\(weights[indexPath.row]) kg"
+                cell.weightTextField.isHidden = true
+                cell.saveButton.isHidden = true
             }
             return cell
         }
@@ -241,22 +225,18 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         navigationController?.dismiss(animated: true)
-        activityIndicator.isHidden = true
-        activityIndicator.stopAnimating()
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         navigationController?.dismiss(animated: true)
-        activityIndicator.isHidden = true
-        activityIndicator.stopAnimating()
         guard let image = info[.editedImage] as? UIImage,
         let imageData = image.jpegData(compressionQuality: 0.5) else { return }
         
         self.headerView.userPhotoImage.image = image
         
-        StorageManager.shared.setUserProfilePicture(email: currentEmail, image: imageData) { [weak self] imageRef in
+        StorageManager.shared.setUserProfilePicture(email: email, image: imageData) { [weak self] imageRef in
             guard let self = self, let imageRef = imageRef else {return}
-            DatabaseManager.shared.updateProfilePhoto(email: self.currentEmail) { success in
+            DatabaseManager.shared.updateProfilePhoto(email: self.email) { success in
                 guard success else {return}
                 StorageManager.shared.downloadUrl(path: imageRef) { url in
                     guard let url = url else { return }
