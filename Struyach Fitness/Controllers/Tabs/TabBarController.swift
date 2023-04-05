@@ -46,22 +46,31 @@ class TabBarController: UITabBarController {
         guard let currentUserEmail = UserDefaults.standard.string(forKey: "email") else {return}
         let programsVC = ProgramsViewController()
         programsVC.title = "Programs"
+        
+        let blogVC = BlogTableViewController()
+        blogVC.title = "Coach Blog"
+        
         let profileVC = ProfileTableViewController(email: currentUserEmail)
         profileVC.title = "Profile"
+        
         programsVC.navigationItem.largeTitleDisplayMode = .always
+        blogVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.fetchUserRecords()
         profileVC.fetchProfileData()
         
         let nav1 = UINavigationController(rootViewController: programsVC)
-        let nav2 = UINavigationController(rootViewController: profileVC)
+        let nav2 = UINavigationController(rootViewController: blogVC)
+        let nav3 = UINavigationController(rootViewController: profileVC)
         
         nav1.navigationBar.prefersLargeTitles = true
         nav2.navigationBar.prefersLargeTitles = true
+        nav3.navigationBar.prefersLargeTitles = true
         
         nav1.tabBarItem = UITabBarItem(title: "Programs", image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
-        nav2.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 2)
+        nav2.tabBarItem = UITabBarItem(title: "Blog", image: UIImage(named: "quote.bubble.fill"), tag: 2)
+        nav3.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 3)
 
-        setViewControllers([nav1, nav2], animated: true)
+        setViewControllers([nav1, nav2, nav3], animated: true)
     }
 }

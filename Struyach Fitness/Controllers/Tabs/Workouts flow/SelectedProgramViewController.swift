@@ -157,15 +157,6 @@ class SelectedProgramViewController: UIViewController {
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
             stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset)
-            
-//            addCommentButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
-//
-//            addCommentButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
-//
-//            commentsLabel.topAnchor.constraint(equalTo: addCommentButton.topAnchor),
-//            commentsLabel.leadingAnchor.constraint(equalTo: addCommentButton.trailingAnchor, constant: baseInset*2),
-//            commentsLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
-//            commentsLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
         ]
         
         NSLayoutConstraint.activate(constraints)
