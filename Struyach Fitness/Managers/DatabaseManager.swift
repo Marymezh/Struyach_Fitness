@@ -183,6 +183,49 @@ final class DatabaseManager {
 //        return listener
 //    }
     
+    //MARK: - Adding and fetching blog posts
+    public func saveBlogPost (with post: Post, completion: @escaping(Bool) ->()){
+        print("Executing function: \(#function)")
+
+        do {
+            let blogPostData = try Firestore.Encoder().encode(post)
+            database
+                .collection("blogPosts")
+                .document(post.id)
+                .setData(blogPostData) { error in
+                    completion(error == nil)
+                }
+        } catch {
+            print("Error encoding workout: \(error)")
+            completion(false)
+        }
+    }
+    
+    public func getAllPosts(completion: @escaping([Post])->()){
+        print("Executing function: \(#function)")
+        database
+            .collection("blogPosts")
+            .order(by: "timestamp", descending: true)
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents else {
+                    print("Error fetching documents: \(error!)")
+                    return
+                }
+                
+                let posts: [Post] = documents.compactMap { document in
+                    do {
+                        let workout = try Firestore.Decoder().decode(Post.self, from: document.data())
+                        print("workouts decoded from database")
+                        return workout
+                    } catch {
+                        print("Error decoding workout: \(error)")
+                        return nil
+                    }
+                }
+                completion(posts)
+            }
+    }
+    
     //MARK: - Adding, fetching, editing, deleting and listen to the changes in comments
     public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
         print("posting comment to Firestore")

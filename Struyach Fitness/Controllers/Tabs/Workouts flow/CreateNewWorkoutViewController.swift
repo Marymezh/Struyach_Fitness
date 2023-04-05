@@ -73,7 +73,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         view.addSubviews(workoutDescriptionTextView)
 
         var baseInset: CGFloat { return 15 }
-        let textViewHeight = self.view.frame.height / 2.2
+        let textViewHeight = self.view.frame.height / 2.4
         
         let constraints = [
             workoutDescriptionTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: baseInset*2),

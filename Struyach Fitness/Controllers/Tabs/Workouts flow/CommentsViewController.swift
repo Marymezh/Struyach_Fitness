@@ -14,7 +14,7 @@ import AVFoundation
 import AVKit
 
 
-class CommentsViewController: MessagesViewController, UITextViewDelegate, AVAudioRecorderDelegate {
+class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     private let workout: Workout
     var commentsArray: [Comment] = []

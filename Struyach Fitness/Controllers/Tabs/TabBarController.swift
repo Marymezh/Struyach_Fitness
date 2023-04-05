@@ -68,7 +68,7 @@ class TabBarController: UITabBarController {
         nav3.navigationBar.prefersLargeTitles = true
         
         nav1.tabBarItem = UITabBarItem(title: "Programs", image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
-        nav2.tabBarItem = UITabBarItem(title: "Blog", image: UIImage(named: "quote.bubble.fill"), tag: 2)
+        nav2.tabBarItem = UITabBarItem(title: "Blog", image: UIImage(named: "character.bubble.fill"), tag: 2)
         nav3.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 3)
 
         setViewControllers([nav1, nav2, nav3], animated: true)

@@ -315,7 +315,8 @@ class SelectedProgramViewController: UIViewController {
                 let selectedWorkout = self.listOfWorkouts[indexPath.item]
                 workoutVC.text = selectedWorkout.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
-                workoutVC.onWorkoutSave = { text in
+                workoutVC.onWorkoutSave = {[weak self] text in
+                    guard let self = self else {return}
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { success in
                         if success{
                             print("workout is successfully updated")

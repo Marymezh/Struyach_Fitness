@@ -10,47 +10,68 @@ import UIKit
 class BlogTableViewController: UITableViewController {
     
     private var blogPosts: [Post] = []
+    private var selectedPost: Post?
     
    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupTableView()
+#if Admin
         setupAdminFunctionality()
+#endif
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = true
+        loadBlogPosts()
     }
     
     private func setupTableView() {
         tableView.backgroundColor = .customDarkGray
-        tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: BlogTableViewCell.self))
+        tableView.register(BlogTableViewCell.self, forCellReuseIdentifier: String(describing: BlogTableViewCell.self))
     }
     
     private func setupAdminFunctionality (){
+        navigationController?.navigationBar.tintColor = .systemGreen
         self.navigationItem.rightBarButtonItem =
             UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewPost))
     }
     
     @objc private func addNewPost() {
         print("Executing function: \(#function)")
-        let newWorkoutVC = CreateNewWorkoutViewController()
-        newWorkoutVC.title = "Add new post"
-        navigationController?.pushViewController(newWorkoutVC, animated: true)
-        newWorkoutVC.onWorkoutSave = {[weak self] text in
-            guard let title = self?.title else {return}
+        let newPostVC = CreateNewWorkoutViewController()
+        newPostVC.title = "Add new post"
+        navigationController?.pushViewController(newPostVC, animated: true)
+        newPostVC.onWorkoutSave = {[weak self] text in
             let timestamp = Date().timeIntervalSince1970
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
-            formatter.dateFormat = "EE \n d MMMM \n yyyy"
+            formatter.dateFormat = "EE d MMMM yyyy"
             let dateString = formatter.string(from: date)
-            let workoutID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
-            let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp)
-            DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
+            let postID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
+            let newPost = Post(id: postID, description: text, date: dateString, timestamp: timestamp)
+            DatabaseManager.shared.saveBlogPost(with: newPost) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
-                    print("workout is added to database - \(newWorkout)")
+                    print("post is added to database - \(newPost)")
                 } else {
-                    self.showAlert(error: "Unable to add new workout for \(title)")
+                    self.showAlert(error: "Unable to add new post")
                 }
+            }
+        }
+    }
+    
+    private func loadBlogPosts() {
+       
+        DatabaseManager.shared.getAllPosts { [weak self] posts in
+            print("Executing function: \(#function)")
+            guard let self = self else {return}
+            self.blogPosts = posts
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
             }
         }
     }
@@ -74,12 +95,13 @@ class BlogTableViewController: UITableViewController {
         // #warning Incomplete implementation, return the number of rows
         return blogPosts.count
     }
-
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell: BlogTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: BlogTableViewCell.self), for: indexPath) as! BlogTableViewCell
-        
+        let post = blogPosts[indexPath.row]
+            cell.postDescriptionTextView.text = post.description
+            cell.postDateLabel.text = post.date
 
         return cell
     }
