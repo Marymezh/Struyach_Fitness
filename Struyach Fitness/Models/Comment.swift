@@ -26,6 +26,7 @@ extension MessageKind {
         case .attributedText(_): return "attributed_text"
         case .photo(_): return "photo"
         case .video(_): return "video"
+        case .audio(_): return "audio"
         default: return ""
         }
     }

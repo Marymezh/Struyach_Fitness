@@ -14,7 +14,7 @@ import AVFoundation
 import AVKit
 
 
-class CommentsViewController: MessagesViewController, UITextViewDelegate {
+class CommentsViewController: MessagesViewController, UITextViewDelegate, AVAudioRecorderDelegate {
     
     private let workout: Workout
     var commentsArray: [Comment] = []
@@ -95,7 +95,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = true
     }
-    
+   
     private func setupMessageCollectionView() {
         messagesCollectionView.toAutoLayout()
         messagesCollectionView.backgroundColor = .customDarkComments
@@ -129,16 +129,17 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messageInputBar.inputTextView.layer.cornerRadius = 10
         messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 5, bottom: 5, right: 0)
         messageInputBar.tintColor = .systemGray
-        
         let attachButton = InputBarButtonItem()
         attachButton.setSize(CGSize(width: 35, height: 44), animated: false)
         attachButton.setImage(UIImage(systemName: "paperclip", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)), for: .normal)
         attachButton.onTouchUpInside { [weak self]_ in
             self?.presentInputOptions()
         }
-        messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: false)
+        messageInputBar.setLeftStackViewWidthConstant(to: 72, animated: false)
+        messageInputBar.setRightStackViewWidthConstant(to: 36, animated: false)
         messageInputBar.setStackViewItems([attachButton], forStack: .left, animated: false)
         messageInputBar.sendButton.setTitle(nil, for: .normal)
+        messageInputBar.sendButton.setSize(CGSize(width: 35, height: 44), animated: false)
         messageInputBar.sendButton.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)), for: .normal)
     }
     
@@ -239,11 +240,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
                 
                 StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout, progressHandler: { [weak self] percentComplete in
-                    self?.progressBackgroundView.isHidden = false
-                    self?.progressView.isHidden = false
-                    self?.progressLabel.isHidden = false
-                    self?.progressView.progress = percentComplete
-                    self?.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
+                    guard let self = self else {return}
+                    self.progressBackgroundView.isHidden = false
+                    self.progressView.isHidden = false
+                    self.progressLabel.isHidden = false
+                    self.progressView.progress = percentComplete
+                    self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
                 }) { [weak self] ref in
                     guard let self = self else {return}
                     if let safeRef = ref {
@@ -355,15 +357,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 }
             }
         }))
-        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: {  _ in
-            print ("to be implemented")
-        }))
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         actionSheet.view.tintColor = .darkGray
         present(actionSheet, animated: true)
     }
     
-  
     //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
     private func postComment(text: String) {
@@ -376,7 +374,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
         let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else {return}
-    
+        
         
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout.id, programId: workout.programID)
         
@@ -390,9 +388,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             print ("scroll to bottom")
                         }
                     }
-                    
                 }
-
+                
                 print ("text comment is posted successfully")
             } else {
                 print ("cant save comment")
@@ -435,6 +432,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             }
         }
     }
+    
     private func postVideoComment(videoUrl: URL) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
         let formatter = DateFormatter()
@@ -735,8 +733,11 @@ extension CommentsViewController: MessageCellDelegate {
                 self.navigationController?.present(profileVC, animated: true)
             }
         }
-        
-     
+    }
+    
+    func didTapPlayButton(in cell: AudioMessageCell) {
+        let player = AVPlayer()
+        player.play()
     }
     
     func didTapImage(in cell: MessageCollectionViewCell) {

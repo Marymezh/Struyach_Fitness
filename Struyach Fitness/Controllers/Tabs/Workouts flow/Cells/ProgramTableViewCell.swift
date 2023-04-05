@@ -29,7 +29,8 @@ class ProgramTableViewCell: UITableViewCell {
     
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        label.textAlignment = .right
         label.textColor = .white
         label.numberOfLines = 0
         label.toAutoLayout()

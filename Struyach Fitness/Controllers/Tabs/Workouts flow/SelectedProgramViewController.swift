@@ -30,6 +30,24 @@ class SelectedProgramViewController: UIViewController {
         button.addTarget(self, action: #selector(pushCommentsVC), for: .touchUpInside)
         return button
     }()
+    
+    private lazy var likeButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.tintColor = .white
+        button.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+        button.addTarget(self, action: #selector(addLikeToWorkout), for: .touchUpInside)
+        return button
+    }()
+    
+    private let likesLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        label.textColor = .white
+        label.text = "0"
+        label.toAutoLayout()
+        return label
+    }()
 
     private let commentsLabel: UILabel = {
         let label = UILabel()
@@ -37,6 +55,15 @@ class SelectedProgramViewController: UIViewController {
         label.textColor = .white
         label.toAutoLayout()
         return label
+    }()
+    
+    private let stackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.distribution = .equalSpacing
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.toAutoLayout()
+        return stackView
     }()
     
     private lazy var searchBar: UISearchBar = {
@@ -95,7 +122,11 @@ class SelectedProgramViewController: UIViewController {
     private func setupSubviews(){
         view.backgroundColor = .customDarkGray
         selectedWorkoutView.toAutoLayout()
-        view.addSubviews(searchBar, workoutsCollection, selectedWorkoutView, addCommentButton, commentsLabel)
+        view.addSubviews(searchBar, workoutsCollection, selectedWorkoutView, stackView)
+        stackView.addArrangedSubview(likeButton)
+        stackView.addArrangedSubview(likesLabel)
+        stackView.addArrangedSubview(addCommentButton)
+        stackView.addArrangedSubview(commentsLabel)
         
         searchBarConstraint = searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -44)
         
@@ -113,17 +144,28 @@ class SelectedProgramViewController: UIViewController {
             selectedWorkoutView.topAnchor.constraint(equalTo: workoutsCollection.bottomAnchor, constant: baseInset),
             selectedWorkoutView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             selectedWorkoutView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            selectedWorkoutView.bottomAnchor.constraint(equalTo: addCommentButton.topAnchor, constant: -baseInset),
+            selectedWorkoutView.bottomAnchor.constraint(equalTo: stackView.topAnchor, constant: -baseInset),
             
-            addCommentButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
+            likeButton.widthAnchor.constraint(equalToConstant: 35),
+            likeButton.heightAnchor.constraint(equalTo: likeButton.widthAnchor),
+            likesLabel.leadingAnchor.constraint(equalTo: likeButton.trailingAnchor, constant: baseInset),
+            likesLabel.widthAnchor.constraint(equalTo: likeButton.widthAnchor),
             addCommentButton.widthAnchor.constraint(equalToConstant: 35),
             addCommentButton.heightAnchor.constraint(equalToConstant: 35),
-            addCommentButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
+            commentsLabel.leadingAnchor.constraint(equalTo: addCommentButton.trailingAnchor, constant: baseInset),
             
-            commentsLabel.topAnchor.constraint(equalTo: addCommentButton.topAnchor),
-            commentsLabel.leadingAnchor.constraint(equalTo: addCommentButton.trailingAnchor, constant: baseInset*2),
-            commentsLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
-            commentsLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
+            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
+            stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
+            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset)
+            
+//            addCommentButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
+//
+//            addCommentButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
+//
+//            commentsLabel.topAnchor.constraint(equalTo: addCommentButton.topAnchor),
+//            commentsLabel.leadingAnchor.constraint(equalTo: addCommentButton.trailingAnchor, constant: baseInset*2),
+//            commentsLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
+//            commentsLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -157,6 +199,18 @@ class SelectedProgramViewController: UIViewController {
         commentsVC.title = "Comments"
     
         navigationController?.pushViewController(commentsVC, animated: true)
+    }
+    
+    @objc private func addLikeToWorkout() {
+        likeButton.isSelected = !likeButton.isSelected
+        
+        if likeButton.isSelected {
+            likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likeButton.tintColor = .systemRed
+        } else {
+            likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likeButton.tintColor = .white
+        }
     }
     
     @objc private func toggleSearchBar() {
@@ -340,8 +394,8 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
             DispatchQueue.main.async {
                 switch comments.count {
                 case 0: self?.commentsLabel.text = "No comments posted yet"
-                case 1: self?.commentsLabel.text = "Read \(comments.count) comment "
-                default: self?.commentsLabel.text = "Read all \(comments.count) comments"
+                case 1: self?.commentsLabel.text = "\(comments.count) comment "
+                default: self?.commentsLabel.text = "\(comments.count) comments"
                 }
             }
         }
