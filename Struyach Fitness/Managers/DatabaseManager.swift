@@ -75,7 +75,7 @@ final class DatabaseManager {
             }
     }
     
-    public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Bool)->()){
+    public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Workout)->()){
         print("Executing function: \(#function)")
         let documentID = workout.programID
             .replacingOccurrences(of: "/", with: "_")
@@ -92,7 +92,7 @@ final class DatabaseManager {
             
             data["description"] = newDescription
             dbRef.setData(data) { error in
-                completion(error == nil)
+                completion(workout)
             }
         }
     }
@@ -356,6 +356,33 @@ final class DatabaseManager {
                 }
                    completion(comments)
                }
+       }
+    
+    public func getCommentsCount(workout: Workout, completion: @escaping(Int)->()){
+        print ("executing loading comments from database \(#function)")
+
+        let documentID = workout.programID
+               .replacingOccurrences(of: "/", with: "_")
+               .replacingOccurrences(of: " ", with: "_")
+        
+        var numberOfComments = 0
+
+        database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workout.id)
+            .collection("comments")
+            .order(by: "sentDate", descending: false)
+            .getDocuments { (querySnapshot, error) in
+                if let error = error {
+                    print("Error getting documents: \(error)")
+                } else {
+                    numberOfComments = querySnapshot?.count ?? 0
+                    print("found \(numberOfComments) comments for selected workout")
+                }
+                completion(numberOfComments)
+            }
        }
     
     public func updateComment(comment: Comment, newDescription: String, completion: @escaping (Bool)->()){
