@@ -102,7 +102,6 @@ class SelectedProgramViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         guard let title = title else {return}
         loadListOfWorkouts(for: title)
-
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -192,15 +191,51 @@ class SelectedProgramViewController: UIViewController {
         navigationController?.pushViewController(commentsVC, animated: true)
     }
     
+    private func hasUserLikedWorkout(workout: Workout) -> Bool {
+        let likedWorkouts = UserDefaults.standard.array(forKey: "likedWorkouts") as? [String] ?? []
+        return likedWorkouts.contains(workout.id)
+    }
+    
     @objc private func addLikeToWorkout() {
         likeButton.isSelected = !likeButton.isSelected
-        
-        if likeButton.isSelected {
+        guard var selectedWorkout = selectedWorkout else {return}
+        guard let index = filteredWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
+        if hasUserLikedWorkout(workout: selectedWorkout) == false {
+            likeButton.isSelected = true
             likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likeButton.tintColor = .systemRed
+            selectedWorkout.likes += 1
+            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] workout in
+                guard let self = self else {return}
+                self.filteredWorkouts[index] = workout
+                DispatchQueue.main.async {
+                    self.likesLabel.text = "\(selectedWorkout.likes)"
+                    self.workoutsCollection.reloadData()
+                    print(self.filteredWorkouts)
+                }
+                var likedWorkouts = UserDefaults.standard.array(forKey: "likedWorkouts") as? [String] ?? []
+                likedWorkouts.append(selectedWorkout.id)
+                UserDefaults.standard.set(likedWorkouts, forKey: "likedWorkouts")
+            }
         } else {
+            likeButton.isSelected = false
             likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likeButton.tintColor = .white
+            selectedWorkout.likes -= 1
+            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) { [weak self] workout in
+                guard let self = self else {return}
+                self.filteredWorkouts[index] = workout
+                DispatchQueue.main.async {
+                    self.likesLabel.text = "\(selectedWorkout.likes)"
+                    self.workoutsCollection.reloadData()
+                    print(self.filteredWorkouts)
+                }
+                var likedWorkouts = UserDefaults.standard.array(forKey: "likedWorkouts") as? [String] ?? []
+                if let index = likedWorkouts.firstIndex(of: selectedWorkout.id) {
+                    likedWorkouts.remove(at: index)
+                }
+                UserDefaults.standard.set(likedWorkouts, forKey: "likedWorkouts")
+            }
         }
     }
     
@@ -229,7 +264,7 @@ class SelectedProgramViewController: UIViewController {
             formatter.dateFormat = "EE \n d MMMM \n yyyy"
             let dateString = formatter.string(from: date)
             let workoutID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
-            let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp)
+            let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp, likes: 0)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
@@ -380,6 +415,21 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
         self.selectedWorkout = selectedWorkout
         selectedWorkoutView.randomizeBackgroungImages()
         selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout.description
+        likesLabel.text = "\(selectedWorkout.likes)"
+        
+        if hasUserLikedWorkout(workout: selectedWorkout) == true {
+            print("like button is selected")
+            self.likeButton.isSelected = true
+            likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likeButton.tintColor = .systemRed
+         
+        } else {
+            print("like button is not selected")
+            self.likeButton.isSelected = false
+            likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likeButton.tintColor = .white
+        }
+
         
         DatabaseManager.shared.getAllComments(workout: selectedWorkout) { [weak self] comments in
             print("found \(comments.count) comments for selected workout")

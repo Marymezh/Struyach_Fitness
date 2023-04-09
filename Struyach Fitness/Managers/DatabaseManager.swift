@@ -97,6 +97,28 @@ final class DatabaseManager {
         }
     }
     
+    public func updateLikes(workout: Workout, likesCount: Int, completion: @escaping (Workout)->()){
+        print("Executing function: \(#function)")
+        let documentID = workout.programID
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let dbRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workout.id)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["likes"] = likesCount
+            dbRef.setData(data) { error in
+                completion(workout)
+            }
+        }
+    }
+    
     public func deleteWorkout(workout: Workout, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         

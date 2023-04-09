@@ -135,8 +135,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         attachButton.onTouchUpInside { [weak self]_ in
             self?.presentInputOptions()
         }
-        messageInputBar.setLeftStackViewWidthConstant(to: 72, animated: false)
-        messageInputBar.setRightStackViewWidthConstant(to: 36, animated: false)
+        messageInputBar.setLeftStackViewWidthConstant(to: 30, animated: false)
+        messageInputBar.setRightStackViewWidthConstant(to: 30, animated: false)
         messageInputBar.setStackViewItems([attachButton], forStack: .left, animated: false)
         messageInputBar.sendButton.setTitle(nil, for: .normal)
         messageInputBar.sendButton.setSize(CGSize(width: 35, height: 44), animated: false)
