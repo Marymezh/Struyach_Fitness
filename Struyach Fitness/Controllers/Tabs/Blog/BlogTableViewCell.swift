@@ -88,7 +88,7 @@ class BlogTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .white
-  //      label.alpha = 0 
+        label.alpha = 0 
         label.toAutoLayout()
         return label
     }()

@@ -168,14 +168,17 @@ class BlogTableViewController: UITableViewController {
         
         DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
             DispatchQueue.main.async {
+                UIView.animate(withDuration: 0.3) {
+                            cell.commentsLabel.alpha = 0
+                        }
                 switch numberOfComments {
                 case 0: cell.commentsLabel.text = "No comments posted yet"
                 case 1: cell.commentsLabel.text = "\(numberOfComments) comment "
                 default: cell.commentsLabel.text = "\(numberOfComments) comments"
-//                    UIView.animate(withDuration: 0.3) {
-//                                cell.commentsLabel.alpha = 1
-//                            }
                 }
+                UIView.animate(withDuration: 0.3) {
+                            cell.commentsLabel.alpha = 1
+                        }
             }
         }
         return cell
