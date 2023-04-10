@@ -12,6 +12,7 @@ class BlogTableViewCell: UITableViewCell {
     private var baseInset: CGFloat { return 15 }
     
     var onCommentsPush: (()->())?
+    var onLikeButtonPush: (()->())?
     
     let containerView: UIView = {
         let view = UIView()
@@ -65,7 +66,7 @@ class BlogTableViewCell: UITableViewCell {
         return button
     }()
     
-    private lazy var likeButton: UIButton = {
+    lazy var likeButton: UIButton = {
         let button = UIButton()
         button.toAutoLayout()
         button.tintColor = .white
@@ -87,6 +88,7 @@ class BlogTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .white
+  //      label.alpha = 0 
         label.toAutoLayout()
         return label
     }()
@@ -154,21 +156,18 @@ class BlogTableViewCell: UITableViewCell {
         NSLayoutConstraint.activate(constraints)
     }
     
+    override func prepareForReuse() {
+           super.prepareForReuse()
+           commentsLabel.text = ""
+       }
+
+    
     @objc private func pushCommentsVC() {
-        
         self.onCommentsPush?()
     }
     
     @objc private func addLikeToWorkout() {
-        likeButton.isSelected = !likeButton.isSelected
-        
-        if likeButton.isSelected {
-            likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likeButton.tintColor = .systemRed
-        } else {
-            likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likeButton.tintColor = .white
-        }
+        self.onLikeButtonPush?()
     }
 
 }

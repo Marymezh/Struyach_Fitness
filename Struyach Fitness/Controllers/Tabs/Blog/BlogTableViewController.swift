@@ -11,6 +11,7 @@ class BlogTableViewController: UITableViewController {
     
     private var blogPosts: [Post] = []
     private var selectedPost: Post?
+    private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
     
    
     override func viewDidLoad() {
@@ -25,6 +26,7 @@ class BlogTableViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = true
+        tabBarController?.tabBar.isHidden = false
         loadBlogPosts()
     }
     
@@ -43,6 +45,7 @@ class BlogTableViewController: UITableViewController {
         print("Executing function: \(#function)")
         let newPostVC = CreateNewWorkoutViewController()
         newPostVC.title = "Add new post"
+        tabBarController?.tabBar.isHidden = true
         navigationController?.pushViewController(newPostVC, animated: true)
         newPostVC.onWorkoutSave = {[weak self] text in
             let timestamp = Date().timeIntervalSince1970
@@ -76,11 +79,14 @@ class BlogTableViewController: UITableViewController {
         }
     }
     
+    private func hasUserLikedPost(blogPost: Post) -> Bool {
+        return self.likedPosts.contains(blogPost.id)
+    }
+    
     private func showAlert (error: String) {
         let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         alert.addAction(cancelAction)
-        
         self.present(alert, animated: true, completion: nil)
     }
 
@@ -99,13 +105,64 @@ class BlogTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell: BlogTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: BlogTableViewCell.self), for: indexPath) as! BlogTableViewCell
-        let post = blogPosts[indexPath.row]
-            cell.postDescriptionTextView.text = post.description
-            cell.postDateLabel.text = post.date
+        var post = blogPosts[indexPath.row]
+
+        
+        cell.postDescriptionTextView.text = post.description
+        cell.postDateLabel.text = post.date
+        cell.likesLabel.text = "\(post.likes)"
+        
+        if hasUserLikedPost(blogPost: post) == true {
+            print("like button is selected")
+            cell.likeButton.isSelected = true
+            cell.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            cell.likeButton.tintColor = .systemRed
+        } else {
+            print("like button is not selected")
+            cell.likeButton.isSelected = false
+            cell.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            cell.likeButton.tintColor = .white
+        }
+        
+        cell.onLikeButtonPush = {
+            cell.likeButton.isSelected = !cell.likeButton.isSelected
+            
+            if cell.likeButton.isSelected {
+                cell.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+                cell.likeButton.tintColor = .systemRed
+                post.likes += 1
+                DatabaseManager.shared.updateBlogLikes(blogPost: post, likesCount: post.likes) {[weak self] blogPost in
+                    guard let self = self else {return}
+                    print ("likes increase by 1")
+                    cell.likesLabel.text = "\(blogPost.likes)"
+                    post = blogPost
+                    if !self.likedPosts.contains(post.id) {
+                        self.likedPosts.append(post.id)
+                        UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
+                    }
+                }
+            } else {
+                cell.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+                cell.likeButton.tintColor = .white
+                post.likes -= 1
+                DatabaseManager.shared.updateBlogLikes(blogPost: post, likesCount: post.likes) {[weak self] blogPost in
+                    guard let self = self else {return}
+                    print ("likes decrease by 1")
+                    
+                    cell.likesLabel.text = "\(blogPost.likes)"
+                    post = blogPost
+                    if let index = self.likedPosts.firstIndex(of: post.id) {
+                        self.likedPosts.remove(at: index)
+                        UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
+                    }
+                }
+            }
+        }
         
         cell.onCommentsPush = {
             let commentsVC = CommentsViewController(blogPost: post)
             commentsVC.title = "Comments"
+            self.tabBarController?.tabBar.isHidden = true
             self.navigationController?.pushViewController(commentsVC, animated: true)
         }
         
@@ -115,13 +172,12 @@ class BlogTableViewController: UITableViewController {
                 case 0: cell.commentsLabel.text = "No comments posted yet"
                 case 1: cell.commentsLabel.text = "\(numberOfComments) comment "
                 default: cell.commentsLabel.text = "\(numberOfComments) comments"
+//                    UIView.animate(withDuration: 0.3) {
+//                                cell.commentsLabel.alpha = 1
+//                            }
                 }
             }
         }
-        
         return cell
     }
-    
-
-  
 }
