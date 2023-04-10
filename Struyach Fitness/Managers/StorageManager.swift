@@ -19,7 +19,25 @@ final class StorageManager {
     public func uploadImageForComment(image: Data?, imageId: String, workout: Workout, progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
         guard let pngData = image else {return}
         
-        let imageRef = "comments_photo/\(workout.programID)/\(imageId)_photo.png"
+        let imageRef = "comments_photo_and_video/photo/\(workout.programID)/\(imageId)_photo.png"
+        let storageRef = container.reference(withPath: imageRef)
+        let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(nil)
+                    return
+                }
+                completion(imageRef)
+            }
+        uploadTask.observe(.progress) { snapshot in
+                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
+                    progress(Float(percentComplete))
+                }
+    }
+    
+    public func uploadImageForBlogComment(image: Data?, imageId: String, blogPost: Post, progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
+        guard let pngData = image else {return}
+        
+        let imageRef = "blog_comments_photo_and_video/photo/\(blogPost.id)/\(imageId)_photo.png"
         let storageRef = container.reference(withPath: imageRef)
         let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
@@ -36,7 +54,7 @@ final class StorageManager {
     
     public func uploadVideoURLForComment(videoID: String, videoData: Data, workout: Workout, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
         
-        let videoRef = "comments_video/\(workout.programID)/\(videoID)"
+        let videoRef = "comments_photo_and_video/video/\(workout.programID)/\(videoID)"
         print(videoData)
         let storageRef = container.reference(withPath: videoRef)
            let uploadTask = storageRef.putData(videoData, metadata: nil) { metadata, error in
@@ -52,7 +70,24 @@ final class StorageManager {
                     progress(Float(percentComplete))
                 }
     }
-    
+    public func uploadVideoURLForBlogComment(videoID: String, videoData: Data, blogPost: Post, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
+        
+        let videoRef = "blog_comments_photo_and_video/video/\(blogPost.id)/\(videoID)"
+        print(videoData)
+        let storageRef = container.reference(withPath: videoRef)
+           let uploadTask = storageRef.putData(videoData, metadata: nil) { metadata, error in
+               if let error = error {
+                   print("Error uploading video to Storage: \(error.localizedDescription)")
+                   completion(nil)
+                   return
+               }
+               completion(videoRef)
+           }
+        uploadTask.observe(.progress) { snapshot in
+                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
+                    progress(Float(percentComplete))
+                }
+    }
     
     public func uploadUserProfilePicture(email: String, image: Data?, completion: @escaping (Bool)->()) {
         let path = email

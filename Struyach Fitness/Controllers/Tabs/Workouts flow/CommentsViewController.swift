@@ -16,7 +16,8 @@ import AVKit
 
 class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
-    private let workout: Workout
+    private let workout: Workout?
+    private let blogPost: Post?
     var commentsArray: [Comment] = []
     private var progressBackgroundView: UIView!
     private var progressView: UIProgressView!
@@ -27,8 +28,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private let userName = UserDefaults.standard.string(forKey: "userName")
     private let userEmail = UserDefaults.standard.string(forKey: "email")
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-
-    let workoutView: UITextView = {
+    
+    let detailsView: UITextView = {
         let textView = UITextView()
         textView.backgroundColor = .systemGray6
         textView.isScrollEnabled = true
@@ -63,17 +64,24 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     }()
     
     private let activityIndicator: UIActivityIndicatorView = {
-            let indicator = UIActivityIndicatorView(style: .large)
-            indicator.toAutoLayout()
-            indicator.isHidden = true
-            indicator.color = .systemGreen
-            return indicator
-        }()
-
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.toAutoLayout()
+        indicator.isHidden = true
+        indicator.color = .systemGreen
+        return indicator
+    }()
+    
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
     
-    init (workout: Workout) {
+    init(workout: Workout) {
         self.workout = workout
+        self.blogPost = nil
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    init(blogPost: Post) {
+        self.workout = nil
+        self.blogPost = blogPost
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -87,7 +95,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         setupInputBar()
         setupNavbarAndView()
         setupProgress()
-        loadComments(workout: self.workout)
+        if let workout = self.workout {
+            loadComments(workout: workout)
+        } else if let post = self.blogPost {
+            loadComments(blogPost: post)
+        }
         setupGestureRecognizer()
     }
     
@@ -95,7 +107,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = true
     }
-   
+    
     private func setupMessageCollectionView() {
         messagesCollectionView.toAutoLayout()
         messagesCollectionView.backgroundColor = .customDarkComments
@@ -145,11 +157,14 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     private func setupNavbarAndView() {
         self.view.backgroundColor = .customDarkComments
-        
-        workoutView.text = workout.description
+        if let workout = workout {
+            detailsView.text = workout.description
+        } else if let post = blogPost {
+            detailsView.text = post.description
+        }
         view.addSubview(containerView)
         containerView.addSubview(secondContainerView)
-        secondContainerView.addSubview(workoutView)
+        secondContainerView.addSubview(detailsView)
         view.addSubview(activityIndicator)
         
         messagesCollectionView.contentInset.top = 180
@@ -165,11 +180,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
             secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
             
-            workoutView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
-            workoutView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
-            workoutView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
-            workoutView.heightAnchor.constraint(equalToConstant: 130),
-            workoutView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10),
+            detailsView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
+            detailsView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
+            detailsView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
+            detailsView.heightAnchor.constraint(equalToConstant: 130),
+            detailsView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10),
             
             activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
@@ -184,7 +199,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         self.progressBackgroundView.isHidden = true
         self.progressBackgroundView.toAutoLayout()
         self.view.addSubview(self.progressBackgroundView)
-
+        
         self.progressView = UIProgressView(progressViewStyle: .default)
         self.progressView.progress = 0
         self.progressView.progressTintColor = .systemGreen
@@ -202,19 +217,19 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         self.progressLabel.isHidden = true
         self.progressLabel.toAutoLayout()
         self.view.addSubview(self.progressLabel)
-                
-                let constraints = [
-                    self.progressBackgroundView.topAnchor.constraint(equalTo: self.view.topAnchor),
-                    self.progressBackgroundView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-                    self.progressBackgroundView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-                    self.progressBackgroundView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-                    self.progressView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-                    self.progressView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
-                    self.progressView.widthAnchor.constraint(equalToConstant: 200),
-                    self.progressView.heightAnchor.constraint(equalToConstant: 12),
-                    self.progressLabel.centerXAnchor.constraint(equalTo: self.progressView.centerXAnchor),
-                    self.progressLabel.bottomAnchor.constraint(equalTo: self.progressView.topAnchor, constant: -10)
-                ]
+        
+        let constraints = [
+            self.progressBackgroundView.topAnchor.constraint(equalTo: self.view.topAnchor),
+            self.progressBackgroundView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            self.progressBackgroundView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.progressBackgroundView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            self.progressView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            self.progressView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+            self.progressView.widthAnchor.constraint(equalToConstant: 200),
+            self.progressView.heightAnchor.constraint(equalToConstant: 12),
+            self.progressLabel.centerXAnchor.constraint(equalTo: self.progressView.centerXAnchor),
+            self.progressLabel.bottomAnchor.constraint(equalTo: self.progressView.topAnchor, constant: -10)
+        ]
         
         NSLayoutConstraint.activate(constraints)
     }
@@ -238,29 +253,54 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 guard let image = info[.originalImage] as? UIImage,
                       let imageData = image.jpegData(compressionQuality: 0.2) else { return }
                 let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
-                
-                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout, progressHandler: { [weak self] percentComplete in
-                    guard let self = self else {return}
-                    self.progressBackgroundView.isHidden = false
-                    self.progressView.isHidden = false
-                    self.progressLabel.isHidden = false
-                    self.progressView.progress = percentComplete
-                    self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
-                }) { [weak self] ref in
-                    guard let self = self else {return}
-                    if let safeRef = ref {
-                        StorageManager.shared.downloadUrl(path: safeRef) { url in
-                            guard let safeUrl = url else { print("unable to get safeURL")
-                                return}
-                            self.postPhotoComment(photoUrl: safeUrl)
-                            print("Image is saved to Storage")
+                if let workout = self.workout {
+                    StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
+                        guard let self = self else {return}
+                        self.progressBackgroundView.isHidden = false
+                        self.progressView.isHidden = false
+                        self.progressLabel.isHidden = false
+                        self.progressView.progress = percentComplete
+                        self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
+                    }) { [weak self] ref in
+                        guard let self = self else {return}
+                        if let safeRef = ref {
+                            StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                guard let safeUrl = url else { print("unable to get safeURL")
+                                    return}
+                                self.postPhotoComment(photoUrl: safeUrl)
+                                print("Image is saved to Storage")
+                            }
+                        } else {
+                            print ("Error uploading image to Storage")
                         }
-                    } else {
-                        print ("Error uploading image to Storage")
+                        self.progressBackgroundView.isHidden = true
+                        self.progressView.isHidden = true
+                        self.progressLabel.isHidden = true
                     }
-                    self.progressBackgroundView.isHidden = true
-                    self.progressView.isHidden = true
-                    self.progressLabel.isHidden = true
+                } else if let post = self.blogPost {
+                    StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
+                        guard let self = self else {return}
+                        self.progressBackgroundView.isHidden = false
+                        self.progressView.isHidden = false
+                        self.progressLabel.isHidden = false
+                        self.progressView.progress = percentComplete
+                        self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
+                    }) { [weak self] ref in
+                        guard let self = self else {return}
+                        if let safeRef = ref {
+                            StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                guard let safeUrl = url else { print("unable to get safeURL")
+                                    return}
+                                self.postPhotoComment(photoUrl: safeUrl)
+                                print("Image is saved to Storage")
+                            }
+                        } else {
+                            print ("Error uploading image to Storage")
+                        }
+                        self.progressBackgroundView.isHidden = true
+                        self.progressView.isHidden = true
+                        self.progressLabel.isHidden = true
+                    }
                 }
             }
         }))
@@ -280,29 +320,54 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 guard let image = info[.originalImage] as? UIImage,
                       let imageData = image.jpegData(compressionQuality: 0.6) else { return }
                 let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
-                
-                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout, progressHandler: { [weak self] percentComplete in
-                    guard let self = self else {return}
-                    self.progressBackgroundView.isHidden = false
-                    self.progressView.isHidden = false
-                    self.progressLabel.isHidden = false
-                    self.progressView.progress = percentComplete
-                    self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
-                }) { [weak self] ref in
-                    guard let self = self else {return}
-                    if let safeRef = ref {
-                        StorageManager.shared.downloadUrl(path: safeRef) { url in
-                            guard let safeUrl = url else { print("unable to get safeURL")
-                                return}
-                            self.postPhotoComment(photoUrl: safeUrl)
-                            print("Image is saved to Storage")
+                if let workout = self.workout {
+                    StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
+                        guard let self = self else {return}
+                        self.progressBackgroundView.isHidden = false
+                        self.progressView.isHidden = false
+                        self.progressLabel.isHidden = false
+                        self.progressView.progress = percentComplete
+                        self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
+                    }) { [weak self] ref in
+                        guard let self = self else {return}
+                        if let safeRef = ref {
+                            StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                guard let safeUrl = url else { print("unable to get safeURL")
+                                    return}
+                                self.postPhotoComment(photoUrl: safeUrl)
+                                print("Image is saved to Storage")
+                            }
+                        } else {
+                            print ("Error uploading image to Storage")
                         }
-                    } else {
-                        print ("Error uploading image to Storage")
+                        self.progressBackgroundView.isHidden = true
+                        self.progressView.isHidden = true
+                        self.progressLabel.isHidden = true
                     }
-                    self.progressBackgroundView.isHidden = true
-                    self.progressView.isHidden = true
-                    self.progressLabel.isHidden = true
+                } else if let post = self.blogPost {
+                    StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
+                        guard let self = self else {return}
+                        self.progressBackgroundView.isHidden = false
+                        self.progressView.isHidden = false
+                        self.progressLabel.isHidden = false
+                        self.progressView.progress = percentComplete
+                        self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
+                    }) { [weak self] ref in
+                        guard let self = self else {return}
+                        if let safeRef = ref {
+                            StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                guard let safeUrl = url else { print("unable to get safeURL")
+                                    return}
+                                self.postPhotoComment(photoUrl: safeUrl)
+                                print("Image is saved to Storage")
+                            }
+                        } else {
+                            print ("Error uploading image to Storage")
+                        }
+                        self.progressBackgroundView.isHidden = true
+                        self.progressView.isHidden = true
+                        self.progressLabel.isHidden = true
+                    }
                 }
             }
         }))
@@ -328,32 +393,59 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     return
                 }
                 let videoData = try! Data(contentsOf: videoUrl)
-                
                 let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
-                StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout, progressHandler: { [weak self] percentComplete in
-                    guard let self = self else {return}
-                    self.progressBackgroundView.isHidden = false
-                    self.progressView.isHidden = false
-                    self.progressLabel.isHidden = false
-                    self.progressView.progress = percentComplete
-                    self.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
-                        })  { [weak self] ref in
-                    guard let self = self else { return }
-                    if let safeRef = ref {
-                        StorageManager.shared.downloadUrl(path: safeRef) { url in
-                            guard let safeUrl = url else {
-                                print("unable to get safeURL and download it")
-                                return
+                if let workout = self.workout {
+                    StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: workout, progressHandler: { [weak self] percentComplete in
+                        guard let self = self else {return}
+                        self.progressBackgroundView.isHidden = false
+                        self.progressView.isHidden = false
+                        self.progressLabel.isHidden = false
+                        self.progressView.progress = percentComplete
+                        self.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
+                    })  { [weak self] ref in
+                        guard let self = self else { return }
+                        if let safeRef = ref {
+                            StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                guard let safeUrl = url else {
+                                    print("unable to get safeURL and download it")
+                                    return
+                                }
+                                self.postVideoComment(videoUrl: safeUrl)
+                                print("Video is saved to Storage")
                             }
-                            self.postVideoComment(videoUrl: safeUrl)
-                            print("Video is saved to Storage")
+                        } else {
+                            print("Error uploading video to Storage")
                         }
-                    } else {
-                        print("Error uploading video to Storage")
+                        self.progressBackgroundView.isHidden = true
+                        self.progressView.isHidden = true
+                        self.progressLabel.isHidden = true
                     }
-                            self.progressBackgroundView.isHidden = true
-                            self.progressView.isHidden = true
-                            self.progressLabel.isHidden = true
+                } else if let post = self.blogPost {
+                    StorageManager.shared.uploadVideoURLForBlogComment(videoID: videoId, videoData: videoData, blogPost: post, progressHandler: { [weak self] percentComplete in
+                        guard let self = self else {return}
+                        self.progressBackgroundView.isHidden = false
+                        self.progressView.isHidden = false
+                        self.progressLabel.isHidden = false
+                        self.progressView.progress = percentComplete
+                        self.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
+                    })  { [weak self] ref in
+                        guard let self = self else { return }
+                        if let safeRef = ref {
+                            StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                guard let safeUrl = url else {
+                                    print("unable to get safeURL and download it")
+                                    return
+                                }
+                                self.postVideoComment(videoUrl: safeUrl)
+                                print("Video is saved to Storage")
+                            }
+                        } else {
+                            print("Error uploading video to Storage")
+                        }
+                        self.progressBackgroundView.isHidden = true
+                        self.progressView.isHidden = true
+                        self.progressLabel.isHidden = true
+                    }
                 }
             }
         }))
@@ -375,27 +467,47 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else {return}
         
-        
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout.id, programId: workout.programID)
-        
-        DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-            guard let self = self else {return}
-            if success {
-                self.loadComments(workout: self.workout) { success in
-                    if success {
-                        DispatchQueue.main.async {
-                            self.messagesCollectionView.scrollToLastItem()
-                            print ("scroll to bottom")
+        if let workout = self.workout {
+            let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout.id, programId: workout.programID)
+            
+            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(workout: workout) { success in
+                        if success {
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
+                                print ("scroll to bottom")
+                            }
                         }
                     }
+                    print ("text comment is posted successfully")
+                } else {
+                    print ("cant save comment")
                 }
-                
-                print ("text comment is posted successfully")
-            } else {
-                print ("cant save comment")
             }
+            messageInputBar.inputTextView.text = nil
+        } else if let post = self.blogPost {
+            let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: "", programId: "")
+            
+            DatabaseManager.shared.postBlogComment(comment: newComment, post: post) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(blogPost: post){ success in
+                        if success {
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
+                                print ("scroll to bottom")
+                            }
+                        }
+                    }
+                    print ("text comment is posted successfully")
+                } else {
+                    print ("cant save comment")
+                }
+            }
+            messageInputBar.inputTextView.text = nil
         }
-        messageInputBar.inputTextView.text = nil
     }
     
     private func postPhotoComment(photoUrl: URL) {
@@ -411,24 +523,44 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         
         guard let placeholder = UIImage(systemName: "photo") else {return}
         let media = Media(url: photoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
-        
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout.id, programId: workout.programID)
-        print ("new comment with photo is created and sent to the Firestore")
-        DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-            guard let self = self else {return}
-            if success {
-                self.loadComments(workout: self.workout){ success in
-                    if success {
-                        DispatchQueue.main.async {
-                            self.messagesCollectionView.scrollToLastItem()
+        if let workout = self.workout {
+            let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout.id, programId: workout.programID)
+            print ("new comment with photo is created and sent to the Firestore")
+            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(workout: workout){ success in
+                        if success {
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
+                            }
+                        }
+                        
+                    }
+                    print ("successfully load photo comment")
+                    self.messagesCollectionView.scrollToLastItem()
+                } else {
+                    print ("cant save comment")
+                }
+            }
+        } else if let post = self.blogPost {
+            let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: nil, programId: nil)
+            print ("new comment with photo is created and sent to the Firestore")
+            DatabaseManager.shared.postBlogComment(comment: newComment, post: post) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(blogPost: post){ success in
+                        if success {
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
+                            }
                         }
                     }
-                    
+                    print ("successfully load photo comment")
+                    self.messagesCollectionView.scrollToLastItem()
+                } else {
+                    print ("cant save comment")
                 }
-                print ("successfully load photo comment")
-                self.messagesCollectionView.scrollToLastItem()
-            } else {
-                print ("cant save comment")
             }
         }
     }
@@ -447,23 +579,43 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         guard let placeholder = UIImage(systemName: "video.fill") else {return}
         let media = Media(url: videoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
         
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: imageData, workoutId: workout.id, programId: workout.programID)
-        print ("new comment with video is created and sent to the Firestore")
-        DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-            guard let self = self else {return}
-            if success {
-                self.loadComments(workout: self.workout){ success in
-                    if success {
-                        DispatchQueue.main.async {
-                            self.messagesCollectionView.scrollToLastItem()
+        if let workout = self.workout {
+            let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: imageData, workoutId: workout.id, programId: workout.programID)
+            print ("new comment with video is created and sent to the Firestore")
+            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(workout: workout){ success in
+                        if success {
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
+                            }
                         }
                     }
-                    
+                    print ("successfully upload video message ")
+                    self.messagesCollectionView.scrollToLastItem()
+                } else {
+                    print ("cant save comment")
                 }
-                print ("successfully upload video message ")
-                self.messagesCollectionView.scrollToLastItem()
-            } else {
-                print ("cant save comment")
+            }
+        } else if let post = self.blogPost {
+            let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: imageData, workoutId: nil, programId: nil)
+            print ("new comment with video is created and sent to the Firestore")
+            DatabaseManager.shared.postBlogComment(comment: newComment, post: post) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(blogPost: post){ success in
+                        if success {
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
+                            }
+                        }
+                    }
+                    print ("successfully upload video message ")
+                    self.messagesCollectionView.scrollToLastItem()
+                } else {
+                    print ("cant save comment")
+                }
             }
         }
     }
@@ -473,6 +625,24 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             self.activityIndicator.isHidden = false
             self.activityIndicator.startAnimating()
             DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
+                guard let self = self else {return}
+                self.commentsArray = comments
+                print ("loaded \(self.commentsArray.count) comments")
+                DispatchQueue.main.async {
+                    self.messagesCollectionView.reloadData()
+                    self.progressBackgroundView.isHidden = true
+                    self.activityIndicator.isHidden = true
+                    self.activityIndicator.stopAnimating()
+                }
+                completion?(true)
+            }
+        }
+    
+    private func loadComments(blogPost: Post, completion: ((Bool) -> Void)? = nil){
+            self.progressBackgroundView.isHidden = false
+            self.activityIndicator.isHidden = false
+            self.activityIndicator.startAnimating()
+            DatabaseManager.shared.getAllBlogComments(blogPost: blogPost) { [weak self] comments in
                 guard let self = self else {return}
                 self.commentsArray = comments
                 print ("loaded \(self.commentsArray.count) comments")
@@ -503,15 +673,27 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                 
                 let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
                     guard let self = self else {return}
-                    DatabaseManager.shared.deleteComment(comment: selectedMessage) { success in
-                        if success {
-                            self.loadComments(workout: self.workout)
-                            print("comment is deleted")
-                        } else {
-                            print ("can not delete comment")
+                    if let workout = self.workout {
+                        DatabaseManager.shared.deleteComment(comment: selectedMessage) { success in
+                            if success {
+                                self.loadComments(workout: workout)
+                                print("comment is deleted")
+                            } else {
+                                print ("can not delete comment")
+                            }
+                        }
+                    } else if let post = self.blogPost {
+                        DatabaseManager.shared.deleteBlogComment(comment: selectedMessage, blogPost: post) { success in
+                            if success {
+                                self.loadComments(blogPost: post)
+                                print("comment is deleted")
+                            } else {
+                                print ("can not delete comment")
+                            }
                         }
                     }
                 }
+                
                 let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
                     guard let self = self else {return}
                     
@@ -522,19 +704,29 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         commentVC.text = textToEdit
                         self.navigationController?.pushViewController(commentVC, animated: true)
                         commentVC.onWorkoutSave = { text in
-                            DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text) { success in
-                                if success{
-                                    self.loadComments(workout: self.workout)
-                                    print("text comment is updated successfully")
-                                } else {
-                                    self.showAlert(error: "Unable to update selected text comment")
+                            if let workout = self.workout {
+                                DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text) { success in
+                                    if success{
+                                        self.loadComments(workout: workout)
+                                        print("text comment is updated successfully")
+                                    } else {
+                                        self.showAlert(error: "Unable to update selected text comment")
+                                    }
+                                }
+                            } else if let post = self.blogPost {
+                                DatabaseManager.shared.updateBlogComment(comment: selectedMessage, blogPost: post, newDescription: text) { success in
+                                    if success{
+                                        self.loadComments(blogPost: post)
+                                        print("text comment is updated successfully")
+                                    } else {
+                                        self.showAlert(error: "Unable to update selected text comment")
+                                    }
                                 }
                             }
                         }
                         
                     case .photo(_):
                         let picker = UIImagePickerController()
-//                        picker.allowsEditing = true
                         picker.delegate = self
                         picker.sourceType = .photoLibrary
                         picker.mediaTypes = ["public.image"]
@@ -545,32 +737,59 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             guard let self = self, let image = info[.originalImage] as? UIImage else { return }
                             guard let imageData = image.jpegData(compressionQuality: 0.6) else { return }
                             let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
-                            
-                            StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: self.workout, progressHandler: { [weak self] percentComplete in
-                                self?.progressBackgroundView.isHidden = false
-                                self?.progressView.isHidden = false
-                                self?.progressLabel.isHidden = false
-                                self?.progressView.progress = percentComplete
-                                self?.progressLabel.text = String(format: "Updating photo (%d%%)", Int(percentComplete * 100))
-                            }) { [weak self] ref in
-                                guard let self = self, let safeRef = ref else { return }
-                                StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                    guard let safeUrl = url else {return}
-                                    let mediaUrl = safeUrl.absoluteString
-                                    DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
-                                        if success {
-                                            self.loadComments(workout: self.workout)
-                                            print("photo comment is updated successfully")
-                                        } else {
-                                            self.showAlert(error: "Unable to update selected photo comment")
+                            if let workout = self.workout {
+                                StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
+                                    self?.progressBackgroundView.isHidden = false
+                                    self?.progressView.isHidden = false
+                                    self?.progressLabel.isHidden = false
+                                    self?.progressView.progress = percentComplete
+                                    self?.progressLabel.text = String(format: "Updating photo (%d%%)", Int(percentComplete * 100))
+                                }) { [weak self] ref in
+                                    guard let self = self, let safeRef = ref else { return }
+                                    StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                        guard let safeUrl = url else {return}
+                                        let mediaUrl = safeUrl.absoluteString
+                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                            if success {
+                                                self.loadComments(workout: workout)
+                                                print("photo comment is updated successfully")
+                                            } else {
+                                                self.showAlert(error: "Unable to update selected photo comment")
+                                            }
+                                            self.progressBackgroundView.isHidden = true
+                                            self.progressView.isHidden = true
+                                            self.progressLabel.isHidden = true
                                         }
-                                        self.progressBackgroundView.isHidden = true
-                                        self.progressView.isHidden = true
-                                        self.progressLabel.isHidden = true
+                                    }
+                                }
+                            } else if let post = self.blogPost {
+                                StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
+                                    self?.progressBackgroundView.isHidden = false
+                                    self?.progressView.isHidden = false
+                                    self?.progressLabel.isHidden = false
+                                    self?.progressView.progress = percentComplete
+                                    self?.progressLabel.text = String(format: "Updating photo (%d%%)", Int(percentComplete * 100))
+                                }) { [weak self] ref in
+                                    guard let self = self, let safeRef = ref else { return }
+                                    StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                        guard let safeUrl = url else {return}
+                                        let mediaUrl = safeUrl.absoluteString
+                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                            if success {
+                                                self.loadComments(blogPost: post)
+                                                print("photo comment is updated successfully")
+                                            } else {
+                                                self.showAlert(error: "Unable to update selected photo comment")
+                                            }
+                                            self.progressBackgroundView.isHidden = true
+                                            self.progressView.isHidden = true
+                                            self.progressLabel.isHidden = true
+                                        }
                                     }
                                 }
                             }
                         }
+                        
                     case .video(_):
                         let picker = UIImagePickerController()
                         picker.allowsEditing = true
@@ -585,29 +804,56 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             guard let self = self, let videoUrl = info[.mediaURL] as? URL else {return}
                             let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
                             let videoData = try! Data(contentsOf: videoUrl)
-                            
-                            StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: self.workout, progressHandler: { [weak self] percentComplete in
-                                self?.progressBackgroundView.isHidden = false
-                                self?.progressView.isHidden = false
-                                self?.progressLabel.isHidden = false
-                                        self?.progressView.progress = percentComplete
-                                        self?.progressLabel.text = String(format: "Updating video (%d%%)", Int(percentComplete * 100))
-                                    })  { [weak self] ref in
-                                guard let self = self, let safeRef = ref else {return}
-                                StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                    guard let safeUrl = url else { print("unable to get safeURL")
-                                        return}
-                                    let mediaUrl = safeUrl.absoluteString
-                                    DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
-                                        if success {
-                                            self.loadComments(workout: self.workout)
-                                            print("video comment is updated successfully")
-                                        } else {
-                                            self.showAlert(error: "Unable to update selected video comment")
+                            if let workout = self.workout {
+                                StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: workout, progressHandler: { [weak self] percentComplete in
+                                    self?.progressBackgroundView.isHidden = false
+                                    self?.progressView.isHidden = false
+                                    self?.progressLabel.isHidden = false
+                                    self?.progressView.progress = percentComplete
+                                    self?.progressLabel.text = String(format: "Updating video (%d%%)", Int(percentComplete * 100))
+                                })  { [weak self] ref in
+                                    guard let self = self, let safeRef = ref else {return}
+                                    StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                        guard let safeUrl = url else { print("unable to get safeURL")
+                                            return}
+                                        let mediaUrl = safeUrl.absoluteString
+                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                            if success {
+                                                self.loadComments(workout: workout)
+                                                print("video comment is updated successfully")
+                                            } else {
+                                                self.showAlert(error: "Unable to update selected video comment")
+                                            }
+                                            self.progressBackgroundView.isHidden = true
+                                            self.progressView.isHidden = true
+                                            self.progressLabel.isHidden = true
                                         }
-                                        self.progressBackgroundView.isHidden = true
-                                        self.progressView.isHidden = true
-                                        self.progressLabel.isHidden = true
+                                    }
+                                }
+                            } else if let post = self.blogPost {
+                                StorageManager.shared.uploadVideoURLForBlogComment(videoID: videoId, videoData: videoData, blogPost: post, progressHandler: { [weak self] percentComplete in
+                                    self?.progressBackgroundView.isHidden = false
+                                    self?.progressView.isHidden = false
+                                    self?.progressLabel.isHidden = false
+                                    self?.progressView.progress = percentComplete
+                                    self?.progressLabel.text = String(format: "Updating video (%d%%)", Int(percentComplete * 100))
+                                })  { [weak self] ref in
+                                    guard let self = self, let safeRef = ref else {return}
+                                    StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                        guard let safeUrl = url else { print("unable to get safeURL")
+                                            return}
+                                        let mediaUrl = safeUrl.absoluteString
+                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                            if success {
+                                                self.loadComments(blogPost: post)
+                                                print("video comment is updated successfully")
+                                            } else {
+                                                self.showAlert(error: "Unable to update selected video comment")
+                                            }
+                                            self.progressBackgroundView.isHidden = true
+                                            self.progressView.isHidden = true
+                                            self.progressLabel.isHidden = true
+                                        }
                                     }
                                 }
                             }

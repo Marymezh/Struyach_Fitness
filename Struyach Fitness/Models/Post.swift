@@ -8,9 +8,10 @@
 import Foundation
 import FirebaseFirestoreSwift
 
-struct Post: Codable {
+struct Post: Codable, Equatable {
     var id: String
     var description: String
     let date: String
     let timestamp: TimeInterval
+    var likes: Int = 0 
 }

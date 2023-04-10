@@ -11,6 +11,8 @@ class BlogTableViewCell: UITableViewCell {
     
     private var baseInset: CGFloat { return 15 }
     
+    var onCommentsPush: (()->())?
+    
     let containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -72,7 +74,7 @@ class BlogTableViewCell: UITableViewCell {
         return button
     }()
     
-    private let likesLabel: UILabel = {
+    let likesLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .white
@@ -81,7 +83,7 @@ class BlogTableViewCell: UITableViewCell {
         return label
     }()
 
-    private let commentsLabel: UILabel = {
+    let commentsLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .white
@@ -153,12 +155,8 @@ class BlogTableViewCell: UITableViewCell {
     }
     
     @objc private func pushCommentsVC() {
-//        guard let selectedWorkout = selectedWorkout else { print("workout is not selected")
-//            return }
-//        let commentsVC = CommentsViewController(workout: selectedWorkout)
-//        commentsVC.title = "Comments"
-//    
-//        navigationController?.pushViewController(commentsVC, animated: true)
+        
+        self.onCommentsPush?()
     }
     
     @objc private func addLikeToWorkout() {

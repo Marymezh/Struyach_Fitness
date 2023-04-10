@@ -206,7 +206,7 @@ final class DatabaseManager {
 //    }
     
     //MARK: - Adding and fetching blog posts
-    public func saveBlogPost (with post: Post, completion: @escaping(Bool) ->()){
+    public func saveBlogPost(with post: Post, completion: @escaping(Bool) ->()){
         print("Executing function: \(#function)")
 
         do {
@@ -247,12 +247,166 @@ final class DatabaseManager {
                 completion(posts)
             }
     }
+    //MARK: - Comments for blog posts: Adding, fetching, editing, deleting and listen to the changes
+    public func postBlogComment(comment: Comment, post: Post, completion: @escaping (Bool) ->()){
+        print("posting comment for blog post to Firestore")
+        var commentContents = ""
+
+        switch comment.kind {
+        case .text(let enteredText): commentContents = enteredText
+        case .photo(let mediaItem):
+            if let mediaUrl = mediaItem.url?.absoluteString {
+                    commentContents = mediaUrl
+                print(mediaUrl)
+            }
+        case .video(let mediaItem):
+            if let mediaUrl = mediaItem.url?.absoluteString {
+                commentContents = mediaUrl
+            }
+        default: break
+        }
+
+        let commentData: [String: Any] = [
+            "senderId": comment.sender.senderId,
+            "senderName": comment.sender.displayName,
+            "messageId": comment.messageId,
+            "sentDate": FieldValue.serverTimestamp(),
+            "contents": commentContents,
+            "type": comment.kind.messageKindString,
+
+            "userImage": comment.userImage,
+            "programId": comment.programId ?? "",
+            "workoutId": comment.workoutId ?? ""
+        ]
+
+           database
+               .collection("blogPosts")
+               .document(post.id)
+               .collection("comments")
+               .document(comment.messageId)
+               .setData(commentData) { error in
+                   if let error = error {
+                       print(error.localizedDescription)
+                   } else {
+                       completion(error == nil)
+                   }
+               }
+       }
+
+    public func getAllBlogComments(blogPost: Post, completion: @escaping([Comment])->()){
+        print ("executing loading comments from database \(#function)")
+
+        database
+            .collection("blogPosts")
+            .document(blogPost.id)
+            .collection("comments")
+            .order(by: "sentDate", descending: false)
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents.compactMap({ $0.data()}), error == nil else {return}
+                let comments: [Comment] = documents.compactMap { dictionary in
+                    guard let senderId = dictionary["senderId"] as? String,
+                          let senderName = dictionary["senderName"] as? String,
+                          let userImage = dictionary["userImage"] as? Data,
+                          let messageId = dictionary["messageId"] as? String,
+                          let contents = dictionary["contents"] as? String,
+                          let type = dictionary["type"] as? String,
+                          let date = dictionary["sentDate"] as? Timestamp,
+                          let workoutId = dictionary["workoutId"] as? String,
+                          let programId = dictionary["programId"] as? String else {print("unable to create comment")
+                        return nil}
+                    
+                    let sentDate = date.dateValue()
+                    var kind: MessageKind?
+                    
+                    switch type {
+                    case "photo":
+                        guard let imageURL = URL(string: contents),
+                        let placeholder = UIImage(systemName: "photo") else {return nil}
+                        let media = Media(url: imageURL, image: nil, placeholderImage: placeholder, size: CGSize(width: 300, height: 250))
+                        kind = .photo(media)
+                    case "video":
+                        guard let videoUrl = URL(string: contents),
+                        let placeholder = UIImage(named: "general") else {return nil}
+                        let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 90, height: 90))
+                        kind = .video(media)
+                    case "text": kind = .text(contents)
+                    default: break
+                    }
+
+                    guard let finalKind = kind else {return nil}
+                    let sender = Sender(senderId: senderId, displayName: senderName)
+                    let comment = Comment(sender: sender, messageId: messageId, sentDate: sentDate, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId)
+                    return comment
+                }
+                   completion(comments)
+               }
+       }
     
-    //MARK: - Adding, fetching, editing, deleting and listen to the changes in comments
+    public func getBlogCommentsCount(blogPost: Post, completion: @escaping(Int)->()){
+        print ("executing loading comments for blog posts \(#function)")
+        var numberOfComments = 0
+
+        database
+            .collection("blogPosts")
+            .document(blogPost.id)
+            .collection("comments")
+            .order(by: "sentDate", descending: false)
+            .getDocuments { (querySnapshot, error) in
+                if let error = error {
+                    print("Error getting documents: \(error)")
+                } else {
+                    numberOfComments = querySnapshot?.count ?? 0
+                    print("found \(numberOfComments) comments for blog post")
+                }
+                completion(numberOfComments)
+            }
+       }
+    
+    public func updateBlogComment(comment: Comment, blogPost: Post, newDescription: String, completion: @escaping (Bool)->()){
+        print("Executing function: \(#function)")
+
+        let dbRef = database
+            .collection("blogPosts")
+            .document(blogPost.id)
+            .collection("comments")
+            .document(comment.messageId)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["contents"] = newDescription
+            dbRef.setData(data) { error in
+                completion(error == nil)
+            }
+        }
+    }
+    
+    public func deleteBlogComment(comment: Comment, blogPost: Post, completion: @escaping (Bool)->()){
+        print("Executing function: \(#function)")
+        
+        let commentsRef = database
+            .collection("blogPosts")
+            .document(blogPost.id)
+            .collection("comments")
+            .document(comment.messageId)
+        
+        commentsRef.delete() { error in
+            if let error = error {
+                print("Error deleting comment: \(error.localizedDescription)")
+                completion(false)
+            } else {
+                print("comment deleted successfully")
+                completion(true)
+            }
+        }
+    }
+    
+    //MARK: - Comments for workouts: Adding, fetching, editing, deleting and listen to the changes 
     public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
         print("posting comment to Firestore")
+        guard let programId = comment.programId, let workoutId = comment.workoutId else {return}
 
-           let documentID = comment.programId
+           let documentID = programId
                .replacingOccurrences(of: "/", with: "_")
                .replacingOccurrences(of: " ", with: "_")
 
@@ -282,15 +436,15 @@ final class DatabaseManager {
             "type": comment.kind.messageKindString, 
 
             "userImage": comment.userImage,
-            "programId": comment.programId,
-            "workoutId": comment.workoutId
+            "programId": comment.programId ?? "",
+            "workoutId": comment.workoutId ?? ""
         ]
 
            database
                .collection("programs")
                .document(documentID)
                .collection("workouts")
-               .document(comment.workoutId)
+               .document(workoutId)
                .collection("comments")
                .document(comment.messageId)
                .setData(commentData) { error in
@@ -387,7 +541,9 @@ final class DatabaseManager {
     
     public func updateComment(comment: Comment, newDescription: String, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
-        let documentID = comment.programId
+        
+        guard let programId = comment.programId, let workoutId = comment.workoutId else {return}
+        let documentID = programId
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
         
@@ -395,7 +551,7 @@ final class DatabaseManager {
             .collection("programs")
             .document(documentID)
             .collection("workouts")
-            .document(comment.workoutId)
+            .document(workoutId)
             .collection("comments")
             .document(comment.messageId)
         
@@ -412,7 +568,8 @@ final class DatabaseManager {
     public func deleteComment(comment: Comment, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         
-        let documentID = comment.programId
+        guard let programId = comment.programId, let workoutId = comment.workoutId else {return}
+        let documentID = programId
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
         
@@ -420,7 +577,7 @@ final class DatabaseManager {
             .collection("programs")
             .document(documentID)
             .collection("workouts")
-            .document(comment.workoutId)
+            .document(workoutId)
             .collection("comments")
             .document(comment.messageId)
         

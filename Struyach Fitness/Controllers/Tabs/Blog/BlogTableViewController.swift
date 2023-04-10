@@ -102,7 +102,23 @@ class BlogTableViewController: UITableViewController {
         let post = blogPosts[indexPath.row]
             cell.postDescriptionTextView.text = post.description
             cell.postDateLabel.text = post.date
-
+        
+        cell.onCommentsPush = {
+            let commentsVC = CommentsViewController(blogPost: post)
+            commentsVC.title = "Comments"
+            self.navigationController?.pushViewController(commentsVC, animated: true)
+        }
+        
+        DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
+            DispatchQueue.main.async {
+                switch numberOfComments {
+                case 0: cell.commentsLabel.text = "No comments posted yet"
+                case 1: cell.commentsLabel.text = "\(numberOfComments) comment "
+                default: cell.commentsLabel.text = "\(numberOfComments) comments"
+                }
+            }
+        }
+        
         return cell
     }
     

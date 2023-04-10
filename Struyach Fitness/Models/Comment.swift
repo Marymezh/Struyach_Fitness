@@ -15,8 +15,8 @@ struct Comment: MessageType {
     var kind: MessageKind
     
     let userImage: Data
-    let workoutId: String
-    let programId: String
+    let workoutId: String?
+    let programId: String?
 }
 
 extension MessageKind {
