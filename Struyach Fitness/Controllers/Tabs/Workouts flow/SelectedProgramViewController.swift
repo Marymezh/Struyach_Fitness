@@ -198,30 +198,38 @@ class SelectedProgramViewController: UIViewController {
     
     @objc private func addLikeToWorkout() {
         likeButton.isSelected = !likeButton.isSelected
-        guard var selectedWorkout = selectedWorkout else {return}
-        guard let index = listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
+        guard let selectedWorkout = selectedWorkout,
+              let index = listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
         
         if likeButton.isSelected {
             likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likeButton.tintColor = .systemRed
-            selectedWorkout.likes += 1
-            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] workout in
+            var updatedWorkout = selectedWorkout
+            updatedWorkout.likes += 1
+            DatabaseManager.shared.updateLikes(workout: updatedWorkout, likesCount: updatedWorkout.likes) {[weak self] workout in
                 guard let self = self else {return}
+                print ("likes increase by 1")
                 self.listOfWorkouts[index] = workout
                 self.filteredWorkouts = self.listOfWorkouts
-                self.likesLabel.text = "\(selectedWorkout.likes)"
-                self.likedWorkouts.append(selectedWorkout.id)
-                UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+                self.likesLabel.text = "\(updatedWorkout.likes)"
+                self.selectedWorkout = updatedWorkout
+                if !self.likedWorkouts.contains(selectedWorkout.id) {
+                    self.likedWorkouts.append(selectedWorkout.id)
+                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+                }
             }
         } else {
             likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likeButton.tintColor = .white
-            selectedWorkout.likes -= 1
-            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) { [weak self] workout in
+            var updatedWorkout = selectedWorkout
+            updatedWorkout.likes -= 1
+            DatabaseManager.shared.updateLikes(workout: updatedWorkout, likesCount: updatedWorkout.likes) {[weak self] workout in
                 guard let self = self else {return}
+                print ("likes decrease by 1")
                 self.listOfWorkouts[index] = workout
                 self.filteredWorkouts = self.listOfWorkouts
-                self.likesLabel.text = "\(selectedWorkout.likes)"
+                self.likesLabel.text = "\(updatedWorkout.likes)"
+                self.selectedWorkout = updatedWorkout
                 if let index = self.likedWorkouts.firstIndex(of: selectedWorkout.id) {
                     self.likedWorkouts.remove(at: index)
                     UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
@@ -414,7 +422,6 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
             self.likeButton.isSelected = true
             likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likeButton.tintColor = .systemRed
-         
         } else {
             print("like button is not selected")
             self.likeButton.isSelected = false
@@ -487,13 +494,11 @@ extension SelectedProgramViewController: UISearchBarDelegate {
             }
         }
         workoutsCollection.reloadData()
-        
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = nil
         filteredWorkouts = listOfWorkouts
-
         workoutsCollection.reloadData()
         searchBar.resignFirstResponder()
     }
