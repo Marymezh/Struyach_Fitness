@@ -265,13 +265,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         guard let self = self else {return}
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                guard let safeUrl = url else { print("unable to get safeURL")
-                                    return}
+                                guard let safeUrl = url else {return}
                                 self.postPhotoComment(photoUrl: safeUrl)
-                                print("Image is saved to Storage")
                             }
                         } else {
-                            print ("Error uploading image to Storage")
+                            self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.progressBackgroundView.isHidden = true
                         self.progressView.isHidden = true
@@ -289,13 +287,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         guard let self = self else {return}
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                guard let safeUrl = url else { print("unable to get safeURL")
-                                    return}
+                                guard let safeUrl = url else {return}
                                 self.postPhotoComment(photoUrl: safeUrl)
-                                print("Image is saved to Storage")
                             }
                         } else {
-                            print ("Error uploading image to Storage")
+                            self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.progressBackgroundView.isHidden = true
                         self.progressView.isHidden = true
@@ -332,13 +328,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         guard let self = self else {return}
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                guard let safeUrl = url else { print("unable to get safeURL")
-                                    return}
+                                guard let safeUrl = url else {return}
                                 self.postPhotoComment(photoUrl: safeUrl)
-                                print("Image is saved to Storage")
                             }
                         } else {
-                            print ("Error uploading image to Storage")
+                            self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.progressBackgroundView.isHidden = true
                         self.progressView.isHidden = true
@@ -356,13 +350,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         guard let self = self else {return}
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                guard let safeUrl = url else { print("unable to get safeURL")
-                                    return}
+                                guard let safeUrl = url else {return}
                                 self.postPhotoComment(photoUrl: safeUrl)
-                                print("Image is saved to Storage")
                             }
                         } else {
-                            print ("Error uploading image to Storage")
+                            self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.progressBackgroundView.isHidden = true
                         self.progressView.isHidden = true
@@ -389,7 +381,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             
             self.onImagePick = { info in
                 guard let videoUrl = info[.mediaURL] as? URL else {
-                    print("couldn't get mediaURL from image picker")
+                    self.showAlert(title: "Warning", message: "Couldn't get mediaURL from image picker")
                     return
                 }
                 let videoData = try! Data(contentsOf: videoUrl)
@@ -406,15 +398,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         guard let self = self else { return }
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                guard let safeUrl = url else {
-                                    print("unable to get safeURL and download it")
-                                    return
-                                }
+                                guard let safeUrl = url else {return}
                                 self.postVideoComment(videoUrl: safeUrl)
-                                print("Video is saved to Storage")
                             }
                         } else {
-                            print("Error uploading video to Storage")
+                            self.showAlert(title: "Warning", message: "Error uploading video to Storage")
                         }
                         self.progressBackgroundView.isHidden = true
                         self.progressView.isHidden = true
@@ -432,15 +420,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         guard let self = self else { return }
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                guard let safeUrl = url else {
-                                    print("unable to get safeURL and download it")
-                                    return
-                                }
+                                guard let safeUrl = url else {return}
                                 self.postVideoComment(videoUrl: safeUrl)
-                                print("Video is saved to Storage")
                             }
                         } else {
-                            print("Error uploading video to Storage")
+                            self.showAlert(title: "Warning", message: "Error uploading video to Storage")
                         }
                         self.progressBackgroundView.isHidden = true
                         self.progressView.isHidden = true
@@ -477,13 +461,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         if success {
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
-                                print ("scroll to bottom")
                             }
                         }
                     }
-                    print ("text comment is posted successfully")
                 } else {
-                    print ("cant save comment")
+                    self.showAlert(title: "Warning", message: "Unable to post comment")
                 }
             }
             messageInputBar.inputTextView.text = nil
@@ -497,13 +479,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         if success {
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
-                                print ("scroll to bottom")
                             }
                         }
                     }
-                    print ("text comment is posted successfully")
                 } else {
-                    print ("cant save comment")
+                    self.showAlert(title: "Warning", message: "Unable to post comment")
                 }
             }
             messageInputBar.inputTextView.text = nil
@@ -535,12 +515,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                 self.messagesCollectionView.scrollToLastItem()
                             }
                         }
-                        
                     }
-                    print ("successfully load photo comment")
-                    self.messagesCollectionView.scrollToLastItem()
                 } else {
-                    print ("cant save comment")
+                    self.showAlert(title: "Warning", message: "Unable to post comment")
                 }
             }
         } else if let post = self.blogPost {
@@ -556,10 +533,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             }
                         }
                     }
-                    print ("successfully load photo comment")
-                    self.messagesCollectionView.scrollToLastItem()
                 } else {
-                    print ("cant save comment")
+                    self.showAlert(title: "Warning", message: "Unable to post comment")
                 }
             }
         }
@@ -592,10 +567,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             }
                         }
                     }
-                    print ("successfully upload video message ")
-                    self.messagesCollectionView.scrollToLastItem()
                 } else {
-                    print ("cant save comment")
+                    self.showAlert(title: "Warning", message: "Unable to post comment")
                 }
             }
         } else if let post = self.blogPost {
@@ -611,10 +584,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             }
                         }
                     }
-                    print ("successfully upload video message ")
-                    self.messagesCollectionView.scrollToLastItem()
                 } else {
-                    print ("cant save comment")
+                    self.showAlert(title: "Warning", message: "Unable to post comment")
                 }
             }
         }
@@ -677,18 +648,16 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         DatabaseManager.shared.deleteComment(comment: selectedMessage) { success in
                             if success {
                                 self.loadComments(workout: workout)
-                                print("comment is deleted")
                             } else {
-                                print ("can not delete comment")
+                                self.showAlert(title: "Warning", message: "Unable to delete comment")
                             }
                         }
                     } else if let post = self.blogPost {
                         DatabaseManager.shared.deleteBlogComment(comment: selectedMessage, blogPost: post) { success in
                             if success {
                                 self.loadComments(blogPost: post)
-                                print("comment is deleted")
                             } else {
-                                print ("can not delete comment")
+                                self.showAlert(title: "Warning", message: "Unable to delete comment")
                             }
                         }
                     }
@@ -708,18 +677,16 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                 DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text) { success in
                                     if success{
                                         self.loadComments(workout: workout)
-                                        print("text comment is updated successfully")
                                     } else {
-                                        self.showAlert(error: "Unable to update selected text comment")
+                                        self.showAlert(title: "Warning", message: "Unable to update selected comment")
                                     }
                                 }
                             } else if let post = self.blogPost {
                                 DatabaseManager.shared.updateBlogComment(comment: selectedMessage, blogPost: post, newDescription: text) { success in
                                     if success{
                                         self.loadComments(blogPost: post)
-                                        print("text comment is updated successfully")
                                     } else {
-                                        self.showAlert(error: "Unable to update selected text comment")
+                                        self.showAlert(title: "Warning", message: "Unable to update selected comment")
                                     }
                                 }
                             }
@@ -752,9 +719,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                         DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
                                             if success {
                                                 self.loadComments(workout: workout)
-                                                print("photo comment is updated successfully")
                                             } else {
-                                                self.showAlert(error: "Unable to update selected photo comment")
+                                                self.showAlert(title: "Warning", message: "Unable to update selected photo comment")
                                             }
                                             self.progressBackgroundView.isHidden = true
                                             self.progressView.isHidden = true
@@ -777,9 +743,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                         DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
                                             if success {
                                                 self.loadComments(blogPost: post)
-                                                print("photo comment is updated successfully")
                                             } else {
-                                                self.showAlert(error: "Unable to update selected photo comment")
+                                                self.showAlert(title: "Warning", message: "Unable to update selected photo comment")
                                             }
                                             self.progressBackgroundView.isHidden = true
                                             self.progressView.isHidden = true
@@ -820,9 +785,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                         DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
                                             if success {
                                                 self.loadComments(workout: workout)
-                                                print("video comment is updated successfully")
                                             } else {
-                                                self.showAlert(error: "Unable to update selected video comment")
+                                                self.showAlert(title: "Warning", message: "Unable to update selected video comment")
                                             }
                                             self.progressBackgroundView.isHidden = true
                                             self.progressView.isHidden = true
@@ -846,9 +810,8 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                         DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
                                             if success {
                                                 self.loadComments(blogPost: post)
-                                                print("video comment is updated successfully")
                                             } else {
-                                                self.showAlert(error: "Unable to update selected video comment")
+                                                self.showAlert(title: "Warning", message: "Unable to update selected video comment")
                                             }
                                             self.progressBackgroundView.isHidden = true
                                             self.progressView.isHidden = true
@@ -871,11 +834,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         }
     }
     
-    private func showAlert (error: String) {
-        let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         alert.addAction(cancelAction)
-        
+        alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
     }
 }

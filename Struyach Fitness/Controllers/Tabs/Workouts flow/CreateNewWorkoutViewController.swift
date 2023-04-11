@@ -46,7 +46,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
             self.onWorkoutSave?(text)
             navigationController?.popViewController(animated: true)
         } else {
-            self.showAlert(error: "Enter workout description!")
+            self.showAlert(title: "Warning", message: "Text of the workout can not be blank!")
         }
     }
     
@@ -85,11 +85,11 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         NSLayoutConstraint.activate(constraints)
     }
     
-    private func showAlert (error: String) {
-        let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         alert.addAction(cancelAction)
-        
+        alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
     }
 }

@@ -140,8 +140,12 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func loginTapped() {
-        guard let email = emailTextField.text, !email.isEmpty,
-              let password = passwordTextField.text, !password.isEmpty else {return}
+        guard let email = emailTextField.text, !email.isEmpty else {
+            self.showAlert(title: "Warning", message: "Check your email")
+            return}
+        guard let password = passwordTextField.text, !password.isEmpty, password.count > 6 else {
+            self.showAlert(title: "Warning", message: "Check your password")
+            return}
         
         AuthManager.shared.signIn(email: email, password: password) { [weak self] success in
             guard let self = self else {return}
@@ -154,7 +158,7 @@ class LoginViewController: UIViewController {
                     self.present(vc, animated: true)
                 }
             } else {
-                self.showAlert(error: "Unable to log in")
+                self.showAlert(title: "Warning", message: "Unable to log in")
             }
         }
     }
@@ -168,13 +172,11 @@ class LoginViewController: UIViewController {
         navigationController?.pushViewController(createAccountVC, animated: true)
     }
     
-    private func showAlert (error: String) {
-        let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Retry", style: .cancel) { _ in
-            print("retry entry")
-        }
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Retry", style: .cancel)
         alert.addAction(cancelAction)
-        alert.editButtonItem.tintColor = .systemGreen
+        alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
     }
 }

@@ -156,11 +156,10 @@ class BlogTableViewCell: UITableViewCell {
         NSLayoutConstraint.activate(constraints)
     }
     
-    override func prepareForReuse() {
-           super.prepareForReuse()
-           commentsLabel.text = ""
-       }
-
+//    override func prepareForReuse() {
+//           super.prepareForReuse()
+//           commentsLabel.text = ""
+//       }
     
     @objc private func pushCommentsVC() {
         self.onCommentsPush?()

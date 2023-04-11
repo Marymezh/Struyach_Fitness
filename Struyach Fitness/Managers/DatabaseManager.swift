@@ -20,7 +20,8 @@ final class DatabaseManager {
     
     private init() {}
     
-    //MARK: - Adding, fetching, editing, deleting workouts and listen to the changes in workouts
+    //MARK: - Workouts: adding, fetching, editing, deleting workouts and listen to the changes
+    
     //TODO: - Firebase pagination and caching workouts and comments localy
     public func postWorkout(with workout: Workout, completion: @escaping(Bool) ->()){
         print("Executing function: \(#function)")
@@ -97,28 +98,6 @@ final class DatabaseManager {
         }
     }
     
-    public func updateLikes(workout: Workout, likesCount: Int, completion: @escaping (Workout)->()){
-        print("Executing function: \(#function)")
-        let documentID = workout.programID
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: " ", with: "_")
-        
-        let dbRef = database
-            .collection("programs")
-            .document(documentID)
-            .collection("workouts")
-            .document(workout.id)
-        
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            
-            data["likes"] = likesCount
-            dbRef.setData(data) { error in
-                completion(workout)
-            }
-        }
-    }
-    
     public func deleteWorkout(workout: Workout, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         
@@ -139,23 +118,19 @@ final class DatabaseManager {
                 completion(false)
                 return
             }
-            
             guard let snapshot = snapshot else {
                 print("No comments found")
                 completion(false)
                 return
             }
-            
             let batch = self.database.batch()
             snapshot.documents.forEach { batch.deleteDocument($0.reference) }
-            
             batch.commit { (error) in
                 if let error = error {
                     print("Error deleting comments: \(error.localizedDescription)")
                     completion(false)
                 } else {
                     print("Comments deleted successfully")
-                    
                     self.database
                         .collection("programs")
                         .document(documentID)
@@ -171,6 +146,28 @@ final class DatabaseManager {
                             }
                         }
                 }
+            }
+        }
+    }
+    
+    public func updateLikes(workout: Workout, likesCount: Int, completion: @escaping (Workout)->()){
+        print("Executing function: \(#function)")
+        let documentID = workout.programID
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let dbRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workout.id)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["likes"] = likesCount
+            dbRef.setData(data) { error in
+                completion(workout)
             }
         }
     }
@@ -205,7 +202,7 @@ final class DatabaseManager {
 //        return listener
 //    }
     
-    //MARK: - Adding and fetching blog posts
+    //MARK: - Blog posts: adding, fetching, updating and deleting
     public func saveBlogPost(with post: Post, completion: @escaping(Bool) ->()){
         print("Executing function: \(#function)")
 
@@ -247,6 +244,86 @@ final class DatabaseManager {
                 completion(posts)
             }
     }
+
+    public func updatePost(blogPost: Post, newDescription: String, completion: @escaping (Post)->()){
+        print("Executing function: \(#function)")
+
+        let dbRef = database
+            .collection("blogPosts")
+            .document(blogPost.id)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["description"] = newDescription
+            dbRef.setData(data) { error in
+                completion(blogPost)
+            }
+        }
+    }
+
+    public func deletePost(blogPost: Post, completion: @escaping (Bool)->()){
+        print("Executing function: \(#function)")
+
+        let commentsRef = database
+            .collection("blogPosts")
+            .document(blogPost.id)
+            .collection("comments")
+        
+        commentsRef.getDocuments { (snapshot, error) in
+            if let error = error {
+                print("Error getting comments: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+            
+            guard let snapshot = snapshot else {
+                print("No comments found")
+                completion(false)
+                return
+            }
+            let batch = self.database.batch()
+            snapshot.documents.forEach { batch.deleteDocument($0.reference) }
+            batch.commit { (error) in
+                if let error = error {
+                    print("Error deleting comments: \(error.localizedDescription)")
+                    completion(false)
+                } else {
+                    print("Comments deleted successfully")
+                    self.database
+                        .collection("blogPosts")
+                        .document(blogPost.id)
+                        .delete() { error in
+                            if let error = error {
+                                print("Error deleting post: \(error.localizedDescription)")
+                                completion(false)
+                            } else {
+                                print("Post deleted successfully")
+                                completion(true)
+                            }
+                        }
+                }
+            }
+        }
+    }
+    
+    public func updateBlogLikes(blogPost: Post, likesCount: Int, completion: @escaping (Post)->()){
+        print("Executing function: \(#function)")
+  
+        let dbRef = database
+            .collection("blogPosts")
+            .document(blogPost.id)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["likes"] = likesCount
+            dbRef.setData(data) { error in
+                completion(blogPost)
+            }
+        }
+    }
+    
     //MARK: - Comments for blog posts: Adding, fetching, editing, deleting and listen to the changes
     public func postBlogComment(comment: Comment, post: Post, completion: @escaping (Bool) ->()){
         print("posting comment for blog post to Firestore")
@@ -377,23 +454,6 @@ final class DatabaseManager {
             data["contents"] = newDescription
             dbRef.setData(data) { error in
                 completion(error == nil)
-            }
-        }
-    }
-    
-    public func updateBlogLikes(blogPost: Post, likesCount: Int, completion: @escaping (Post)->()){
-        print("Executing function: \(#function)")
-  
-        let dbRef = database
-            .collection("blogPosts")
-            .document(blogPost.id)
-        
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            
-            data["likes"] = likesCount
-            dbRef.setData(data) { error in
-                completion(blogPost)
             }
         }
     }

@@ -268,9 +268,9 @@ class SelectedProgramViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
-                    print("workout is added to database - \(newWorkout)")
+                    self.showAlert(title: "Success", message: "New workout for \(title) training plan is posted successfully!")
                 } else {
-                    self.showAlert(error: "Unable to add new workout for \(title)")
+                    self.showAlert(title: "Warning", message: "Unable to post new workout")
                 }
             }
         }
@@ -294,19 +294,17 @@ class SelectedProgramViewController: UIViewController {
                         self.workoutsCollection.reloadData()
                         self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
                         self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
-                        print("select workout at selected indexPath")
                     } else {
                         self.workoutsCollection.reloadData()
                         let indexPath = IndexPath(row: 0, section: 0)
                         self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
                         self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-                        print("select first item in collection")
                     }
                 }
             }
         }
     }
-    
+    // MARK: - Long press setup for admin to delete and update workouts
     private func setupGuestureRecognizer() {
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
         workoutsCollection.addGestureRecognizer(longPress)
@@ -336,31 +334,32 @@ class SelectedProgramViewController: UIViewController {
                                 self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout successfully deleted"
                             }
                         }
-                        print("workout is deleted")
                     } else {
-                        print ("can not delete workout")
+                        self.showAlert(title: "Warning", message: "Unable to delete this workout")
                     }
                 }
             }
+            
             let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
                 guard let self = self else {return}
                 let workoutVC = CreateNewWorkoutViewController()
                 workoutVC.title = "Edit workout"
                 let selectedWorkout = self.listOfWorkouts[indexPath.item]
-                guard let index = self.listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
                 workoutVC.text = selectedWorkout.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
                 workoutVC.onWorkoutSave = {[weak self] text in
                     guard let self = self else {return}
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { [weak self] workout in
                         guard let self = self else {return}
+                        guard let index = self.listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
                         self.listOfWorkouts[index] = workout
                         self.filteredWorkouts = self.listOfWorkouts
                         DispatchQueue.main.async {
                             self.selectedWorkoutView.workoutDescriptionTextView.text = text
                         }
+                        self.showAlert(title: "Success", message: "Workout is successfully updated!")
+                        self.workoutsCollection.reloadData()
                     }
-                    self.workoutsCollection.reloadData()
                 }
             }
             let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
@@ -372,11 +371,11 @@ class SelectedProgramViewController: UIViewController {
         }
     }
 
-    private func showAlert (error: String) {
-        let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
         alert.addAction(cancelAction)
-        
+        alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
     }
 }

@@ -13,10 +13,8 @@ class BlogTableViewController: UITableViewController {
     private var selectedPost: Post?
     private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
     
-   
     override func viewDidLoad() {
         super.viewDidLoad()
-
         setupTableView()
 #if Admin
         setupAdminFunctionality()
@@ -36,6 +34,7 @@ class BlogTableViewController: UITableViewController {
     }
     
     private func setupAdminFunctionality (){
+        setupGestureRecognizer()
         navigationController?.navigationBar.tintColor = .systemGreen
         self.navigationItem.rightBarButtonItem =
             UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewPost))
@@ -59,16 +58,15 @@ class BlogTableViewController: UITableViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
-                    print("post is added to database - \(newPost)")
+                    self.showAlert(title: "Success", message: "New post is published")
                 } else {
-                    self.showAlert(error: "Unable to add new post")
+                    self.showAlert(title: "Warning", message: "Unable to add new post")
                 }
             }
         }
     }
     
     private func loadBlogPosts() {
-       
         DatabaseManager.shared.getAllPosts { [weak self] posts in
             print("Executing function: \(#function)")
             guard let self = self else {return}
@@ -79,16 +77,76 @@ class BlogTableViewController: UITableViewController {
         }
     }
     
+    private func setupGestureRecognizer() {
+        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
+        tableView.addGestureRecognizer(longPressRecognizer)
+    }
+    
+    @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        let touchPoint = gestureRecognizer.location(in: tableView)
+        if let indexPath = tableView.indexPathForRow(at: touchPoint) {
+            let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
+            
+            let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
+                guard let self = self else {return}
+                let post = self.blogPosts[indexPath.item]
+                DatabaseManager.shared.deletePost(blogPost: post) { success in
+                    if success {
+                        DatabaseManager.shared.getAllPosts { [weak self] posts in
+                            print("Executing function: \(#function)")
+                            guard let self = self else {return}
+                            self.blogPosts = posts
+                            self.tableView.reloadData()
+                        }
+                        self.showAlert(title: "Success", message: "Post is successfully deleted!")
+                    } else {
+                        self.showAlert(title: "Warning", message: "Unable to delete selected post")
+                    }
+                }
+            }
+            let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
+                guard let self = self else {return}
+                let workoutVC = CreateNewWorkoutViewController()
+                workoutVC.title = "Edit post"
+                let selectedPost = self.blogPosts[indexPath.item]
+                workoutVC.text = selectedPost.description
+                self.navigationController?.pushViewController(workoutVC, animated: true)
+                workoutVC.onWorkoutSave = {[weak self] text in
+                    guard let self = self else {return}
+                    DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { [weak self] post in
+                        guard let self = self else {return}
+                        guard let index = self.blogPosts.firstIndex(where: {$0 == selectedPost}) else {return}
+                        self.blogPosts[index] = post
+                        DispatchQueue.main.async {
+                            if let cell = self.tableView.cellForRow(at: indexPath) as? BlogTableViewCell {
+                                cell.postDescriptionTextView.text = text
+                            }
+                        }
+                        self.showAlert(title: "Success", message: "Post is successfully updated!")
+                    }
+                }
+            }
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+            alertController.addAction(editAction)
+            alertController.addAction(deleteAction)
+            alertController.addAction(cancelAction)
+            alertController.view.tintColor = .darkGray
+            present(alertController, animated: true)
+        }
+    }
+
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        alert.addAction(cancelAction)
+        alert.view.tintColor = .systemGreen
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     private func hasUserLikedPost(blogPost: Post) -> Bool {
         return self.likedPosts.contains(blogPost.id)
     }
-    
-    private func showAlert (error: String) {
-        let alert = UIAlertController(title: "Warning", message: error, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-        alert.addAction(cancelAction)
-        self.present(alert, animated: true, completion: nil)
-    }
+
 
     // MARK: - Table view data source
 
@@ -107,10 +165,9 @@ class BlogTableViewController: UITableViewController {
         let cell: BlogTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: BlogTableViewCell.self), for: indexPath) as! BlogTableViewCell
         var post = blogPosts[indexPath.row]
 
-        
-        cell.postDescriptionTextView.text = post.description
         cell.postDateLabel.text = post.date
         cell.likesLabel.text = "\(post.likes)"
+        cell.postDescriptionTextView.text = post.description
         
         if hasUserLikedPost(blogPost: post) == true {
             print("like button is selected")
@@ -168,9 +225,6 @@ class BlogTableViewController: UITableViewController {
         
         DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
             DispatchQueue.main.async {
-                UIView.animate(withDuration: 0.3) {
-                            cell.commentsLabel.alpha = 0
-                        }
                 switch numberOfComments {
                 case 0: cell.commentsLabel.text = "No comments posted yet"
                 case 1: cell.commentsLabel.text = "\(numberOfComments) comment "
