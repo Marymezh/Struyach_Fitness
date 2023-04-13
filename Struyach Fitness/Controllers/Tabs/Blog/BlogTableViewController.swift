@@ -6,12 +6,16 @@
 //
 
 import UIKit
+import FirebaseFirestore
 
 class BlogTableViewController: UITableViewController {
     
     private var blogPosts: [Post] = []
     private var selectedPost: Post?
     private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
+    private let pageSize = 10
+    private var lastDocumentSnapshot: DocumentSnapshot? = nil
+    private var isFetching = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +29,8 @@ class BlogTableViewController: UITableViewController {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = true
         tabBarController?.tabBar.isHidden = false
-        loadBlogPosts()
+      //  loadBlogPosts()
+        loadBlogPostsWithPagination(pageSize: pageSize)
     }
     
     private func setupTableView() {
@@ -57,12 +62,28 @@ class BlogTableViewController: UITableViewController {
             DatabaseManager.shared.saveBlogPost(with: newPost) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
-                if success {
-                    self.showAlert(title: "Success", message: "New post is published")
-                } else {
+                if !success {
                     self.showAlert(title: "Warning", message: "Unable to add new post")
                 }
             }
+        }
+    }
+    
+    private func loadBlogPostsWithPagination(pageSize: Int) {
+        guard !isFetching else { return }
+        isFetching = true
+        DatabaseManager.shared.getBlogPostsWithPagination(pageSize: pageSize, startAfter: lastDocumentSnapshot) { [weak self] posts, lastDocumentSnapshot in
+            guard let self = self else { return }
+            if self.lastDocumentSnapshot == nil {
+                // First page
+                self.blogPosts = posts
+            } else {
+                // Subsequent pages
+                self.blogPosts.append(contentsOf: posts)
+            }
+            self.lastDocumentSnapshot = lastDocumentSnapshot
+            self.tableView.reloadData()
+            self.isFetching = false
         }
     }
     
@@ -71,9 +92,7 @@ class BlogTableViewController: UITableViewController {
             print("Executing function: \(#function)")
             guard let self = self else {return}
             self.blogPosts = posts
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-            }
+            self.tableView.reloadData()
         }
     }
     
@@ -170,12 +189,10 @@ class BlogTableViewController: UITableViewController {
         cell.postDescriptionTextView.text = post.description
         
         if hasUserLikedPost(blogPost: post) == true {
-            print("like button is selected")
             cell.likeButton.isSelected = true
             cell.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             cell.likeButton.tintColor = .systemRed
         } else {
-            print("like button is not selected")
             cell.likeButton.isSelected = false
             cell.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             cell.likeButton.tintColor = .white
@@ -237,4 +254,16 @@ class BlogTableViewController: UITableViewController {
         }
         return cell
     }
+    
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+           // Check if table view is near bottom and not currently loading
+           let scrollViewHeight = scrollView.frame.size.height
+           let scrollContentSizeHeight = scrollView.contentSize.height
+           let scrollOffset = scrollView.contentOffset.y
+
+           if (scrollOffset + scrollViewHeight) >= (scrollContentSizeHeight - 50) && !isFetching {
+               // Load more blogs from Firestore
+               self.loadBlogPostsWithPagination(pageSize: pageSize)
+           }
+       }
 }

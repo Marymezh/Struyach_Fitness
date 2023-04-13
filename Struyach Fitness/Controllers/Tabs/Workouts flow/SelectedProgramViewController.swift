@@ -417,12 +417,10 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
         likesLabel.text = "\(selectedWorkout.likes)"
         
         if hasUserLikedWorkout(workout: selectedWorkout) == true {
-            print("like button is selected")
             self.likeButton.isSelected = true
             likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likeButton.tintColor = .systemRed
         } else {
-            print("like button is not selected")
             self.likeButton.isSelected = false
             likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likeButton.tintColor = .white

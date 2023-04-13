@@ -10,14 +10,12 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 import UIKit
 import MessageKit
-import AVKit
 
 final class DatabaseManager {
     
     static let shared = DatabaseManager()
     private let database = Firestore.firestore()
-    private let formatter = DateFormatter()
-    
+  
     private init() {}
     
     //MARK: - Workouts: adding, fetching, editing, deleting workouts and listen to the changes
@@ -233,17 +231,48 @@ final class DatabaseManager {
                 
                 let posts: [Post] = documents.compactMap { document in
                     do {
-                        let workout = try Firestore.Decoder().decode(Post.self, from: document.data())
-                        print("workouts decoded from database")
-                        return workout
+                        let post = try Firestore.Decoder().decode(Post.self, from: document.data())
+                        
+                        return post
                     } catch {
                         print("Error decoding workout: \(error)")
                         return nil
                     }
                 }
                 completion(posts)
+                print (posts.count)
             }
     }
+    
+    func getBlogPostsWithPagination(pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Post], DocumentSnapshot?) -> ()) {
+        var query = database
+            .collection("blogPosts")
+            .order(by: "timestamp", descending: true)
+            .limit(to: pageSize)
+        if let startAfter = startAfter {
+                query = query.start(afterDocument: startAfter)
+            }
+            
+            query.getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents else {
+                    print("Error fetching documents: \(error!)")
+                    return
+                }
+                var lastDocumentSnapshot: DocumentSnapshot?
+                let posts: [Post] = documents.compactMap { document in
+                    do {
+                        let post = try Firestore.Decoder().decode(Post.self, from: document.data())
+                        lastDocumentSnapshot = document
+                        return post
+                    } catch {
+                        print("Error decoding post: \(error)")
+                        return nil
+                    }
+                }
+                completion(posts, lastDocumentSnapshot)
+                print (posts.count)
+            }
+        }
 
     public func updatePost(blogPost: Post, newDescription: String, completion: @escaping (Post)->()){
         print("Executing function: \(#function)")
@@ -420,9 +449,7 @@ final class DatabaseManager {
        }
     
     public func getBlogCommentsCount(blogPost: Post, completion: @escaping(Int)->()){
-        print ("executing loading comments for blog posts \(#function)")
         var numberOfComments = 0
-
         database
             .collection("blogPosts")
             .document(blogPost.id)
@@ -433,7 +460,6 @@ final class DatabaseManager {
                     print("Error getting documents: \(error)")
                 } else {
                     numberOfComments = querySnapshot?.count ?? 0
-                    print("found \(numberOfComments) comments for blog post")
                 }
                 completion(numberOfComments)
             }
