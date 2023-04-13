@@ -24,6 +24,8 @@ class BlogTableViewController: UITableViewController {
 #if Admin
         setupAdminFunctionality()
 #endif
+        refreshControl = UIRefreshControl()
+        refreshControl?.addTarget(self, action: #selector(refreshBlogPosts(_:)), for: .valueChanged)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -36,6 +38,7 @@ class BlogTableViewController: UITableViewController {
     private func setupTableView() {
         tableView.backgroundColor = .customDarkGray
         tableView.register(BlogTableViewCell.self, forCellReuseIdentifier: String(describing: BlogTableViewCell.self))
+        tableView.refreshControl = refreshControl
     }
     
     private func setupAdminFunctionality (){
@@ -44,6 +47,13 @@ class BlogTableViewController: UITableViewController {
         self.navigationItem.rightBarButtonItem =
             UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewPost))
     }
+    
+    @objc private func refreshBlogPosts(_ sender: Any) {
+        lastDocumentSnapshot = nil
+        shouldLoadMorePosts = true
+        loadBlogPostsWithPagination(pageSize: pageSize)
+        refreshControl?.endRefreshing()
+       }
     
     @objc private func addNewPost() {
         print("Executing function: \(#function)")
