@@ -15,6 +15,7 @@ final class DatabaseManager {
     
     static let shared = DatabaseManager()
     private let database = Firestore.firestore()
+    var allPostsLoaded = false
   
     private init() {}
     
@@ -218,61 +219,101 @@ final class DatabaseManager {
         }
     }
     
-    public func getAllPosts(completion: @escaping([Post])->()){
-        print("Executing function: \(#function)")
-        database
-            .collection("blogPosts")
-            .order(by: "timestamp", descending: true)
-            .getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents else {
-                    print("Error fetching documents: \(error!)")
-                    return
-                }
-                
-                let posts: [Post] = documents.compactMap { document in
-                    do {
-                        let post = try Firestore.Decoder().decode(Post.self, from: document.data())
-                        
-                        return post
-                    } catch {
-                        print("Error decoding workout: \(error)")
-                        return nil
-                    }
-                }
-                completion(posts)
-                print (posts.count)
-            }
-    }
+//    public func getAllPosts(completion: @escaping([Post])->()){
+//        print("Executing function: \(#function)")
+//        database
+//            .collection("blogPosts")
+//            .order(by: "timestamp", descending: true)
+//            .getDocuments { snapshot, error in
+//                guard let documents = snapshot?.documents else {
+//                    print("Error fetching documents: \(error!)")
+//                    return
+//                }
+//
+//                let posts: [Post] = documents.compactMap { document in
+//                    do {
+//                        let post = try Firestore.Decoder().decode(Post.self, from: document.data())
+//
+//                        return post
+//                    } catch {
+//                        print("Error decoding workout: \(error)")
+//                        return nil
+//                    }
+//                }
+//                completion(posts)
+//                print (posts.count)
+//            }
+//    }
     
     func getBlogPostsWithPagination(pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Post], DocumentSnapshot?) -> ()) {
+        if allPostsLoaded {
+            print ("all posts have been loaded")
+               return
+           }
         var query = database
             .collection("blogPosts")
             .order(by: "timestamp", descending: true)
             .limit(to: pageSize)
         if let startAfter = startAfter {
-                query = query.start(afterDocument: startAfter)
+            query = query.start(afterDocument: startAfter)
+        }
+        
+        query.getDocuments { snapshot, error in
+            guard let documents = snapshot?.documents else {
+                print("Error fetching documents: \(error!)")
+                return
+            }
+            var lastDocumentSnapshot: DocumentSnapshot?
+            let posts: [Post] = documents.compactMap { document in
+                do {
+                    let post = try Firestore.Decoder().decode(Post.self, from: document.data())
+                    lastDocumentSnapshot = document
+                    return post
+                } catch {
+                    print("Error decoding post: \(error)")
+                    return nil
+                }
             }
             
-            query.getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents else {
-                    print("Error fetching documents: \(error!)")
-                    return
-                }
-                var lastDocumentSnapshot: DocumentSnapshot?
-                let posts: [Post] = documents.compactMap { document in
-                    do {
-                        let post = try Firestore.Decoder().decode(Post.self, from: document.data())
-                        lastDocumentSnapshot = document
-                        return post
-                    } catch {
-                        print("Error decoding post: \(error)")
-                        return nil
-                    }
-                }
-                completion(posts, lastDocumentSnapshot)
-                print (posts.count)
+            if documents.count < pageSize {
+                self.allPostsLoaded = true
+                print ("all posts have been loaded - for sure")
             }
+            
+            completion(posts, lastDocumentSnapshot)
+            print ("downloaded \(posts.count) posts")
         }
+    }
+
+//    func getBlogPostsWithPagination(pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Post], DocumentSnapshot?) -> ()) {
+//        var query = database
+//            .collection("blogPosts")
+//            .order(by: "timestamp", descending: true)
+//            .limit(to: pageSize)
+//        if let startAfter = startAfter {
+//                query = query.start(afterDocument: startAfter)
+//            }
+//
+//            query.getDocuments { snapshot, error in
+//                guard let documents = snapshot?.documents else {
+//                    print("Error fetching documents: \(error!)")
+//                    return
+//                }
+//                var lastDocumentSnapshot: DocumentSnapshot?
+//                let posts: [Post] = documents.compactMap { document in
+//                    do {
+//                        let post = try Firestore.Decoder().decode(Post.self, from: document.data())
+//                        lastDocumentSnapshot = document
+//                        return post
+//                    } catch {
+//                        print("Error decoding post: \(error)")
+//                        return nil
+//                    }
+//                }
+//                completion(posts, lastDocumentSnapshot)
+//                print ("downloaded \(posts.count) posts")
+//            }
+//        }
 
     public func updatePost(blogPost: Post, newDescription: String, completion: @escaping (Post)->()){
         print("Executing function: \(#function)")

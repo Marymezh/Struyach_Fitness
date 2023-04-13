@@ -16,6 +16,7 @@ class BlogTableViewController: UITableViewController {
     private let pageSize = 10
     private var lastDocumentSnapshot: DocumentSnapshot? = nil
     private var isFetching = false
+    private var shouldLoadMorePosts = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,7 +30,6 @@ class BlogTableViewController: UITableViewController {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = true
         tabBarController?.tabBar.isHidden = false
-      //  loadBlogPosts()
         loadBlogPostsWithPagination(pageSize: pageSize)
     }
     
@@ -62,7 +62,10 @@ class BlogTableViewController: UITableViewController {
             DatabaseManager.shared.saveBlogPost(with: newPost) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
-                if !success {
+                if success {
+                self.blogPosts.insert(newPost, at: 0)
+                self.tableView.reloadData()
+                } else {
                     self.showAlert(title: "Warning", message: "Unable to add new post")
                 }
             }
@@ -70,6 +73,7 @@ class BlogTableViewController: UITableViewController {
     }
     
     private func loadBlogPostsWithPagination(pageSize: Int) {
+        print ("executing function \(#function)")
         guard !isFetching else { return }
         isFetching = true
         DatabaseManager.shared.getBlogPostsWithPagination(pageSize: pageSize, startAfter: lastDocumentSnapshot) { [weak self] posts, lastDocumentSnapshot in
@@ -87,14 +91,14 @@ class BlogTableViewController: UITableViewController {
         }
     }
     
-    private func loadBlogPosts() {
-        DatabaseManager.shared.getAllPosts { [weak self] posts in
-            print("Executing function: \(#function)")
-            guard let self = self else {return}
-            self.blogPosts = posts
-            self.tableView.reloadData()
-        }
-    }
+//    private func loadBlogPosts() {
+//        DatabaseManager.shared.getAllPosts { [weak self] posts in
+//            print("Executing function: \(#function)")
+//            guard let self = self else {return}
+//            self.blogPosts = posts
+//            self.tableView.reloadData()
+//        }
+//    }
     
     private func setupGestureRecognizer() {
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
@@ -107,16 +111,14 @@ class BlogTableViewController: UITableViewController {
             let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
             
             let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
-                guard let self = self else {return}
+                guard let self = self else { return }
                 let post = self.blogPosts[indexPath.item]
-                DatabaseManager.shared.deletePost(blogPost: post) { success in
+                DatabaseManager.shared.deletePost(blogPost: post) { [weak self] success in
+                    guard let self = self else { return }
                     if success {
-                        DatabaseManager.shared.getAllPosts { [weak self] posts in
-                            print("Executing function: \(#function)")
-                            guard let self = self else {return}
-                            self.blogPosts = posts
-                            self.tableView.reloadData()
-                        }
+                        self.blogPosts.remove(at: indexPath.row)
+                        self.tableView.reloadData()
+                        print ("number of posts left - \(self.blogPosts.count)")
                         self.showAlert(title: "Success", message: "Post is successfully deleted!")
                     } else {
                         self.showAlert(title: "Warning", message: "Unable to delete selected post")
@@ -255,15 +257,34 @@ class BlogTableViewController: UITableViewController {
         return cell
     }
     
+//    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//           // Check if table view is near bottom and not currently loading
+//           let scrollViewHeight = scrollView.frame.size.height
+//           let scrollContentSizeHeight = scrollView.contentSize.height
+//           let scrollOffset = scrollView.contentOffset.y
+//
+//           if (scrollOffset + scrollViewHeight) >= (scrollContentSizeHeight - 50) && !isFetching {
+//               // Load more blogs from Firestore
+//               self.loadBlogPostsWithPagination(pageSize: pageSize)
+//           }
+//       }
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
-           // Check if table view is near bottom and not currently loading
-           let scrollViewHeight = scrollView.frame.size.height
-           let scrollContentSizeHeight = scrollView.contentSize.height
-           let scrollOffset = scrollView.contentOffset.y
+        // Check if table view is near bottom and not currently loading
+        let scrollViewHeight = scrollView.frame.size.height
+        let scrollContentSizeHeight = scrollView.contentSize.height
+        let scrollOffset = scrollView.contentOffset.y
 
-           if (scrollOffset + scrollViewHeight) >= (scrollContentSizeHeight - 50) && !isFetching {
-               // Load more blogs from Firestore
-               self.loadBlogPostsWithPagination(pageSize: pageSize)
-           }
-       }
+        if (scrollOffset + scrollViewHeight) >= (scrollContentSizeHeight - 50) && !isFetching && shouldLoadMorePosts {
+            // Load more blogs from Firestore
+            if !DatabaseManager.shared.allPostsLoaded {
+                self.loadBlogPostsWithPagination(pageSize: pageSize)
+            } else {
+                shouldLoadMorePosts = false
+                print("All posts have been loaded")
+                self.tableView.tableFooterView = nil
+                self.tableView.reloadData()
+                scrollView.delegate = nil
+            }
+        }
+    }
 }
