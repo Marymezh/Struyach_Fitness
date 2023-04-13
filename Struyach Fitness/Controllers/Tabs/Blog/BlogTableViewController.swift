@@ -53,7 +53,11 @@ class BlogTableViewController: UITableViewController {
             formatter.dateFormat = "EE d MMMM yyyy"
             let dateString = formatter.string(from: date)
             let postID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
-            let newPost = Post(id: postID, description: text, date: dateString, timestamp: timestamp)
+            let newPost = Post()
+            newPost.id = postID
+            newPost.text = text
+            newPost.date = dateString
+            newPost.timestamp = timestamp
             DatabaseManager.shared.saveBlogPost(with: newPost) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
@@ -167,7 +171,7 @@ class BlogTableViewController: UITableViewController {
 
         cell.postDateLabel.text = post.date
         cell.likesLabel.text = "\(post.likes)"
-        cell.postDescriptionTextView.text = post.description
+        cell.postDescriptionTextView.text = post.text
         
         if hasUserLikedPost(blogPost: post) == true {
             print("like button is selected")

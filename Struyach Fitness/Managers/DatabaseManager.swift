@@ -255,7 +255,7 @@ final class DatabaseManager {
         dbRef.getDocument { snapshot, error in
             guard var data = snapshot?.data(), error == nil else {return}
             
-            data["description"] = newDescription
+            data["text"] = newDescription
             dbRef.setData(data) { error in
                 completion(blogPost)
             }
