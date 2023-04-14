@@ -8,7 +8,7 @@
 import UIKit
 import FirebaseFirestore
 
-class BlogTableViewController: UITableViewController {
+class BlogTableViewController: UIViewController {
     
     private var blogPosts: [Post] = []
     private var selectedPost: Post?
@@ -17,6 +17,26 @@ class BlogTableViewController: UITableViewController {
     private var lastDocumentSnapshot: DocumentSnapshot? = nil
     private var isFetching = false
     private var shouldLoadMorePosts = true
+    private var arrowButton: UIBarButtonItem?
+    private var isAtTop = true
+    private var tableView = UITableView(frame: .zero, style: .grouped)
+    private var refreshControl = UIRefreshControl()
+    
+    private lazy var plusButton: UIButton = {
+       let button = UIButton()
+        button.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), for: .normal)
+        button.backgroundColor = .systemGreen
+        button.tintColor = .white
+        button.addTarget(self, action: #selector(addNewPost), for: .touchUpInside)
+        button.layer.cornerRadius = 25
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowRadius = 25
+        button.layer.shadowOffset = CGSize(width: 5, height: 5)
+        button.layer.shadowOpacity = 0.6
+        button.isHidden = true
+        button.toAutoLayout()
+        return button
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,36 +44,75 @@ class BlogTableViewController: UITableViewController {
 #if Admin
         setupAdminFunctionality()
 #endif
-        refreshControl = UIRefreshControl()
-        refreshControl?.addTarget(self, action: #selector(refreshBlogPosts(_:)), for: .valueChanged)
+        loadBlogPostsWithPagination(pageSize: pageSize)
+        refreshControl.addTarget(self, action: #selector(refreshBlogPosts(_:)), for: .valueChanged)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        setupNavAndTabBar()
+    }
+    
+    private func setupNavAndTabBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
         tabBarController?.tabBar.isHidden = false
-        loadBlogPostsWithPagination(pageSize: pageSize)
+        navigationController?.navigationBar.tintColor = .systemGreen
+        arrowButton = UIBarButtonItem(image: UIImage(systemName: "arrow.up", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(scrollToTheTop))
+        self.navigationItem.rightBarButtonItem = arrowButton
+        arrowButton?.isEnabled = false
+        arrowButton?.tintColor = .clear
+     
+        
     }
     
     private func setupTableView() {
+        view.backgroundColor = .customDarkGray
         tableView.backgroundColor = .customDarkGray
         tableView.register(BlogTableViewCell.self, forCellReuseIdentifier: String(describing: BlogTableViewCell.self))
         tableView.refreshControl = refreshControl
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.toAutoLayout()
+        view.addSubviews(tableView, plusButton)
+        view.bringSubviewToFront(plusButton)
+        let constraints = [
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            plusButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -35),
+            plusButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            plusButton.widthAnchor.constraint(equalToConstant: 50),
+            plusButton.heightAnchor.constraint(equalTo: plusButton.widthAnchor)
+        
+        ]
+        
+        NSLayoutConstraint.activate(constraints)
     }
     
     private func setupAdminFunctionality (){
         setupGestureRecognizer()
-        navigationController?.navigationBar.tintColor = .systemGreen
-        self.navigationItem.rightBarButtonItem =
-            UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewPost))
+        arrowButton = UIBarButtonItem(image: UIImage(systemName: "arrow.up", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(scrollToTheTop))
+        self.navigationItem.rightBarButtonItem = arrowButton
+        arrowButton?.isEnabled = false
+        arrowButton?.tintColor = .clear
+        plusButton.isHidden = false
+       
+      
     }
     
     @objc private func refreshBlogPosts(_ sender: Any) {
         lastDocumentSnapshot = nil
         shouldLoadMorePosts = true
         loadBlogPostsWithPagination(pageSize: pageSize)
-        refreshControl?.endRefreshing()
+        refreshControl.endRefreshing()
        }
+    
+    @objc private func scrollToTheTop() {
+        let indexPath = IndexPath(row: 0, section: 0)
+        tableView.scrollToRow(at: indexPath, at: .top, animated: true)
+    }
     
     @objc private func addNewPost() {
         print("Executing function: \(#function)")
@@ -89,10 +148,8 @@ class BlogTableViewController: UITableViewController {
         DatabaseManager.shared.getBlogPostsWithPagination(pageSize: pageSize, startAfter: lastDocumentSnapshot) { [weak self] posts, lastDocumentSnapshot in
             guard let self = self else { return }
             if self.lastDocumentSnapshot == nil {
-                // First page
                 self.blogPosts = posts
             } else {
-                // Subsequent pages
                 self.blogPosts.append(contentsOf: posts)
             }
             self.lastDocumentSnapshot = lastDocumentSnapshot
@@ -178,20 +235,22 @@ class BlogTableViewController: UITableViewController {
         return self.likedPosts.contains(blogPost.id)
     }
 
-
+}
     // MARK: - Table view data source
+    
+    extension BlogTableViewController: UITableViewDelegate, UITableViewDataSource {
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return blogPosts.count
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell: BlogTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: BlogTableViewCell.self), for: indexPath) as! BlogTableViewCell
         var post = blogPosts[indexPath.row]
@@ -266,6 +325,7 @@ class BlogTableViewController: UITableViewController {
         }
         return cell
     }
+
     
 //    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
 //           // Check if table view is near bottom and not currently loading
@@ -278,14 +338,23 @@ class BlogTableViewController: UITableViewController {
 //               self.loadBlogPostsWithPagination(pageSize: pageSize)
 //           }
 //       }
-    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        
+   func scrollViewDidScroll(_ scrollView: UIScrollView) {
         // Check if table view is near bottom and not currently loading
         let scrollViewHeight = scrollView.frame.size.height
         let scrollContentSizeHeight = scrollView.contentSize.height
         let scrollOffset = scrollView.contentOffset.y
+               if scrollOffset > 0 && isAtTop {
+                   isAtTop = false
+                   arrowButton?.isEnabled = true
+                   arrowButton?.tintColor = .systemGreen
+               } else if scrollOffset <= 0 && !isAtTop {
+                   isAtTop = true
+                   arrowButton?.isEnabled = false
+                   arrowButton?.tintColor = .clear
+               }
 
         if (scrollOffset + scrollViewHeight) >= (scrollContentSizeHeight - 50) && !isFetching && shouldLoadMorePosts {
-            // Load more blogs from Firestore
             if !DatabaseManager.shared.allPostsLoaded {
                 self.loadBlogPostsWithPagination(pageSize: pageSize)
             } else {
@@ -298,3 +367,5 @@ class BlogTableViewController: UITableViewController {
         }
     }
 }
+
+

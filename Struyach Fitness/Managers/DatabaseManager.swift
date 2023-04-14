@@ -246,10 +246,9 @@ final class DatabaseManager {
 //    }
     
     func getBlogPostsWithPagination(pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Post], DocumentSnapshot?) -> ()) {
-        if allPostsLoaded {
-            print ("all posts have been loaded")
-               return
-           }
+//        if allPostsLoaded {
+//               return
+//           }
         var query = database
             .collection("blogPosts")
             .order(by: "timestamp", descending: true)
@@ -277,7 +276,7 @@ final class DatabaseManager {
             
             if documents.count < pageSize {
                 self.allPostsLoaded = true
-                print ("all posts have been loaded - for sure")
+                print ("all posts have been loaded from Firestore")
             }
             
             completion(posts, lastDocumentSnapshot)
