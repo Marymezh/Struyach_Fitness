@@ -13,5 +13,6 @@ struct Post: Codable, Equatable {
     var description: String
     let date: String
     let timestamp: TimeInterval
-    var likes: Int = 0 
+    var likes: Int = 0
+    var comments: Int = 0 
 }

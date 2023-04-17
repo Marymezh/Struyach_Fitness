@@ -16,6 +16,11 @@ class BlogTableViewCell: UITableViewCell {
             postDateLabel.text = post?.date
             postDescriptionTextView.text = post?.description
             likesLabel.text = "\(post?.likes ?? 0)"
+//            switch post?.comments {
+//            case 0: commentsLabel.text = "No comments posted yet"
+//            case 1: commentsLabel.text = "\(post?.comments ?? 1) comment "
+//            default: commentsLabel.text = "\(post?.comments ?? 111) comments"
+//            }
         }
     }
     
@@ -96,7 +101,7 @@ class BlogTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .white
-        label.alpha = 0 
+//        label.alpha = 0
         label.toAutoLayout()
         return label
     }()
@@ -163,17 +168,6 @@ class BlogTableViewCell: UITableViewCell {
         
         NSLayoutConstraint.activate(constraints)
     }
-    
-//    override func prepareForReuse() {
-//           super.prepareForReuse()
-//           commentsLabel.text = ""
-//       }
-//
-//    func update(with post: Post) {
-//        postDateLabel.text = post.date
-//        postDescriptionTextView.text = post.description
-//        likesLabel.text = "\(post.likes)"
-//        }
     
     @objc private func pushCommentsVC() {
         self.onCommentsPush?()

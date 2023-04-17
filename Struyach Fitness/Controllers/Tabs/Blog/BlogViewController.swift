@@ -47,7 +47,6 @@ class BlogViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupNavAndTabBar()
-        tableView.reloadData()
     }
     
     private func setupNavAndTabBar() {
@@ -209,11 +208,24 @@ class BlogViewController: UIViewController {
     private func hasUserLikedPost(blogPost: Post) -> Bool {
         return self.likedPosts.contains(blogPost.id)
     }
+    
+//    private func updateCommentsCount() {
+//        for post in blogPosts {
+//
+//            DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
+//                DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak self] blogPost in
+//                    guard let self = self else {return}
+//                    print ("number of blog post comments is \(blogPost.comments)")
+//                    if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
+//                        self.blogPosts[index] = blogPost
+//                        self.tableView.reloadData()
+//                    }
+//                }
+//            }
+//        }
+//    }
 }
 
-private func pressLikeButton() {
-        
-}
     // MARK: - Table view data source and delegate methods
     
     extension BlogViewController: UITableViewDelegate, UITableViewDataSource {
@@ -227,11 +239,16 @@ private func pressLikeButton() {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell: BlogTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: BlogTableViewCell.self), for: indexPath) as! BlogTableViewCell
         var post = blogPosts[indexPath.row]
         
         cell.post = post
+        
+        switch post.comments {
+        case 0: cell.commentsLabel.text = "No comments posted yet"
+        case 1: cell.commentsLabel.text = "\(post.comments) comment "
+        default: cell.commentsLabel.text = "\(post.comments) comments"
+        }
         
         if hasUserLikedPost(blogPost: post) == true {
             cell.likeButton.isSelected = true
@@ -253,9 +270,10 @@ private func pressLikeButton() {
                 DatabaseManager.shared.updateBlogLikes(blogPost: post, likesCount: post.likes) {[weak self] blogPost in
                     guard let self = self else {return}
                     print (blogPost.likes)
-                    post = blogPost
+                    if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
+                            self.blogPosts[index] = blogPost
                     cell.likesLabel.text = "\(blogPost.likes)"
-
+                    }
                     
                     if !self.likedPosts.contains(post.id) {
                         self.likedPosts.append(post.id)
@@ -269,9 +287,11 @@ private func pressLikeButton() {
                 DatabaseManager.shared.updateBlogLikes(blogPost: post, likesCount: post.likes) {[weak self] blogPost in
                     guard let self = self else {return}
                     print (blogPost.likes)
-                    post = blogPost
+                    if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
+                            self.blogPosts[index] = blogPost
                     cell.likesLabel.text = "\(blogPost.likes)"
-                   
+                    }
+                
                     if let index = self.likedPosts.firstIndex(of: post.id) {
                         self.likedPosts.remove(at: index)
                         UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
@@ -285,18 +305,22 @@ private func pressLikeButton() {
             commentsVC.title = "Comments"
             self.tabBarController?.tabBar.isHidden = true
             self.navigationController?.pushViewController(commentsVC, animated: true)
-        }
-        
-        DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
-            DispatchQueue.main.async {
-                switch numberOfComments {
-                case 0: cell.commentsLabel.text = "No comments posted yet"
-                case 1: cell.commentsLabel.text = "\(numberOfComments) comment "
-                default: cell.commentsLabel.text = "\(numberOfComments) comments"
-                }
-                UIView.animate(withDuration: 0.3) {
-                            cell.commentsLabel.alpha = 1
+            
+            commentsVC.onCommentsClose = {
+                DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
+                    DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak self] blogPost in
+                        guard let self = self else {return}
+                        print ("number of blog post comments is \(blogPost.comments)")
+                        if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
+                            self.blogPosts[index] = blogPost
+                            switch blogPost.comments {
+                            case 0: cell.commentsLabel.text = "No comments posted yet"
+                            case 1: cell.commentsLabel.text = "\(blogPost.comments) comment "
+                            default: cell.commentsLabel.text = "\(blogPost.comments) comments"
+                            }
                         }
+                    }
+                }
             }
         }
         return cell

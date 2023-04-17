@@ -512,6 +512,28 @@ final class DatabaseManager {
             }
        }
     
+    public func updateBlogCommentsCount(blogPost: Post, commentsCount: Int, completion: @escaping (Post)->()){
+        print("Executing function: \(#function)")
+  
+        let dbRef = database
+            .collection("blogPosts")
+            .document(blogPost.id)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["comments"] = commentsCount
+            dbRef.setData(data) { error in
+                if error == nil {
+                    var updatedBlogPost = blogPost
+                    updatedBlogPost.comments = commentsCount
+                    completion(updatedBlogPost)
+                }
+            }
+        }
+    }
+    
+    
     public func updateBlogComment(comment: Comment, blogPost: Post, newDescription: String, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
 
