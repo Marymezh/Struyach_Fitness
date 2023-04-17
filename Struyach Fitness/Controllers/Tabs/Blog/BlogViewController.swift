@@ -8,7 +8,7 @@
 import UIKit
 import FirebaseFirestore
 
-class BlogTableViewController: UIViewController {
+class BlogViewController: UIViewController {
     
     private var blogPosts: [Post] = []
     private var selectedPost: Post?
@@ -17,10 +17,7 @@ class BlogTableViewController: UIViewController {
     private var lastDocumentSnapshot: DocumentSnapshot? = nil
     private var isFetching = false
     private var shouldLoadMorePosts = true
-    private var arrowButton: UIBarButtonItem?
-    private var isAtTop = true
     private var tableView = UITableView(frame: .zero, style: .grouped)
-    private var refreshControl = UIRefreshControl()
     
     private lazy var plusButton: UIButton = {
        let button = UIButton()
@@ -45,31 +42,25 @@ class BlogTableViewController: UIViewController {
         setupAdminFunctionality()
 #endif
         loadBlogPostsWithPagination(pageSize: pageSize)
-        refreshControl.addTarget(self, action: #selector(refreshBlogPosts(_:)), for: .valueChanged)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupNavAndTabBar()
+        tableView.reloadData()
     }
     
     private func setupNavAndTabBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
         tabBarController?.tabBar.isHidden = false
         navigationController?.navigationBar.tintColor = .systemGreen
-        arrowButton = UIBarButtonItem(image: UIImage(systemName: "arrow.up", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(scrollToTheTop))
-        self.navigationItem.rightBarButtonItem = arrowButton
-        arrowButton?.isEnabled = false
-        arrowButton?.tintColor = .clear
-     
-        
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "arrow.up", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(scrollToTheTop))
     }
     
     private func setupTableView() {
         view.backgroundColor = .customDarkGray
         tableView.backgroundColor = .customDarkGray
         tableView.register(BlogTableViewCell.self, forCellReuseIdentifier: String(describing: BlogTableViewCell.self))
-        tableView.refreshControl = refreshControl
         tableView.delegate = self
         tableView.dataSource = self
         tableView.toAutoLayout()
@@ -85,7 +76,6 @@ class BlogTableViewController: UIViewController {
             plusButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             plusButton.widthAnchor.constraint(equalToConstant: 50),
             plusButton.heightAnchor.constraint(equalTo: plusButton.widthAnchor)
-        
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -93,21 +83,8 @@ class BlogTableViewController: UIViewController {
     
     private func setupAdminFunctionality (){
         setupGestureRecognizer()
-        arrowButton = UIBarButtonItem(image: UIImage(systemName: "arrow.up", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(scrollToTheTop))
-        self.navigationItem.rightBarButtonItem = arrowButton
-        arrowButton?.isEnabled = false
-        arrowButton?.tintColor = .clear
         plusButton.isHidden = false
-       
-      
     }
-    
-    @objc private func refreshBlogPosts(_ sender: Any) {
-        lastDocumentSnapshot = nil
-        shouldLoadMorePosts = true
-        loadBlogPostsWithPagination(pageSize: pageSize)
-        refreshControl.endRefreshing()
-       }
     
     @objc private func scrollToTheTop() {
         let indexPath = IndexPath(row: 0, section: 0)
@@ -132,6 +109,7 @@ class BlogTableViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
+                self.scrollToTheTop()
                 self.blogPosts.insert(newPost, at: 0)
                 self.tableView.reloadData()
                 } else {
@@ -205,11 +183,8 @@ class BlogTableViewController: UIViewController {
                         guard let self = self else {return}
                         guard let index = self.blogPosts.firstIndex(where: {$0 == selectedPost}) else {return}
                         self.blogPosts[index] = post
-                        DispatchQueue.main.async {
-                            if let cell = self.tableView.cellForRow(at: indexPath) as? BlogTableViewCell {
-                                cell.postDescriptionTextView.text = text
-                            }
-                        }
+                        print(post.description)
+                        self.tableView.reloadData()
                         self.showAlert(title: "Success", message: "Post is successfully updated!")
                     }
                 }
@@ -225,7 +200,7 @@ class BlogTableViewController: UIViewController {
 
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Ok", style: .cancel)
         alert.addAction(cancelAction)
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
@@ -234,19 +209,20 @@ class BlogTableViewController: UIViewController {
     private func hasUserLikedPost(blogPost: Post) -> Bool {
         return self.likedPosts.contains(blogPost.id)
     }
-
 }
-    // MARK: - Table view data source
+
+private func pressLikeButton() {
+        
+}
+    // MARK: - Table view data source and delegate methods
     
-    extension BlogTableViewController: UITableViewDelegate, UITableViewDataSource {
+    extension BlogViewController: UITableViewDelegate, UITableViewDataSource {
 
     func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return blogPosts.count
     }
     
@@ -254,10 +230,8 @@ class BlogTableViewController: UIViewController {
         
         let cell: BlogTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: BlogTableViewCell.self), for: indexPath) as! BlogTableViewCell
         var post = blogPosts[indexPath.row]
-
-        cell.postDateLabel.text = post.date
-        cell.likesLabel.text = "\(post.likes)"
-        cell.postDescriptionTextView.text = post.description
+        
+        cell.post = post
         
         if hasUserLikedPost(blogPost: post) == true {
             cell.likeButton.isSelected = true
@@ -278,9 +252,11 @@ class BlogTableViewController: UIViewController {
                 post.likes += 1
                 DatabaseManager.shared.updateBlogLikes(blogPost: post, likesCount: post.likes) {[weak self] blogPost in
                     guard let self = self else {return}
-                    print ("likes increase by 1")
-                    cell.likesLabel.text = "\(blogPost.likes)"
+                    print (blogPost.likes)
                     post = blogPost
+                    cell.likesLabel.text = "\(blogPost.likes)"
+
+                    
                     if !self.likedPosts.contains(post.id) {
                         self.likedPosts.append(post.id)
                         UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
@@ -292,10 +268,10 @@ class BlogTableViewController: UIViewController {
                 post.likes -= 1
                 DatabaseManager.shared.updateBlogLikes(blogPost: post, likesCount: post.likes) {[weak self] blogPost in
                     guard let self = self else {return}
-                    print ("likes decrease by 1")
-                    
-                    cell.likesLabel.text = "\(blogPost.likes)"
+                    print (blogPost.likes)
                     post = blogPost
+                    cell.likesLabel.text = "\(blogPost.likes)"
+                   
                     if let index = self.likedPosts.firstIndex(of: post.id) {
                         self.likedPosts.remove(at: index)
                         UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
@@ -325,35 +301,12 @@ class BlogTableViewController: UIViewController {
         }
         return cell
     }
-
-    
-//    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//           // Check if table view is near bottom and not currently loading
-//           let scrollViewHeight = scrollView.frame.size.height
-//           let scrollContentSizeHeight = scrollView.contentSize.height
-//           let scrollOffset = scrollView.contentOffset.y
-//
-//           if (scrollOffset + scrollViewHeight) >= (scrollContentSizeHeight - 50) && !isFetching {
-//               // Load more blogs from Firestore
-//               self.loadBlogPostsWithPagination(pageSize: pageSize)
-//           }
-//       }
         
    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         // Check if table view is near bottom and not currently loading
         let scrollViewHeight = scrollView.frame.size.height
         let scrollContentSizeHeight = scrollView.contentSize.height
         let scrollOffset = scrollView.contentOffset.y
-               if scrollOffset > 0 && isAtTop {
-                   isAtTop = false
-                   arrowButton?.isEnabled = true
-                   arrowButton?.tintColor = .systemGreen
-               } else if scrollOffset <= 0 && !isAtTop {
-                   isAtTop = true
-                   arrowButton?.isEnabled = false
-                   arrowButton?.tintColor = .clear
-               }
-
         if (scrollOffset + scrollViewHeight) >= (scrollContentSizeHeight - 50) && !isFetching && shouldLoadMorePosts {
             if !DatabaseManager.shared.allPostsLoaded {
                 self.loadBlogPostsWithPagination(pageSize: pageSize)
