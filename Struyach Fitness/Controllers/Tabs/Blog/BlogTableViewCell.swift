@@ -11,6 +11,14 @@ class BlogTableViewCell: UITableViewCell {
     
     private var baseInset: CGFloat { return 15 }
     
+    var post: Post? {
+        didSet {
+            postDateLabel.text = post?.date
+            postDescriptionTextView.text = post?.description
+            likesLabel.text = "\(post?.likes ?? 0)"
+        }
+    }
+    
     var onCommentsPush: (()->())?
     var onLikeButtonPush: (()->())?
     
@@ -160,6 +168,12 @@ class BlogTableViewCell: UITableViewCell {
 //           super.prepareForReuse()
 //           commentsLabel.text = ""
 //       }
+//
+//    func update(with post: Post) {
+//        postDateLabel.text = post.date
+//        postDescriptionTextView.text = post.description
+//        likesLabel.text = "\(post.likes)"
+//        }
     
     @objc private func pushCommentsVC() {
         self.onCommentsPush?()

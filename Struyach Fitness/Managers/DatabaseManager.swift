@@ -313,7 +313,6 @@ final class DatabaseManager {
 //                print ("downloaded \(posts.count) posts")
 //            }
 //        }
-
     public func updatePost(blogPost: Post, newDescription: String, completion: @escaping (Post)->()){
         print("Executing function: \(#function)")
 
@@ -325,12 +324,16 @@ final class DatabaseManager {
             guard var data = snapshot?.data(), error == nil else {return}
             
             data["description"] = newDescription
-            dbRef.setData(data) { error in
-                completion(blogPost)
+            dbRef.setData(data)  { error in
+                if error == nil {
+                    var updatedBlogPost = blogPost
+                    updatedBlogPost.description = newDescription
+                    completion(updatedBlogPost)
+                }
             }
         }
     }
-
+ 
     public func deletePost(blogPost: Post, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
 
@@ -388,7 +391,11 @@ final class DatabaseManager {
             
             data["likes"] = likesCount
             dbRef.setData(data) { error in
-                completion(blogPost)
+                if error == nil {
+                    var updatedBlogPost = blogPost
+                    updatedBlogPost.likes = likesCount
+                    completion(updatedBlogPost)
+                }
             }
         }
     }
