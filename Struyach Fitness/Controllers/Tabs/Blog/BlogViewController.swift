@@ -208,22 +208,6 @@ class BlogViewController: UIViewController {
     private func hasUserLikedPost(blogPost: Post) -> Bool {
         return self.likedPosts.contains(blogPost.id)
     }
-    
-//    private func updateCommentsCount() {
-//        for post in blogPosts {
-//
-//            DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
-//                DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak self] blogPost in
-//                    guard let self = self else {return}
-//                    print ("number of blog post comments is \(blogPost.comments)")
-//                    if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
-//                        self.blogPosts[index] = blogPost
-//                        self.tableView.reloadData()
-//                    }
-//                }
-//            }
-//        }
-//    }
 }
 
     // MARK: - Table view data source and delegate methods
@@ -244,6 +228,9 @@ class BlogViewController: UIViewController {
         
         cell.post = post
         
+        cell.postDateLabel.text = post.date
+        cell.postDescriptionTextView.text = post.description
+        cell.likesLabel.text = "\(post.likes)"
         switch post.comments {
         case 0: cell.commentsLabel.text = "No comments posted yet"
         case 1: cell.commentsLabel.text = "\(post.comments) comment "

@@ -21,6 +21,10 @@ class SelectedProgramViewController: UIViewController {
     private var selectedWorkout: Workout?
     private var searchBarConstraint: NSLayoutConstraint?
     private var likedWorkouts = UserDefaults.standard.array(forKey: "likedWorkouts") as? [String] ?? []
+    private let pageSize = 10
+    private var lastDocumentSnapshot: DocumentSnapshot? = nil
+    private var isFetching = false
+    private var shouldLoadMorePosts = true
    
     
     private lazy var addCommentButton: UIButton = {
@@ -95,14 +99,16 @@ class SelectedProgramViewController: UIViewController {
 #if Admin
         setupAdminFunctionality()
 #endif
+        guard let title = title else {return}
+        loadWorkoutsWithPagination(program: title, pageSize: pageSize)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("Executing function: \(#function)")
         navigationController?.navigationBar.prefersLargeTitles = true
-        guard let title = title else {return}
-        loadListOfWorkouts(for: title)
+        shouldLoadMorePosts = true
+        DatabaseManager.shared.allWorkoutsLoaded = false 
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -183,70 +189,24 @@ class SelectedProgramViewController: UIViewController {
         ]
     }
     
-    @objc private func pushCommentsVC() {
-        guard let selectedWorkout = selectedWorkout else { print("workout is not selected")
-            return }
-        let commentsVC = CommentsViewController(workout: selectedWorkout)
-        commentsVC.title = "Comments"
-    
-        navigationController?.pushViewController(commentsVC, animated: true)
-    }
-    
-    private func hasUserLikedWorkout(workout: Workout) -> Bool {
-        return self.likedWorkouts.contains(workout.id)
-    }
-    
-    @objc private func addLikeToWorkout() {
-        likeButton.isSelected = !likeButton.isSelected
-        guard let selectedWorkout = selectedWorkout,
-              let index = listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
-        
-        if likeButton.isSelected {
-            likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likeButton.tintColor = .systemRed
-            var updatedWorkout = selectedWorkout
-            updatedWorkout.likes += 1
-            DatabaseManager.shared.updateLikes(workout: updatedWorkout, likesCount: updatedWorkout.likes) {[weak self] workout in
-                guard let self = self else {return}
-                print ("likes increase by 1")
-                self.listOfWorkouts[index] = workout
-                self.filteredWorkouts = self.listOfWorkouts
-                self.likesLabel.text = "\(updatedWorkout.likes)"
-                self.selectedWorkout = updatedWorkout
-                if !self.likedWorkouts.contains(selectedWorkout.id) {
-                    self.likedWorkouts.append(selectedWorkout.id)
-                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
-                }
-            }
+    private func selectItem() {
+        if self.listOfWorkouts.isEmpty {
+            self.workoutsCollection.reloadData()
+            self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
         } else {
-            likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likeButton.tintColor = .white
-            var updatedWorkout = selectedWorkout
-            updatedWorkout.likes -= 1
-            DatabaseManager.shared.updateLikes(workout: updatedWorkout, likesCount: updatedWorkout.likes) {[weak self] workout in
-                guard let self = self else {return}
-                print ("likes decrease by 1")
-                self.listOfWorkouts[index] = workout
-                self.filteredWorkouts = self.listOfWorkouts
-                self.likesLabel.text = "\(updatedWorkout.likes)"
-                self.selectedWorkout = updatedWorkout
-                if let index = self.likedWorkouts.firstIndex(of: selectedWorkout.id) {
-                    self.likedWorkouts.remove(at: index)
-                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
-                }
+            if self.selectedIndexPath != nil {
+                self.workoutsCollection.reloadData()
+                self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
+                self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
+            } else {
+                self.workoutsCollection.reloadData()
+                let indexPath = IndexPath(row: 0, section: 0)
+                self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+                self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
             }
         }
     }
-    
-    @objc private func toggleSearchBar() {
-        searchBar.isHidden = !searchBar.isHidden
-        
-        if searchBar.isHidden {
-            searchBarConstraint?.constant = -searchBar.frame.size.height
-        } else {
-            searchBarConstraint?.constant = 0
-        }
-    }
+
     
     // MARK: - Adding new workout and loading list of workouts
     // only Admin user can add new workout
@@ -268,42 +228,84 @@ class SelectedProgramViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
-                    self.showAlert(title: "Success", message: "New workout for \(title) training plan is posted successfully!")
+                    self.listOfWorkouts.insert(newWorkout, at: 0)
+                    self.filteredWorkouts = self.listOfWorkouts
+                    let indexPath = IndexPath(row: 0, section: 0)
+                    self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+                    self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
+                    self.workoutsCollection.reloadData()
                 } else {
                     self.showAlert(title: "Warning", message: "Unable to post new workout")
                 }
             }
         }
     }
-    
-    private func loadListOfWorkouts(for programName: String) {
-       
-        DatabaseManager.shared.getAllWorkouts(for: programName) { [weak self] workouts in
-            print("Executing function: \(#function)")
-            guard let self = self else {return}
-            self.listOfWorkouts = workouts
-            self.filteredWorkouts = self.listOfWorkouts
-         
-            DispatchQueue.main.async {
-                if self.listOfWorkouts.isEmpty {
-                    self.workoutsCollection.reloadData()
-                    print("no workouts")
-                    self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
-                } else {
-                    if self.selectedIndexPath != nil {
-                        self.workoutsCollection.reloadData()
-                        self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
-                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
-                    } else {
-                        self.workoutsCollection.reloadData()
-                        let indexPath = IndexPath(row: 0, section: 0)
-                        self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
-                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-                    }
-                }
+    private func loadWorkoutsWithPagination(program: String, pageSize: Int){
+        print ("executing function \(#function)")
+        guard !isFetching else { return }
+        isFetching = true
+        DatabaseManager.shared.getWorkoutsWithPagination(program: program, pageSize: pageSize, startAfter: lastDocumentSnapshot) { [weak self] workouts, lastDocumentSnapshot in
+            guard let self = self else { return }
+            if self.lastDocumentSnapshot == nil {
+                self.listOfWorkouts = workouts
+                self.filteredWorkouts = self.listOfWorkouts
+            } else {
+                self.listOfWorkouts.append(contentsOf: workouts)
+                self.filteredWorkouts = self.listOfWorkouts
             }
+            self.lastDocumentSnapshot = lastDocumentSnapshot
+            self.workoutsCollection.reloadData()
+            self.isFetching = false
+            
+//            DispatchQueue.main.async {
+//                if self.listOfWorkouts.isEmpty {
+//                    self.workoutsCollection.reloadData()
+//                    print("no workouts")
+//                    self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
+//                } else {
+//                    if self.selectedIndexPath != nil {
+//                        self.workoutsCollection.reloadData()
+//                        self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
+//                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
+//                    } else {
+//                        self.workoutsCollection.reloadData()
+//                        let indexPath = IndexPath(row: 0, section: 0)
+//                        self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+//                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
+//                    }
+//                }
+//            }
         }
     }
+    
+//    private func loadListOfWorkouts(for programName: String) {
+//
+//        DatabaseManager.shared.getAllWorkouts(for: programName) { [weak self] workouts in
+//            print("Executing function: \(#function)")
+//            guard let self = self else {return}
+//            self.listOfWorkouts = workouts
+//            self.filteredWorkouts = self.listOfWorkouts
+//
+//            DispatchQueue.main.async {
+//                if self.listOfWorkouts.isEmpty {
+//                    self.workoutsCollection.reloadData()
+//                    print("no workouts")
+//                    self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
+//                } else {
+//                    if self.selectedIndexPath != nil {
+//                        self.workoutsCollection.reloadData()
+//                        self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
+//                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
+//                    } else {
+//                        self.workoutsCollection.reloadData()
+//                        let indexPath = IndexPath(row: 0, section: 0)
+//                        self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+//                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
+//                    }
+//                }
+//            }
+//        }
+//    }
     // MARK: - Long press setup for admin to delete and update workouts
     private func setupGuestureRecognizer() {
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
@@ -319,21 +321,19 @@ class SelectedProgramViewController: UIViewController {
             let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
                 guard let self = self else {return}
                 let workout = self.listOfWorkouts[indexPath.item]
-                DatabaseManager.shared.deleteWorkout(workout: workout) { success in
+                DatabaseManager.shared.deleteWorkout(workout: workout) {[weak self] success in
+                    guard let self = self else { return }
                     if success {
-                        DatabaseManager.shared.getAllWorkouts(for: workout.programID) { [weak self] workouts in
-                            print("Executing function: \(#function)")
-                            guard let self = self else {return}
-                            self.listOfWorkouts = workouts
+                            self.listOfWorkouts.remove(at: indexPath.item)
                             self.filteredWorkouts = self.listOfWorkouts
                             self.workoutsCollection.reloadData()
+                        print ("number of workouts left - \(self.listOfWorkouts.count)")
                             
                             if self.listOfWorkouts.isEmpty {
                                 self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
                             } else {
                                 self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout successfully deleted"
                             }
-                        }
                     } else {
                         self.showAlert(title: "Warning", message: "Unable to delete this workout")
                     }
@@ -353,12 +353,11 @@ class SelectedProgramViewController: UIViewController {
                         guard let self = self else {return}
                         guard let index = self.listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
                         self.listOfWorkouts[index] = workout
+                        self.selectedWorkoutView.workoutDescriptionTextView.text = workout.description
+                        print(workout.description)
                         self.filteredWorkouts = self.listOfWorkouts
-                        DispatchQueue.main.async {
-                            self.selectedWorkoutView.workoutDescriptionTextView.text = text
-                        }
-                        self.showAlert(title: "Success", message: "Workout is successfully updated!")
                         self.workoutsCollection.reloadData()
+                        self.showAlert(title: "Success", message: "Workout is successfully updated!")
                     }
                 }
             }
@@ -370,10 +369,89 @@ class SelectedProgramViewController: UIViewController {
             present(alertController, animated: true)
         }
     }
+    
+    @objc private func pushCommentsVC() {
+        guard let selectedWorkout = selectedWorkout else { print("workout is not selected")
+            return }
+        let commentsVC = CommentsViewController(workout: selectedWorkout)
+        commentsVC.title = "Comments"
+        navigationController?.pushViewController(commentsVC, animated: true)
+        
+        commentsVC.onCommentsClose = {
+            DatabaseManager.shared.getCommentsCount(workout: selectedWorkout) { [weak self] numberOfComments in
+                DatabaseManager.shared.updateWorkoutCommentsCount(workout: selectedWorkout, commentsCount: numberOfComments) { [weak self] workout in
+                    guard let self = self else {return}
+                    print ("number of workout comments is \(workout.comments)")
+                    if let index = self.listOfWorkouts.firstIndex(where: { $0.id == workout.id }) {
+                        self.listOfWorkouts[index] = workout
+                        switch workout.comments {
+                        case 0: self.commentsLabel.text = "No comments posted yet"
+                        case 1: self.commentsLabel.text = "\(workout.comments) comment "
+                        default: self.commentsLabel.text = "\(workout.comments) comments"
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    //MARK: - Methods to handle likes and toggle search bar
+    private func hasUserLikedWorkout(workout: Workout) -> Bool {
+        return self.likedWorkouts.contains(workout.id)
+    }
+    
+    @objc private func addLikeToWorkout() {
+        likeButton.isSelected = !likeButton.isSelected
+        guard var selectedWorkout = selectedWorkout,
+              let index = listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
+        
+        if likeButton.isSelected {
+            likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likeButton.tintColor = .systemRed
+            selectedWorkout.likes += 1
+            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] workout in
+                guard let self = self else {return}
+                print ("likes increase by 1")
+                self.listOfWorkouts[index] = workout
+                self.filteredWorkouts = self.listOfWorkouts
+                self.likesLabel.text = "\(workout.likes)"
+                if !self.likedWorkouts.contains(selectedWorkout.id) {
+                    self.likedWorkouts.append(selectedWorkout.id)
+                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+                }
+            }
+        } else {
+            likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likeButton.tintColor = .white
+            selectedWorkout.likes -= 1
+            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] workout in
+                guard let self = self else {return}
+                print ("likes decrease by 1")
+                self.listOfWorkouts[index] = workout
+                self.filteredWorkouts = self.listOfWorkouts
+                self.likesLabel.text = "\(workout.likes)"
+                if let index = self.likedWorkouts.firstIndex(of: selectedWorkout.id) {
+                    self.likedWorkouts.remove(at: index)
+                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+                }
+            }
+        }
+        self.workoutsCollection.reloadData()
+    }
+    
+    @objc private func toggleSearchBar() {
+        searchBar.isHidden = !searchBar.isHidden
+        
+        if searchBar.isHidden {
+            searchBarConstraint?.constant = -searchBar.frame.size.height
+        } else {
+            searchBarConstraint?.constant = 0
+        }
+    }
 
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Ok", style: .cancel)
         alert.addAction(cancelAction)
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
@@ -409,12 +487,18 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
         guard let safeIndexPath = selectedIndexPath else {print ("no index path")
             return
         }
-        filteredWorkouts = listOfWorkouts
+        
         let selectedWorkout = filteredWorkouts[safeIndexPath.item]
         self.selectedWorkout = selectedWorkout
         selectedWorkoutView.randomizeBackgroungImages()
         selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout.description
         likesLabel.text = "\(selectedWorkout.likes)"
+        switch selectedWorkout.comments {
+        case 0: commentsLabel.text = "No comments posted yet"
+        case 1: commentsLabel.text = "\(selectedWorkout.comments) comment "
+        default: commentsLabel.text = "\(selectedWorkout.comments) comments"
+        }
+        
         
         if hasUserLikedWorkout(workout: selectedWorkout) == true {
             self.likeButton.isSelected = true
@@ -426,16 +510,7 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
             likeButton.tintColor = .white
         }
 
-        DatabaseManager.shared.getCommentsCount(workout: selectedWorkout) { [weak self] numberOfComments in
-            DispatchQueue.main.async {
-                switch numberOfComments {
-                case 0: self?.commentsLabel.text = "No comments posted yet"
-                case 1: self?.commentsLabel.text = "\(numberOfComments) comment "
-                default: self?.commentsLabel.text = "\(numberOfComments) comments"
-                }
-            }
-        }
-    }
+}
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         print("Executing function: \(#function)")
@@ -448,6 +523,22 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
         let cell = cell as! WorkoutsCollectionViewCell
            updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
     }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+         // Check if table view is near bottom and not currently loading
+         let scrollViewWidth = scrollView.frame.size.width
+         let scrollContentSizeWidth = scrollView.contentSize.width
+         let scrollOffset = scrollView.contentOffset.x
+         if (scrollOffset + scrollViewWidth) >= (scrollContentSizeWidth - 50) && !isFetching && shouldLoadMorePosts {
+             if !DatabaseManager.shared.allWorkoutsLoaded {
+                 self.loadWorkoutsWithPagination(program: title!, pageSize: pageSize)
+             } else {
+                 shouldLoadMorePosts = false
+                 print("All workouts have been loaded")
+                 self.workoutsCollection.reloadData()
+             }
+         }
+     }
 }
 
 extension SelectedProgramViewController: UICollectionViewDelegateFlowLayout {
