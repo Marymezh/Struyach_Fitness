@@ -47,7 +47,7 @@ class TabBarController: UITabBarController {
         let programsVC = ProgramsViewController()
         programsVC.title = "Programs"
         
-        let blogVC = BlogTableViewController()
+        let blogVC = BlogViewController()
         blogVC.title = "Coach Blog"
         
         let profileVC = ProfileTableViewController(email: currentUserEmail)

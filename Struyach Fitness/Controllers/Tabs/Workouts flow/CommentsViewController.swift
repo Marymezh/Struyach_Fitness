@@ -24,6 +24,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     private var progressLabel: UILabel!
     
     var onImagePick:(([UIImagePickerController.InfoKey : Any])-> Void)?
+    var onCommentsClose: (() -> ())?
     
     private let userName = UserDefaults.standard.string(forKey: "userName")
     private let userEmail = UserDefaults.standard.string(forKey: "email")
@@ -106,6 +107,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.prefersLargeTitles = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.onCommentsClose?()
     }
     
     private func setupMessageCollectionView() {

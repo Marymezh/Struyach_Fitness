@@ -10,14 +10,14 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 import UIKit
 import MessageKit
-import AVKit
 
 final class DatabaseManager {
     
     static let shared = DatabaseManager()
     private let database = Firestore.firestore()
-    private let formatter = DateFormatter()
-    
+    var allPostsLoaded = false
+    var allWorkoutsLoaded = false
+  
     private init() {}
     
     //MARK: - Workouts: adding, fetching, editing, deleting workouts and listen to the changes
@@ -45,23 +45,71 @@ final class DatabaseManager {
         }
     }
     
-    public func getAllWorkouts(for program: String, completion: @escaping([Workout])->()){
+    func getWorkoutsWithPagination(program: String, pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Workout], DocumentSnapshot?) -> ()) {
         print("Executing function: \(#function)")
         let documentID = program
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
-        
-        database
+  
+        var query = database
             .collection("programs")
             .document(documentID)
             .collection("workouts")
             .order(by: "timestamp", descending: true)
-            .getDocuments { snapshot, error in
+            .limit(to: pageSize)
+        if let startAfter = startAfter {
+            query = query.start(afterDocument: startAfter)
+        }
+        
+        query.getDocuments { snapshot, error in
+            guard let documents = snapshot?.documents else {
+                print("Error fetching documents: \(error!)")
+                return
+            }
+            var lastDocumentSnapshot: DocumentSnapshot?
+            let workouts: [Workout] = documents.compactMap { document in
+                do {
+                    let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
+                    lastDocumentSnapshot = document
+                    return workout
+                } catch {
+                    print("Error decoding workout: \(error)")
+                    return nil
+                }
+            }
+            
+            if documents.count < pageSize {
+                self.allWorkoutsLoaded = true
+                print ("all posts have been loaded from Firestore")
+            }
+            
+            completion(workouts, lastDocumentSnapshot)
+            print ("downloaded \(workouts.count) workouts")
+        }
+    }
+    
+    public func searchWorkoutsByDescription(program: String, searchText: String, completion: @escaping([Workout])->()){
+        print("Executing function: \(#function)")
+        
+        let documentID = program
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let workoutsRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            
+        let query = workoutsRef
+            .whereField("description", isGreaterThanOrEqualTo: searchText)
+            .whereField("description", isLessThanOrEqualTo: searchText + "\u{f8ff}")
+
+            query.getDocuments { snapshot, error in
                 guard let documents = snapshot?.documents else {
                     print("Error fetching documents: \(error!)")
                     return
                 }
-                
+
                 let workouts: [Workout] = documents.compactMap { document in
                     do {
                         let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
@@ -92,8 +140,12 @@ final class DatabaseManager {
             guard var data = snapshot?.data(), error == nil else {return}
             
             data["description"] = newDescription
-            dbRef.setData(data) { error in
-                completion(workout)
+            dbRef.setData(data)  { error in
+                if error == nil {
+                    var updatedWorkout = workout
+                    updatedWorkout.description = newDescription
+                    completion(updatedWorkout)
+                }
             }
         }
     }
@@ -167,7 +219,11 @@ final class DatabaseManager {
             
             data["likes"] = likesCount
             dbRef.setData(data) { error in
-                completion(workout)
+                if error == nil {
+                    var updatedWorkout = workout
+                    updatedWorkout.likes = likesCount
+                    completion(updatedWorkout)
+                }
             }
         }
     }
@@ -220,30 +276,68 @@ final class DatabaseManager {
         }
     }
     
-    public func getAllPosts(completion: @escaping([Post])->()){
-        print("Executing function: \(#function)")
-        database
+//    public func getAllPosts(completion: @escaping([Post])->()){
+//        print("Executing function: \(#function)")
+//        database
+//            .collection("blogPosts")
+//            .order(by: "timestamp", descending: true)
+//            .getDocuments { snapshot, error in
+//                guard let documents = snapshot?.documents else {
+//                    print("Error fetching documents: \(error!)")
+//                    return
+//                }
+//
+//                let posts: [Post] = documents.compactMap { document in
+//                    do {
+//                        let post = try Firestore.Decoder().decode(Post.self, from: document.data())
+//
+//                        return post
+//                    } catch {
+//                        print("Error decoding workout: \(error)")
+//                        return nil
+//                    }
+//                }
+//                completion(posts)
+//                print (posts.count)
+//            }
+//    }
+    
+    func getBlogPostsWithPagination(pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Post], DocumentSnapshot?) -> ()) {
+        var query = database
             .collection("blogPosts")
             .order(by: "timestamp", descending: true)
-            .getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents else {
-                    print("Error fetching documents: \(error!)")
-                    return
-                }
-                
-                let posts: [Post] = documents.compactMap { document in
-                    do {
-                        let workout = try Firestore.Decoder().decode(Post.self, from: document.data())
-                        print("workouts decoded from database")
-                        return workout
-                    } catch {
-                        print("Error decoding workout: \(error)")
-                        return nil
-                    }
-                }
-                completion(posts)
+            .limit(to: pageSize)
+        if let startAfter = startAfter {
+            query = query.start(afterDocument: startAfter)
+        }
+        
+        query.getDocuments { snapshot, error in
+            guard let documents = snapshot?.documents else {
+                print("Error fetching documents: \(error!)")
+                return
             }
+            var lastDocumentSnapshot: DocumentSnapshot?
+            let posts: [Post] = documents.compactMap { document in
+                do {
+                    let post = try Firestore.Decoder().decode(Post.self, from: document.data())
+                    lastDocumentSnapshot = document
+                    return post
+                } catch {
+                    print("Error decoding post: \(error)")
+                    return nil
+                }
+            }
+            
+            if documents.count < pageSize {
+                self.allPostsLoaded = true
+                print ("all posts have been loaded from Firestore")
+            }
+            
+            completion(posts, lastDocumentSnapshot)
+            print ("downloaded \(posts.count) posts")
+        }
     }
+
 
     public func updatePost(blogPost: Post, newDescription: String, completion: @escaping (Post)->()){
         print("Executing function: \(#function)")
@@ -254,14 +348,17 @@ final class DatabaseManager {
         
         dbRef.getDocument { snapshot, error in
             guard var data = snapshot?.data(), error == nil else {return}
-            
-            data["text"] = newDescription
-            dbRef.setData(data) { error in
-                completion(blogPost)
+            data["description"] = newDescription
+            dbRef.setData(data)  { error in
+                if error == nil {
+                    var updatedBlogPost = blogPost
+                    updatedBlogPost.description = newDescription
+                    completion(updatedBlogPost)
+                }
             }
         }
     }
-
+ 
     public func deletePost(blogPost: Post, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
 
@@ -319,7 +416,11 @@ final class DatabaseManager {
             
             data["likes"] = likesCount
             dbRef.setData(data) { error in
-                completion(blogPost)
+                if error == nil {
+                    var updatedBlogPost = blogPost
+                    updatedBlogPost.likes = likesCount
+                    completion(updatedBlogPost)
+                }
             }
         }
     }
@@ -420,9 +521,7 @@ final class DatabaseManager {
        }
     
     public func getBlogCommentsCount(blogPost: Post, completion: @escaping(Int)->()){
-        print ("executing loading comments for blog posts \(#function)")
         var numberOfComments = 0
-
         database
             .collection("blogPosts")
             .document(blogPost.id)
@@ -433,11 +532,32 @@ final class DatabaseManager {
                     print("Error getting documents: \(error)")
                 } else {
                     numberOfComments = querySnapshot?.count ?? 0
-                    print("found \(numberOfComments) comments for blog post")
                 }
                 completion(numberOfComments)
             }
        }
+    
+    public func updateBlogCommentsCount(blogPost: Post, commentsCount: Int, completion: @escaping (Post)->()){
+        print("Executing function: \(#function)")
+  
+        let dbRef = database
+            .collection("blogPosts")
+            .document(blogPost.id)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["comments"] = commentsCount
+            dbRef.setData(data) { error in
+                if error == nil {
+                    var updatedBlogPost = blogPost
+                    updatedBlogPost.comments = commentsCount
+                    completion(updatedBlogPost)
+                }
+            }
+        }
+    }
+    
     
     public func updateBlogComment(comment: Comment, blogPost: Post, newDescription: String, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
@@ -616,6 +736,32 @@ final class DatabaseManager {
             }
        }
     
+    public func updateWorkoutCommentsCount(workout: Workout, commentsCount: Int, completion: @escaping (Workout)->()){
+        print("Executing function: \(#function)")
+        let documentID = workout.programID
+               .replacingOccurrences(of: "/", with: "_")
+               .replacingOccurrences(of: " ", with: "_")
+        
+        let dbRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workout.id)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["comments"] = commentsCount
+            dbRef.setData(data) { error in
+                if error == nil {
+                    var updatedWorkout = workout
+                    updatedWorkout.comments = commentsCount
+                    completion(updatedWorkout)
+                }
+            }
+        }
+    }
+    
     public func updateComment(comment: Comment, newDescription: String, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         
@@ -770,6 +916,30 @@ final class DatabaseManager {
                 completion(user)
             }
     }
+    
+    public func updateUserName(email: String, newUserName: String,
+                               completion: @escaping(Bool)->()
+    ){
+        let documentID = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let dbRef = database
+            .collection("users")
+            .document(documentID)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            data["name"] = newUserName
+            dbRef.setData(data) { error in
+                if error == nil {
+                    completion(true)
+                }
+            }
+        }
+    }
+    
+    
     
     public func updateProfilePhoto(email: String, completion: @escaping (Bool) ->()){
         let path = email

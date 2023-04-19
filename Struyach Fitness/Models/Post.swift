@@ -7,16 +7,12 @@
 
 import Foundation
 import FirebaseFirestoreSwift
-import RealmSwift
 
-class Post: Object, Codable {
-    @objc dynamic var id: String = ""
-    @objc dynamic var text: String = ""
-    @objc dynamic var date: String = ""
-    @objc dynamic var timestamp: TimeInterval = 0.0
-    @objc dynamic var likes: Int = 0
-    
-    override static func primaryKey() -> String? {
-            return "id"
-        }
+struct Post: Codable, Equatable {
+    var id: String
+    var description: String
+    let date: String
+    let timestamp: TimeInterval
+    var likes: Int = 0
+    var comments: Int = 0
 }

@@ -14,6 +14,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
     
     var text: String = ""
     var onWorkoutSave: ((String) -> Void)?
+    
     let workoutDescriptionTextView: UITextView = {
         let textView = UITextView()
         textView.font = UIFont.systemFont(ofSize: 16, weight: .regular)
@@ -44,7 +45,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         if let text = workoutDescriptionTextView.text,
               text != "" {
             self.onWorkoutSave?(text)
-            navigationController?.popViewController(animated: true)
+            self.navigationController?.popViewController(animated: true)
         } else {
             self.showAlert(title: "Warning", message: "Text of the workout can not be blank!")
         }
