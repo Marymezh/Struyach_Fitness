@@ -25,9 +25,9 @@ class BlogViewController: UIViewController {
         button.backgroundColor = .systemGreen
         button.tintColor = .white
         button.addTarget(self, action: #selector(addNewPost), for: .touchUpInside)
-        button.layer.cornerRadius = 25
+        button.layer.cornerRadius = 30
         button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowRadius = 25
+        button.layer.shadowRadius = 30
         button.layer.shadowOffset = CGSize(width: 5, height: 5)
         button.layer.shadowOpacity = 0.6
         button.isHidden = true
@@ -41,12 +41,16 @@ class BlogViewController: UIViewController {
 #if Admin
         setupAdminFunctionality()
 #endif
-        loadBlogPostsWithPagination(pageSize: pageSize)
+      //  loadBlogPostsWithPagination(pageSize: pageSize)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupNavAndTabBar()
+        lastDocumentSnapshot = nil
+        shouldLoadMorePosts = true
+        DatabaseManager.shared.allPostsLoaded = false
+        loadBlogPostsWithPagination(pageSize: pageSize)
     }
     
     private func setupNavAndTabBar() {
@@ -71,9 +75,9 @@ class BlogViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            plusButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -35),
-            plusButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            plusButton.widthAnchor.constraint(equalToConstant: 50),
+            plusButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -25),
+            plusButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -25),
+            plusButton.widthAnchor.constraint(equalToConstant: 60),
             plusButton.heightAnchor.constraint(equalTo: plusButton.widthAnchor)
         ]
         
@@ -108,9 +112,13 @@ class BlogViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
+                    self.lastDocumentSnapshot = nil
+                    self.shouldLoadMorePosts = true
+                    DatabaseManager.shared.allPostsLoaded = false
+                    self.loadBlogPostsWithPagination(pageSize: self.pageSize)
                 self.scrollToTheTop()
-                self.blogPosts.insert(newPost, at: 0)
-                self.tableView.reloadData()
+//                self.blogPosts.insert(newPost, at: 0)
+//                self.tableView.reloadData()
                 } else {
                     self.showAlert(title: "Warning", message: "Unable to add new post")
                 }

@@ -46,6 +46,8 @@ class ProfileTableViewController: UITableViewController {
         tableView.backgroundColor = .customDarkGray
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: ProfileTableViewCell.self))
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
+//        tableView.estimatedSectionHeaderHeight = 165
+//        tableView.sectionHeaderHeight = UITableView.automaticDimension
     }
     
     private func setupHeaderView() {
@@ -57,11 +59,44 @@ class ProfileTableViewController: UITableViewController {
     private func setupGuestureRecognizer() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(userPhotoImageTapped))
         headerView.userPhotoImage.addGestureRecognizer(tap)
+        
+        let buttonTap = UITapGestureRecognizer(target: self, action: #selector(changeUserNameTapped))
+        headerView.changeUserNameButton.addGestureRecognizer(buttonTap)
     }
     
     @objc private func userPhotoImageTapped() {
         guard currentUserEmail == email else {return}
         showImagePickerController()
+    }
+    
+    @objc private func changeUserNameTapped() {
+        let alertController = UIAlertController(title: "Change user name", message: nil, preferredStyle: .alert)
+        alertController.addTextField { textfield in
+            textfield.placeholder = "Enter new name here"
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default)
+        let changeAction = UIAlertAction(title: "Save", style: .default) { action in
+            if let text = alertController.textFields?[0].text,
+               text != "" {
+                UserDefaults.standard.set(text, forKey: "userName")
+                self.headerView.userNameLabel.text = text
+                DatabaseManager.shared.updateUserName(email: self.email, newUserName: text) { success in
+                    if success {
+                        DispatchQueue.main.async {
+                            self.headerView.userNameLabel.text = text
+                        }
+                    }
+                }
+            } else {
+                self.showErrorAlert(text: "User name can not be blank!")
+            }
+        }
+        
+        alertController.addAction(changeAction)
+        alertController.addAction(cancelAction)
+
+        alertController.view.tintColor = .darkGray
+        present(alertController, animated: true)
     }
     
     func fetchOtherUserData(completion: @escaping (Bool)->()) {
@@ -71,14 +106,12 @@ class ProfileTableViewController: UITableViewController {
             StorageManager.shared.downloadUrl(path: imageRef) { url in
                 guard let url = url else { return }
 
-                // Download the image data from the URL
                 let task = URLSession.shared.dataTask(with: url) { data, response, error in
                     guard let data = data, error == nil else {
                         print("Error downloading image: \(error?.localizedDescription ?? "unknown error")")
                         return
                     }
 
-                    // Create the UIImage object from the downloaded data
                     if let image = UIImage(data: data) {
                         DispatchQueue.main.async {
                             self.headerView.userPhotoImage.image = image
@@ -167,7 +200,6 @@ class ProfileTableViewController: UITableViewController {
             action: #selector(didTapSignOut))
     }
     
-    
     @objc private func didTapSignOut() {
         let alert = UIAlertController(title: "Sign Out", message: "Are you sure you would like to sign out?", preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -188,6 +220,14 @@ class ProfileTableViewController: UITableViewController {
                 }
             }
         }))
+        present(alert, animated: true)
+    }
+    
+    private func showErrorAlert(text: String) {
+        let alert = UIAlertController(title: "Error", message: text, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        alert.view.tintColor = .red
+        alert.addAction(cancelAction)
         present(alert, animated: true)
     }
 
@@ -239,10 +279,10 @@ class ProfileTableViewController: UITableViewController {
         return headerView
     }
     
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        
-        return 130
-    }
+//    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+//        
+//        return 150
+//    }
 }
 //MARK: - UIImagePickerControllerDelegate methods
 extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {

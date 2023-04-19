@@ -8,7 +8,7 @@
 import UIKit
 import FirebaseFirestore
 
-class SelectedProgramViewController: UIViewController {
+class WorkoutsViewController: UIViewController {
     
     //MARK: - Properties
     
@@ -121,7 +121,7 @@ class SelectedProgramViewController: UIViewController {
         super.viewWillAppear(animated)
         print("Executing function: \(#function)")
         navigationController?.navigationBar.prefersLargeTitles = true
-        self.lastDocumentSnapshot = nil
+        lastDocumentSnapshot = nil
         shouldLoadMorePosts = true
         DatabaseManager.shared.allWorkoutsLoaded = false
         guard let title = title else {return}
@@ -426,7 +426,7 @@ class SelectedProgramViewController: UIViewController {
     }
 }
 
-extension SelectedProgramViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
    //     listOfWorkouts.count
         filteredWorkouts.count
@@ -509,7 +509,7 @@ extension SelectedProgramViewController: UICollectionViewDataSource, UICollectio
      }
 }
 
-extension SelectedProgramViewController: UICollectionViewDelegateFlowLayout {
+extension WorkoutsViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let screenWidth = collectionView.bounds.width
         let cellWidth = ((screenWidth - 60) / 5)
@@ -534,7 +534,7 @@ extension SelectedProgramViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension SelectedProgramViewController: UISearchBarDelegate {
+extension WorkoutsViewController: UISearchBarDelegate {
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         let searchQuery = searchText.trimmingCharacters(in: .whitespacesAndNewlines)

@@ -918,6 +918,30 @@ final class DatabaseManager {
             }
     }
     
+    public func updateUserName(email: String, newUserName: String,
+                               completion: @escaping(Bool)->()
+    ){
+        let documentID = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let dbRef = database
+            .collection("users")
+            .document(documentID)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            data["name"] = newUserName
+            dbRef.setData(data) { error in
+                if error == nil {
+                    completion(true)
+                }
+            }
+        }
+    }
+    
+    
+    
     public func updateProfilePhoto(email: String, completion: @escaping (Bool) ->()){
         let path = email
             .replacingOccurrences(of: ".", with: "_")
