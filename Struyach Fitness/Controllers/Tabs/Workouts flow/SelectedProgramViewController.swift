@@ -81,13 +81,28 @@ class SelectedProgramViewController: UIViewController {
         searchBar.barTintColor = .customDarkGray
         searchBar.tintColor = .customDarkGray
         searchBar.clipsToBounds = true
-        searchBar.showsSearchResultsButton = true
+        searchBar.showsCancelButton = true
         searchBar.isHidden = true
         searchBar.toAutoLayout()
         return searchBar
     }()
     
-    //TODO: - Access data offline - when is not connected to the WEB, first give a notification, cache all the data to a copy of Firestore database and sincronize when the device is online again. read here https://firebase.google.com/docs/firestore/manage-data/enable-offline
+    private lazy var plusButton: UIButton = {
+       let button = UIButton()
+        button.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), for: .normal)
+        button.backgroundColor = .systemGreen
+        button.tintColor = .white
+        button.addTarget(self, action: #selector(addNewWorkout), for: .touchUpInside)
+        button.layer.cornerRadius = 30
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowRadius = 30
+        button.layer.shadowOffset = CGSize(width: 5, height: 5)
+        button.layer.shadowOpacity = 0.6
+        button.isHidden = true
+        button.toAutoLayout()
+        return button
+    }()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -99,22 +114,23 @@ class SelectedProgramViewController: UIViewController {
 #if Admin
         setupAdminFunctionality()
 #endif
-        guard let title = title else {return}
-        loadWorkoutsWithPagination(program: title, pageSize: pageSize)
+        setupSearchBarCancelButton()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("Executing function: \(#function)")
         navigationController?.navigationBar.prefersLargeTitles = true
+        self.lastDocumentSnapshot = nil
         shouldLoadMorePosts = true
-        DatabaseManager.shared.allWorkoutsLoaded = false 
+        DatabaseManager.shared.allWorkoutsLoaded = false
+        guard let title = title else {return}
+        self.loadWorkoutsWithPagination(program: title, pageSize: self.pageSize)
     }
-
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         print("Executing function: \(#function)")
-        searchBarCancelButtonClicked(searchBar)
     }
     
     //MARK: - Methods to setup Navigation Bar, TableView and load workout data
@@ -128,7 +144,7 @@ class SelectedProgramViewController: UIViewController {
     private func setupSubviews(){
         view.backgroundColor = .customDarkGray
         selectedWorkoutView.toAutoLayout()
-        view.addSubviews(searchBar, workoutsCollection, selectedWorkoutView, stackView)
+        view.addSubviews(searchBar, workoutsCollection, selectedWorkoutView, stackView, plusButton)
         stackView.addArrangedSubview(likeButton)
         stackView.addArrangedSubview(likesLabel)
         stackView.addArrangedSubview(addCommentButton)
@@ -162,7 +178,12 @@ class SelectedProgramViewController: UIViewController {
             
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
             stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
-            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset)
+            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
+            
+            plusButton.bottomAnchor.constraint(equalTo: selectedWorkoutView.bottomAnchor, constant: -25),
+            plusButton.trailingAnchor.constraint(equalTo: selectedWorkoutView.trailingAnchor, constant: -25),
+            plusButton.widthAnchor.constraint(equalToConstant: 60),
+            plusButton.heightAnchor.constraint(equalTo: plusButton.widthAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -183,30 +204,8 @@ class SelectedProgramViewController: UIViewController {
     
     private func setupAdminFunctionality (){
         setupGuestureRecognizer()
-        self.navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(image: UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(addNewWorkout)),
-            UIBarButtonItem(image: UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(toggleSearchBar))
-        ]
+        self.plusButton.isHidden = false
     }
-    
-    private func selectItem() {
-        if self.listOfWorkouts.isEmpty {
-            self.workoutsCollection.reloadData()
-            self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
-        } else {
-            if self.selectedIndexPath != nil {
-                self.workoutsCollection.reloadData()
-                self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
-                self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
-            } else {
-                self.workoutsCollection.reloadData()
-                let indexPath = IndexPath(row: 0, section: 0)
-                self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
-                self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-            }
-        }
-    }
-
     
     // MARK: - Adding new workout and loading list of workouts
     // only Admin user can add new workout
@@ -228,84 +227,53 @@ class SelectedProgramViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
-                    self.listOfWorkouts.insert(newWorkout, at: 0)
-                    self.filteredWorkouts = self.listOfWorkouts
-                    let indexPath = IndexPath(row: 0, section: 0)
-                    self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
-                    self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-                    self.workoutsCollection.reloadData()
+                    self.lastDocumentSnapshot = nil
+                    self.shouldLoadMorePosts = true
+                    DatabaseManager.shared.allWorkoutsLoaded = false
+                    self.loadWorkoutsWithPagination(program: title, pageSize: self.pageSize)
                 } else {
                     self.showAlert(title: "Warning", message: "Unable to post new workout")
                 }
             }
         }
     }
+    
     private func loadWorkoutsWithPagination(program: String, pageSize: Int){
         print ("executing function \(#function)")
         guard !isFetching else { return }
         isFetching = true
         DatabaseManager.shared.getWorkoutsWithPagination(program: program, pageSize: pageSize, startAfter: lastDocumentSnapshot) { [weak self] workouts, lastDocumentSnapshot in
             guard let self = self else { return }
+
             if self.lastDocumentSnapshot == nil {
                 self.listOfWorkouts = workouts
                 self.filteredWorkouts = self.listOfWorkouts
+                self.workoutsCollection.reloadData()
+                print("load first bunch of workouts")
+                print(self.listOfWorkouts.count)
+                if !self.listOfWorkouts.isEmpty{
+                let indexPath = IndexPath(row: 0, section: 0)
+                self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+                self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
             } else {
+                self.workoutsCollection.reloadData()
+                self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
+            }
+            } else {
+                print("load next bunch of workouts")
                 self.listOfWorkouts.append(contentsOf: workouts)
                 self.filteredWorkouts = self.listOfWorkouts
+                self.workoutsCollection.reloadData()
+                print(self.listOfWorkouts.count)
             }
+                
             self.lastDocumentSnapshot = lastDocumentSnapshot
             self.workoutsCollection.reloadData()
             self.isFetching = false
-            
-//            DispatchQueue.main.async {
-//                if self.listOfWorkouts.isEmpty {
-//                    self.workoutsCollection.reloadData()
-//                    print("no workouts")
-//                    self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
-//                } else {
-//                    if self.selectedIndexPath != nil {
-//                        self.workoutsCollection.reloadData()
-//                        self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
-//                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
-//                    } else {
-//                        self.workoutsCollection.reloadData()
-//                        let indexPath = IndexPath(row: 0, section: 0)
-//                        self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
-//                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-//                    }
-//                }
-//            }
         }
     }
     
-//    private func loadListOfWorkouts(for programName: String) {
-//
-//        DatabaseManager.shared.getAllWorkouts(for: programName) { [weak self] workouts in
-//            print("Executing function: \(#function)")
-//            guard let self = self else {return}
-//            self.listOfWorkouts = workouts
-//            self.filteredWorkouts = self.listOfWorkouts
-//
-//            DispatchQueue.main.async {
-//                if self.listOfWorkouts.isEmpty {
-//                    self.workoutsCollection.reloadData()
-//                    print("no workouts")
-//                    self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
-//                } else {
-//                    if self.selectedIndexPath != nil {
-//                        self.workoutsCollection.reloadData()
-//                        self.workoutsCollection.selectItem(at: self.selectedIndexPath!, animated: true, scrollPosition: .right)
-//                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: self.selectedIndexPath!)
-//                    } else {
-//                        self.workoutsCollection.reloadData()
-//                        let indexPath = IndexPath(row: 0, section: 0)
-//                        self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
-//                        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-//                    }
-//                }
-//            }
-//        }
-//    }
+
     // MARK: - Long press setup for admin to delete and update workouts
     private func setupGuestureRecognizer() {
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
@@ -567,28 +535,46 @@ extension SelectedProgramViewController: UICollectionViewDelegateFlowLayout {
 }
 
 extension SelectedProgramViewController: UISearchBarDelegate {
-    
+
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        let searchQuery = searchText
-        if searchQuery.isEmpty {
+        let searchQuery = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if searchQuery.count < 3 {
             filteredWorkouts = listOfWorkouts
             selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout?.description
+            workoutsCollection.reloadData()
         } else {
-            filteredWorkouts = listOfWorkouts.filter { $0.description.localizedCaseInsensitiveContains(searchQuery)}
-            if filteredWorkouts.isEmpty == true {
-                selectedWorkoutView.workoutDescriptionTextView.text = "Ooops! No workouts were found! Change your query and try again."
-            } else {
-            selectedWorkoutView.workoutDescriptionTextView.text = "Select workout from search results."
+            DatabaseManager.shared.searchWorkoutsByDescription(program: title!, searchText: searchQuery) { [weak self] workouts in
+                guard let self = self else {return}
+                self.filteredWorkouts = workouts.sorted(by: { $0.timestamp > $1.timestamp })
+                if self.filteredWorkouts.isEmpty {
+                    self.selectedWorkoutView.workoutDescriptionTextView.text = "Ooops! No workouts were found! Change your query and try again."
+                } else {
+                    self.selectedWorkoutView.workoutDescriptionTextView.text = "Select workout from search results."
+                }
+                self.workoutsCollection.reloadData()
             }
         }
-        workoutsCollection.reloadData()
     }
-    
+    private func setupSearchBarCancelButton() {
+        if let cancelButton = searchBar.value(forKey: "cancelButton") as? UIButton {
+            cancelButton.backgroundColor = .clear
+            cancelButton.tintColor = .white
+            cancelButton.setTitle(nil, for: .normal)
+            cancelButton.setImage(UIImage(systemName: "clear", withConfiguration: UIImage.SymbolConfiguration(pointSize: 35, weight: .medium)), for: .normal)
+        }
+    }
+
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        print ("executing method \(#function)")
         searchBar.text = nil
         filteredWorkouts = listOfWorkouts
+        selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout?.description
         workoutsCollection.reloadData()
+        let indexPath = IndexPath(row: 0, section: 0)
+        self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
         searchBar.resignFirstResponder()
     }
+
 }
 

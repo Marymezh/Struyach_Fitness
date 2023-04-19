@@ -135,15 +135,6 @@ class BlogViewController: UIViewController {
         }
     }
     
-//    private func loadBlogPosts() {
-//        DatabaseManager.shared.getAllPosts { [weak self] posts in
-//            print("Executing function: \(#function)")
-//            guard let self = self else {return}
-//            self.blogPosts = posts
-//            self.tableView.reloadData()
-//        }
-//    }
-    
     private func setupGestureRecognizer() {
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         tableView.addGestureRecognizer(longPressRecognizer)

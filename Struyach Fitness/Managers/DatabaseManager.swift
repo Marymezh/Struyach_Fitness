@@ -88,36 +88,41 @@ final class DatabaseManager {
         }
     }
     
-//    public func getAllWorkouts(for program: String, completion: @escaping([Workout])->()){
-//        print("Executing function: \(#function)")
-//        let documentID = program
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        database
-//            .collection("programs")
-//            .document(documentID)
-//            .collection("workouts")
-//            .order(by: "timestamp", descending: true)
-//            .getDocuments { snapshot, error in
-//                guard let documents = snapshot?.documents else {
-//                    print("Error fetching documents: \(error!)")
-//                    return
-//                }
-//
-//                let workouts: [Workout] = documents.compactMap { document in
-//                    do {
-//                        let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
-//                        print("workouts decoded from database")
-//                        return workout
-//                    } catch {
-//                        print("Error decoding workout: \(error)")
-//                        return nil
-//                    }
-//                }
-//                completion(workouts)
-//            }
-//    }
+    public func searchWorkoutsByDescription(program: String, searchText: String, completion: @escaping([Workout])->()){
+        print("Executing function: \(#function)")
+        
+        let documentID = program
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let workoutsRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            
+        let query = workoutsRef
+            .whereField("description", isGreaterThanOrEqualTo: searchText)
+            .whereField("description", isLessThanOrEqualTo: searchText + "\u{f8ff}")
+
+            query.getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents else {
+                    print("Error fetching documents: \(error!)")
+                    return
+                }
+
+                let workouts: [Workout] = documents.compactMap { document in
+                    do {
+                        let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
+                        print("workouts decoded from database")
+                        return workout
+                    } catch {
+                        print("Error decoding workout: \(error)")
+                        return nil
+                    }
+                }
+                completion(workouts)
+            }
+    }
     
     public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Workout)->()){
         print("Executing function: \(#function)")
