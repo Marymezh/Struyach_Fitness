@@ -386,15 +386,11 @@ final class DatabaseManager {
             .collection("blogPosts")
             .document(blogPost.id)
         
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            data["description"] = newDescription
-            dbRef.setData(data)  { error in
-                if error == nil {
-                    var updatedBlogPost = blogPost
-                    updatedBlogPost.description = newDescription
-                    completion(updatedBlogPost)
-                }
+        dbRef.updateData(["description": newDescription]) { error in
+            if error == nil {
+                var updatedPost = blogPost
+                updatedPost.description = newDescription
+                completion(updatedPost)
             }
         }
     }
@@ -451,18 +447,37 @@ final class DatabaseManager {
             .collection("blogPosts")
             .document(blogPost.id)
         
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            
-            data["likes"] = likesCount
-            dbRef.setData(data) { error in
-                if error == nil {
-                    var updatedBlogPost = blogPost
-                    updatedBlogPost.likes = likesCount
-                    completion(updatedBlogPost)
-                }
+        dbRef.updateData(["likes": likesCount]) { error in
+            if error == nil {
+                var updatedPost = blogPost
+                updatedPost.likes = likesCount
+                completion(updatedPost)
             }
         }
+    }
+    
+    func addBlogPostsListener(completion: @escaping ([Post]) -> ()) -> ListenerRegistration? {
+        print("Executing function: \(#function)")
+
+        let postsListener = database
+            .collection("blogPosts")
+            .order(by: "timestamp", descending: true)
+            .addSnapshotListener { (snapshot, error) in
+            guard let snapshot = snapshot else {
+                print("Error fetching workouts: \(error?.localizedDescription ?? "unknown error")")
+                return
+            }
+            do {
+                let posts = try snapshot.documents.compactMap { document -> Post? in
+                    let post = try document.data(as: Post.self)
+                    return post
+                }
+                completion(posts)
+            } catch {
+                print("Error decoding workouts: \(error.localizedDescription)")
+            }
+        }
+        return postsListener
     }
     
     //MARK: - Comments for blog posts: Adding, fetching, editing, deleting and listen to the changes
@@ -584,20 +599,14 @@ final class DatabaseManager {
             .collection("blogPosts")
             .document(blogPost.id)
         
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            
-            data["comments"] = commentsCount
-            dbRef.setData(data) { error in
-                if error == nil {
-                    var updatedBlogPost = blogPost
-                    updatedBlogPost.comments = commentsCount
-                    completion(updatedBlogPost)
-                }
+        dbRef.updateData(["comments": commentsCount]) { error in
+            if error == nil {
+                var updatedPost = blogPost
+                updatedPost .comments = commentsCount
+                completion(updatedPost)
             }
         }
     }
-    
     
     public func updateBlogComment(comment: Comment, blogPost: Post, newDescription: String, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
