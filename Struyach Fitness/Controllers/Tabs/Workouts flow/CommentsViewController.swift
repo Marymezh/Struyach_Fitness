@@ -240,15 +240,23 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         NSLayoutConstraint.activate(constraints)
     }
     
+    private func showActivityIndicator() {
+        self.progressBackgroundView.isHidden = false
+        self.activityIndicator.isHidden = false
+        self.activityIndicator.startAnimating()
+    }
+    
+    private func hideActivityIndicator() {
+        self.progressBackgroundView.isHidden = true
+        self.activityIndicator.isHidden = true
+        self.activityIndicator.stopAnimating()
+    }
+    
     private func presentInputOptions() {
         let actionSheet = UIAlertController(title: "Attach media", message: nil, preferredStyle: .actionSheet)
         actionSheet.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self] _ in
             guard let self = self else {return}
-            
-            self.progressBackgroundView.isHidden = false
-            self.activityIndicator.isHidden = false
-            self.activityIndicator.startAnimating()
-            
+            self.showActivityIndicator()
             let picker = UIImagePickerController()
             picker.delegate = self
             picker.sourceType = .camera
@@ -280,6 +288,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         self.progressBackgroundView.isHidden = true
                         self.progressView.isHidden = true
                         self.progressLabel.isHidden = true
+                  //      self.activityIndicator.stopAnimating()
                     }
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
@@ -308,11 +317,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         }))
         actionSheet.addAction(UIAlertAction(title: "Photo", style: .default, handler: { [weak self] _ in
             guard let self = self else {return}
-            
-            self.progressBackgroundView.isHidden = false
-            self.activityIndicator.isHidden = false
-            self.activityIndicator.startAnimating()
-            
+            self.showActivityIndicator()
             let picker = UIImagePickerController()
             picker.delegate = self
             picker.sourceType = .photoLibrary
@@ -372,10 +377,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
             guard let self = self else { return }
             
-            self.progressBackgroundView.isHidden = false
-            self.activityIndicator.isHidden = false
-            self.activityIndicator.startAnimating()
-            
+            self.showActivityIndicator()
             let picker = UIImagePickerController()
             picker.allowsEditing = true
             picker.delegate = self
@@ -598,40 +600,32 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     }
     
     private func loadComments(workout: Workout, completion: ((Bool) -> Void)? = nil){
-            self.progressBackgroundView.isHidden = false
-            self.activityIndicator.isHidden = false
-            self.activityIndicator.startAnimating()
-            DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
-                guard let self = self else {return}
-                self.commentsArray = comments
-                print ("loaded \(self.commentsArray.count) comments")
-                DispatchQueue.main.async {
-                    self.messagesCollectionView.reloadData()
-                    self.progressBackgroundView.isHidden = true
-                    self.activityIndicator.isHidden = true
-                    self.activityIndicator.stopAnimating()
-                }
-                completion?(true)
+        self.showActivityIndicator()
+        DatabaseManager.shared.getAllComments(workout: workout) { [weak self] comments in
+            guard let self = self else {return}
+            self.commentsArray = comments
+            print ("loaded \(self.commentsArray.count) comments")
+            DispatchQueue.main.async {
+                self.messagesCollectionView.reloadData()
+                self.hideActivityIndicator()
             }
+            completion?(true)
         }
+    }
     
     private func loadComments(blogPost: Post, completion: ((Bool) -> Void)? = nil){
-            self.progressBackgroundView.isHidden = false
-            self.activityIndicator.isHidden = false
-            self.activityIndicator.startAnimating()
-            DatabaseManager.shared.getAllBlogComments(blogPost: blogPost) { [weak self] comments in
-                guard let self = self else {return}
-                self.commentsArray = comments
-                print ("loaded \(self.commentsArray.count) comments")
-                DispatchQueue.main.async {
-                    self.messagesCollectionView.reloadData()
-                    self.progressBackgroundView.isHidden = true
-                    self.activityIndicator.isHidden = true
-                    self.activityIndicator.stopAnimating()
-                }
-                completion?(true)
+        self.showActivityIndicator()
+        DatabaseManager.shared.getAllBlogComments(blogPost: blogPost) { [weak self] comments in
+            guard let self = self else {return}
+            self.commentsArray = comments
+            print ("loaded \(self.commentsArray.count) comments")
+            DispatchQueue.main.async {
+                self.messagesCollectionView.reloadData()
+                self.hideActivityIndicator()
             }
+            completion?(true)
         }
+    }
 
     //MARK: - Methods for editing and deleting comments from local array and Firestore
     
@@ -645,7 +639,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         let location = sender.location(in: messagesCollectionView)
         if let indexPath = messagesCollectionView.indexPathForItem(at: location) {
             let selectedMessage = self.commentsArray[indexPath.section]
-            if userName == selectedMessage.sender.displayName {
+            if userEmail == selectedMessage.sender.senderId {
                 let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
                 
                 let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
@@ -937,14 +931,15 @@ extension CommentsViewController: MessageCellDelegate {
     
     func didTapAvatar(in cell: MessageCollectionViewCell) {
         guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
-        
         let comment = commentsArray[indexPath.section]
         guard comment.sender.senderId != userEmail else {return}
+        self.showActivityIndicator()
         let profileVC = ProfileTableViewController(email: comment.sender.senderId)
         profileVC.fetchUserRecords()
         profileVC.fetchOtherUserData { [weak self] success in
             guard let self = self else {return}
             if success {
+                self.hideActivityIndicator()
                 self.navigationController?.present(profileVC, animated: true)
             }
         }

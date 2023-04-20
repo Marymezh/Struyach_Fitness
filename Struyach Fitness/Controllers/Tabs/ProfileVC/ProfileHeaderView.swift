@@ -19,13 +19,6 @@ class ProfileHeaderView: UIView {
         image.clipsToBounds = true
         image.layer.cornerRadius = 60
         image.contentMode = .scaleAspectFill
-//        image.layer.borderColor = UIColor.black.cgColor
-//        image.layer.borderWidth = 0.5
-        image.layer.cornerRadius = 60
-        image.layer.shadowColor = UIColor.darkGray.cgColor
-        image.layer.shadowRadius = 60
-        image.layer.shadowOffset = CGSize(width: 5, height: 5)
-        image.layer.shadowOpacity = 0.6
         image.toAutoLayout()
         return image
     }()
@@ -60,19 +53,14 @@ class ProfileHeaderView: UIView {
         button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 5
-        button.layer.shadowColor = UIColor.darkGray.cgColor
-        button.layer.shadowRadius = 5
-        button.layer.shadowOffset = CGSize(width: 5, height: 5)
-        button.layer.shadowOpacity = 0.6
-     //   button.addTarget(self, action: #selector(changeName), for: .touchUpInside)
         button.toAutoLayout()
         return button
     }()
     
     private let stackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.distribution = .equalSpacing
         stackView.axis = .vertical
+        stackView.distribution = .fillEqually
         stackView.alignment = .center
         stackView.toAutoLayout()
         return stackView
@@ -103,7 +91,7 @@ class ProfileHeaderView: UIView {
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),
             userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2),
             
-            stackView.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 5),
+            stackView.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: baseInset),
             stackView.leadingAnchor.constraint(equalTo: userPhotoImage.trailingAnchor, constant: baseInset),
             stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -baseInset*2),
             stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2)
@@ -111,38 +99,4 @@ class ProfileHeaderView: UIView {
    
         NSLayoutConstraint.activate(constraints)
     }
-    
-//    @objc func changeName () {
-//        let alertController = UIAlertController(title: "Change user name", message: nil, preferredStyle: .alert)
-//        alertController.addTextField { textfield in
-//            textfield.placeholder = "Enter new name here"
-//        }
-//        let cancelAction = UIAlertAction(title: "Cancel", style: .default)
-//        let changeAction = UIAlertAction(title: "Save", style: .default) { action in
-//            if let text = alertController.textFields?[0].text,
-//               text != "" {
-//                UserDefaults.standard.set(text, forKey: "userName")
-//                self.userNameLabel.text = text
-//            } else {
-//                self.showErrorAlert(text: "User name can not be blank!")
-//            }
-//        }
-//        
-//        alertController.addAction(changeAction)
-//        alertController.addAction(cancelAction)
-//
-//        alertController.view.tintColor = .darkGray
-//        self.window?.rootViewController?.present(alertController, animated: true)
-//        
-//    }
-    
-    private func showErrorAlert(text: String) {
-        let alert = UIAlertController(title: "Error", message: text, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-        alert.view.tintColor = .red
-        alert.addAction(cancelAction)
-        self.window?.rootViewController?.present(alert, animated: true)
-    }
-
-
 }

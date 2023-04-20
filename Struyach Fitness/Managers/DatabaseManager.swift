@@ -124,6 +124,32 @@ final class DatabaseManager {
             }
     }
     
+//    public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Workout)->()){
+//        print("Executing function: \(#function)")
+//        let documentID = workout.programID
+//            .replacingOccurrences(of: "/", with: "_")
+//            .replacingOccurrences(of: " ", with: "_")
+//
+//        let dbRef = database
+//            .collection("programs")
+//            .document(documentID)
+//            .collection("workouts")
+//            .document(workout.id)
+//
+//        dbRef.getDocument { snapshot, error in
+//            guard var data = snapshot?.data(), error == nil else {return}
+//
+//            data["description"] = newDescription
+//            dbRef.setData(data)  { error in
+//                if error == nil {
+//                    var updatedWorkout = workout
+//                    updatedWorkout.description = newDescription
+//                    completion(updatedWorkout)
+//                }
+//            }
+//        }
+//    }
+    
     public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Workout)->()){
         print("Executing function: \(#function)")
         let documentID = workout.programID
@@ -135,17 +161,11 @@ final class DatabaseManager {
             .document(documentID)
             .collection("workouts")
             .document(workout.id)
-        
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            
-            data["description"] = newDescription
-            dbRef.setData(data)  { error in
-                if error == nil {
-                    var updatedWorkout = workout
-                    updatedWorkout.description = newDescription
-                    completion(updatedWorkout)
-                }
+        dbRef.updateData(["description": newDescription]) { error in
+            if error == nil {
+                var updatedWorkout = workout
+                updatedWorkout.description = newDescription
+                completion(updatedWorkout)
             }
         }
     }
@@ -214,49 +234,69 @@ final class DatabaseManager {
             .collection("workouts")
             .document(workout.id)
         
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            
-            data["likes"] = likesCount
-            dbRef.setData(data) { error in
-                if error == nil {
-                    var updatedWorkout = workout
-                    updatedWorkout.likes = likesCount
-                    completion(updatedWorkout)
-                }
+        dbRef.updateData(["likes": likesCount]) { error in
+            if error == nil {
+                var updatedWorkout = workout
+                updatedWorkout.likes = likesCount
+                completion(updatedWorkout)
             }
         }
     }
-    
-//    func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
+//    public func updateLikes(workout: Workout, likesCount: Int, completion: @escaping (Workout)->()){
 //        print("Executing function: \(#function)")
-//
-//        let documentID = programName
+//        let documentID = workout.programID
 //            .replacingOccurrences(of: "/", with: "_")
 //            .replacingOccurrences(of: " ", with: "_")
 //
-//        let listener = database
+//        let dbRef = database
 //            .collection("programs")
 //            .document(documentID)
 //            .collection("workouts")
-//            .order(by: "timestamp", descending: true)
-//            .addSnapshotListener { (snapshot, error) in
-//            guard let snapshot = snapshot else {
-//                print("Error fetching workouts: \(error?.localizedDescription ?? "unknown error")")
-//                return
-//            }
-//            do {
-//                let workouts = try snapshot.documents.compactMap { document -> Workout? in
-//                    let workout = try document.data(as: Workout.self)
-//                    return workout
+//            .document(workout.id)
+//
+//        dbRef.getDocument { snapshot, error in
+//            guard var data = snapshot?.data(), error == nil else {return}
+//
+//            data["likes"] = likesCount
+//            dbRef.setData(data) { error in
+//                if error == nil {
+//                    var updatedWorkout = workout
+//                    updatedWorkout.likes = likesCount
+//                    completion(updatedWorkout)
 //                }
-//                completion(workouts)
-//            } catch {
-//                print("Error decoding workouts: \(error.localizedDescription)")
 //            }
 //        }
-//        return listener
 //    }
+    
+    func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
+        print("Executing function: \(#function)")
+
+        let documentID = programName
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+
+        let workoutsListener = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .order(by: "timestamp", descending: true)
+            .addSnapshotListener { (snapshot, error) in
+            guard let snapshot = snapshot else {
+                print("Error fetching workouts: \(error?.localizedDescription ?? "unknown error")")
+                return
+            }
+            do {
+                let workouts = try snapshot.documents.compactMap { document -> Workout? in
+                    let workout = try document.data(as: Workout.self)
+                    return workout
+                }
+                completion(workouts)
+            } catch {
+                print("Error decoding workouts: \(error.localizedDescription)")
+            }
+        }
+        return workoutsListener
+    }
     
     //MARK: - Blog posts: adding, fetching, updating and deleting
     public func saveBlogPost(with post: Post, completion: @escaping(Bool) ->()){
@@ -748,19 +788,25 @@ final class DatabaseManager {
             .collection("workouts")
             .document(workout.id)
         
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            
-            data["comments"] = commentsCount
-            dbRef.setData(data) { error in
-                if error == nil {
-                    var updatedWorkout = workout
-                    updatedWorkout.comments = commentsCount
-                    completion(updatedWorkout)
-                }
+        dbRef.updateData(["comments": commentsCount]) { error in
+            if error == nil {
+                var updatedWorkout = workout
+                updatedWorkout.comments = commentsCount
+                completion(updatedWorkout)
             }
         }
     }
+            
+//            data["comments"] = commentsCount
+//            dbRef.setData(data) { error in
+//                if error == nil {
+//                    var updatedWorkout = workout
+//                    updatedWorkout.comments = commentsCount
+//                    completion(updatedWorkout)
+//                }
+//            }
+//        }
+//    }
     
     public func updateComment(comment: Comment, newDescription: String, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")

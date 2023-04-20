@@ -78,10 +78,9 @@ class ProfileTableViewController: UITableViewController {
         let changeAction = UIAlertAction(title: "Save", style: .default) { action in
             if let text = alertController.textFields?[0].text,
                text != "" {
-                UserDefaults.standard.set(text, forKey: "userName")
-                self.headerView.userNameLabel.text = text
                 DatabaseManager.shared.updateUserName(email: self.email, newUserName: text) { success in
                     if success {
+                        UserDefaults.standard.set(text, forKey: "userName")
                         DispatchQueue.main.async {
                             self.headerView.userNameLabel.text = text
                         }
@@ -117,6 +116,7 @@ class ProfileTableViewController: UITableViewController {
                             self.headerView.userPhotoImage.image = image
                             self.headerView.userNameLabel.text = user.name
                             self.headerView.userEmailLabel.text = user.email
+                            self.headerView.changeUserNameButton.isHidden = true
                             completion(true)
                         }
                     } else {
