@@ -144,21 +144,24 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messageInputBar.inputTextView.placeholder = " Write a comment..."
         messageInputBar.inputTextView.placeholderTextColor = .gray
         messageInputBar.inputTextView.backgroundColor = .systemGray6
-        messageInputBar.inputTextView.layer.cornerRadius = 10
+        messageInputBar.inputTextView.layer.cornerRadius = 15
         messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 5, bottom: 5, right: 0)
         messageInputBar.tintColor = .systemGray
         let attachButton = InputBarButtonItem()
-        attachButton.setSize(CGSize(width: 35, height: 44), animated: false)
-        attachButton.setImage(UIImage(systemName: "paperclip", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)), for: .normal)
+        attachButton.setSize(CGSize(width: 35, height: 35), animated: false)
+        attachButton.setImage(UIImage(systemName: "paperclip", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
         attachButton.onTouchUpInside { [weak self]_ in
             self?.presentInputOptions()
         }
-        messageInputBar.setLeftStackViewWidthConstant(to: 30, animated: false)
-        messageInputBar.setRightStackViewWidthConstant(to: 30, animated: false)
+        messageInputBar.setLeftStackViewWidthConstant(to: 35, animated: false)
+        messageInputBar.setRightStackViewWidthConstant(to: 35, animated: false)
+        messageInputBar.leftStackView.layoutMargins = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 10)
+        messageInputBar.leftStackView.isLayoutMarginsRelativeArrangement = true
+        messageInputBar.rightStackView.isLayoutMarginsRelativeArrangement = true
         messageInputBar.setStackViewItems([attachButton], forStack: .left, animated: false)
         messageInputBar.sendButton.setTitle(nil, for: .normal)
-        messageInputBar.sendButton.setSize(CGSize(width: 35, height: 44), animated: false)
-        messageInputBar.sendButton.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)), for: .normal)
+        messageInputBar.sendButton.setSize(CGSize(width: 35, height: 35), animated: false)
+        messageInputBar.sendButton.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
     }
     
     private func setupNavbarAndView() {
