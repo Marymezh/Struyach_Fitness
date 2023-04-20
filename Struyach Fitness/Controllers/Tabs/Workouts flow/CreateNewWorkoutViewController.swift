@@ -31,6 +31,7 @@ class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
         super.viewDidLoad()
         self.view.backgroundColor = .customDarkGray
         navigationController?.navigationBar.prefersLargeTitles = false
+        tabBarController?.tabBar.isHidden = true 
         configureButtons()
         setupTextView()
         setupSubviews()

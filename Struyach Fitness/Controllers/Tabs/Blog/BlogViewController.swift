@@ -17,6 +17,7 @@ class BlogViewController: UIViewController {
     private var lastDocumentSnapshot: DocumentSnapshot? = nil
     private var isFetching = false
     private var shouldLoadMorePosts = true
+    private var postUpdatesListener: ListenerRegistration?
     private var tableView = UITableView(frame: .zero, style: .grouped)
     
     private lazy var plusButton: UIButton = {
@@ -41,16 +42,23 @@ class BlogViewController: UIViewController {
 #if Admin
         setupAdminFunctionality()
 #endif
-      //  loadBlogPostsWithPagination(pageSize: pageSize)
+        loadBlogPostsWithPagination(pageSize: pageSize)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupNavAndTabBar()
-        lastDocumentSnapshot = nil
-        shouldLoadMorePosts = true
         DatabaseManager.shared.allPostsLoaded = false
-        loadBlogPostsWithPagination(pageSize: pageSize)
+        postUpdatesListener = DatabaseManager.shared.addBlogPostsListener { [weak self] updatedPosts in
+            guard let self = self else {return}
+            self.blogPosts = updatedPosts
+            self.tableView.reloadData()
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        postUpdatesListener?.remove()
     }
     
     private func setupNavAndTabBar() {
@@ -89,6 +97,12 @@ class BlogViewController: UIViewController {
         plusButton.isHidden = false
     }
     
+//    private func updateUI(post: Post){
+//        if let cell = self.tableView.cellForRow(at: indexPath) as? BlogTableViewCell {
+//            cell.postDescriptionTextView.text = post.description
+//
+//    }
+//    }
     @objc private func scrollToTheTop() {
         let indexPath = IndexPath(row: 0, section: 0)
         tableView.scrollToRow(at: indexPath, at: .top, animated: true)
@@ -112,10 +126,10 @@ class BlogViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
-                    self.lastDocumentSnapshot = nil
-                    self.shouldLoadMorePosts = true
-                    DatabaseManager.shared.allPostsLoaded = false
-                    self.loadBlogPostsWithPagination(pageSize: self.pageSize)
+//                    self.lastDocumentSnapshot = nil
+//                    self.shouldLoadMorePosts = true
+//                    DatabaseManager.shared.allPostsLoaded = false
+//                    self.loadBlogPostsWithPagination(pageSize: self.pageSize)
                 self.scrollToTheTop()
 //                self.blogPosts.insert(newPost, at: 0)
 //                self.tableView.reloadData()
@@ -159,10 +173,13 @@ class BlogViewController: UIViewController {
                 DatabaseManager.shared.deletePost(blogPost: post) { [weak self] success in
                     guard let self = self else { return }
                     if success {
-                        self.blogPosts.remove(at: indexPath.row)
-                        self.tableView.reloadData()
+//                        self.blogPosts.remove(at: indexPath.row)
+//                        self.tableView.reloadData()
                         print ("number of posts left - \(self.blogPosts.count)")
-                        self.showAlert(title: "Success", message: "Post is successfully deleted!")
+                        switch self.blogPosts.isEmpty {
+                        case true: self.showAlert(title: "Success", message: "Post is successfully deleted! No more posts left in the Blog")
+                        case false: self.showAlert(title: "Success", message: "Post is successfully deleted!")
+                        }
                     } else {
                         self.showAlert(title: "Warning", message: "Unable to delete selected post")
                     }
@@ -179,10 +196,10 @@ class BlogViewController: UIViewController {
                     guard let self = self else {return}
                     DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { [weak self] post in
                         guard let self = self else {return}
-                        guard let index = self.blogPosts.firstIndex(where: {$0 == selectedPost}) else {return}
-                        self.blogPosts[index] = post
-                        print(post.description)
-                        self.tableView.reloadData()
+//                        guard let index = self.blogPosts.firstIndex(where: {$0 == selectedPost}) else {return}
+//                        self.blogPosts[index] = post
+//                        print(post.description)
+//                        self.tableView.reloadData()
                         self.showAlert(title: "Success", message: "Post is successfully updated!")
                     }
                 }
@@ -203,10 +220,7 @@ class BlogViewController: UIViewController {
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
     }
-    
-    private func hasUserLikedPost(blogPost: Post) -> Bool {
-        return self.likedPosts.contains(blogPost.id)
-    }
+
 }
 
     // MARK: - Table view data source and delegate methods
@@ -235,7 +249,8 @@ class BlogViewController: UIViewController {
         case 1: cell.commentsLabel.text = "\(post.comments) comment "
         default: cell.commentsLabel.text = "\(post.comments) comments"
         }
-        if hasUserLikedPost(blogPost: post) == true {
+        
+        if likedPosts.contains(post.id) {
             cell.likeButton.isSelected = true
             cell.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             cell.likeButton.tintColor = .systemRed
@@ -247,7 +262,7 @@ class BlogViewController: UIViewController {
         
         cell.onLikeButtonPush = {
             cell.likeButton.isSelected = !cell.likeButton.isSelected
-            
+
             if cell.likeButton.isSelected {
                 cell.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
                 cell.likeButton.tintColor = .systemRed
@@ -259,7 +274,7 @@ class BlogViewController: UIViewController {
                             self.blogPosts[index] = blogPost
                     cell.likesLabel.text = "\(blogPost.likes)"
                     }
-                    
+
                     if !self.likedPosts.contains(post.id) {
                         self.likedPosts.append(post.id)
                         UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
@@ -276,7 +291,7 @@ class BlogViewController: UIViewController {
                             self.blogPosts[index] = blogPost
                     cell.likesLabel.text = "\(blogPost.likes)"
                     }
-                
+
                     if let index = self.likedPosts.firstIndex(of: post.id) {
                         self.likedPosts.remove(at: index)
                         UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
