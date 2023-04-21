@@ -52,7 +52,9 @@ class BlogViewController: UIViewController {
         postUpdatesListener = DatabaseManager.shared.addBlogPostsListener { [weak self] updatedPosts in
             guard let self = self else {return}
             self.blogPosts = updatedPosts
-            self.tableView.reloadData()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                self.tableView.reloadData()
+            }
         }
     }
     
@@ -96,16 +98,12 @@ class BlogViewController: UIViewController {
         setupGestureRecognizer()
         plusButton.isHidden = false
     }
-    
-//    private func updateUI(post: Post){
-//        if let cell = self.tableView.cellForRow(at: indexPath) as? BlogTableViewCell {
-//            cell.postDescriptionTextView.text = post.description
-//
-//    }
-//    }
+
     @objc private func scrollToTheTop() {
+        if !blogPosts.isEmpty {
         let indexPath = IndexPath(row: 0, section: 0)
         tableView.scrollToRow(at: indexPath, at: .top, animated: true)
+        }
     }
     
     @objc private func addNewPost() {
@@ -126,13 +124,8 @@ class BlogViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
-//                    self.lastDocumentSnapshot = nil
-//                    self.shouldLoadMorePosts = true
-//                    DatabaseManager.shared.allPostsLoaded = false
-//                    self.loadBlogPostsWithPagination(pageSize: self.pageSize)
-                self.scrollToTheTop()
-//                self.blogPosts.insert(newPost, at: 0)
-//                self.tableView.reloadData()
+                        self.scrollToTheTop()
+
                 } else {
                     self.showAlert(title: "Warning", message: "Unable to add new post")
                 }
