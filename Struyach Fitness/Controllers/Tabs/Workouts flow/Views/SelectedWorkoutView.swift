@@ -58,23 +58,17 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
         setupSubviews()
         randomizeBackgroungImages()
-        
     }
     
     private func setupSubviews() {
-        
         self.addSubviews(backgroundView, workoutView)
         workoutView.addSubview(workoutDescriptionTextView)
  
-        
         let constraints = [
-            
             backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
             backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),

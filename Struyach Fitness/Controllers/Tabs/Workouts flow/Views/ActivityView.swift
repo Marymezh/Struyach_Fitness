@@ -1,0 +1,52 @@
+//
+//  ActivityView.swift
+//  Struyach Fitness
+//
+//  Created by Мария Межова on 21/4/23.
+//
+
+import UIKit
+
+class ActivityView: UIView {
+    
+    let backgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black
+        view.alpha = 0.7
+        view.toAutoLayout()
+        return view
+    }()
+    
+   let activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.toAutoLayout()
+        indicator.color = .systemGreen
+        return indicator
+    }()
+
+    init() {
+           super.init(frame: .zero)
+        setupSubviews() 
+       }
+
+       required init?(coder: NSCoder) {
+           fatalError("init(coder:) has not been implemented")
+       }
+    
+    private func setupSubviews()  {
+        self.addSubviews(backgroundView, activityIndicator)
+
+        let constraints = [
+            backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+           backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: self.centerYAnchor)
+        ]
+        
+        NSLayoutConstraint.activate(constraints)
+    }
+
+}
