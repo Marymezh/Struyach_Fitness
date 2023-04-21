@@ -16,55 +16,25 @@ import AVKit
 
 class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
+//    MARK: - Properties
+    
     private let workout: Workout?
     private let blogPost: Post?
     var commentsArray: [Comment] = []
     
-    private var progress = ProgressView()
-    private var indicator = ActivityView()
+    private var detailsView = DetailsView()
+    private var progressView = ProgressView()
+    private var indicatorView = ActivityView()
     
     var onImagePick:(([UIImagePickerController.InfoKey : Any])-> Void)?
     var onCommentsClose: (() -> ())?
     
     private let userName = UserDefaults.standard.string(forKey: "userName")
     private let userEmail = UserDefaults.standard.string(forKey: "email")
+    private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     
-    let detailsView: UITextView = {
-        let textView = UITextView()
-        textView.backgroundColor = .systemGray6
-        textView.isScrollEnabled = true
-        textView.isUserInteractionEnabled = true
-        textView.isEditable = false
-        textView.font = UIFont.systemFont(ofSize: 16)
-        textView.layer.cornerRadius = 10
-        textView.toAutoLayout()
-        return textView
-    }()
-    
-    let containerView: UIView = {
-        let view = UIView()
-        view.toAutoLayout()
-        view.backgroundColor = .customDarkComments
-        return view
-    }()
-    
-    let secondContainerView: UIView = {
-        let view = UIView()
-        view.toAutoLayout()
-        view.backgroundColor = .systemGray6
-        view.layer.borderWidth = 0.5
-        view.layer.borderColor = UIColor.black.cgColor
-        view.layer.cornerRadius = 10
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowRadius = 10
-        view.layer.shadowOffset = CGSize(width: 5, height: 5)
-        view.layer.shadowOpacity = 0.7
-        view.alpha = 0.8
-        return view
-    }()
-    
-    private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
+    //MARK: - Initializers
     
     init(workout: Workout) {
         self.workout = workout
@@ -86,9 +56,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         super.viewDidLoad()
         setupMessageCollectionView()
         setupInputBar()
-        setupNavbarAndView()
-        setupIndicator()
-        setupProgress()
+        setupDetailsView()
+        setupIndicatorView()
+        setupProgressView()
         if let workout = self.workout {
             loadComments(workout: workout)
         } else if let post = self.blogPost {
@@ -107,13 +77,18 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         self.onCommentsClose?()
     }
     
+    //MARK: - Message Collection View and InputBarView setup
+    
     private func setupMessageCollectionView() {
+        self.view.backgroundColor = .customDarkComments
         messagesCollectionView.toAutoLayout()
         messagesCollectionView.backgroundColor = .customDarkComments
         messagesCollectionView.messageCellDelegate = self
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
+        messagesCollectionView.contentInset.top = 180
+        messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
         
         let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
         layout?.setMessageOutgoingAvatarSize(CGSize(width: 40, height: 40))
@@ -126,11 +101,9 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         
         layout?.setMessageOutgoingAvatarPosition(AvatarPosition(vertical: .messageBottom))
         layout?.setMessageIncomingAvatarPosition(AvatarPosition(vertical: .messageBottom))
-        
     }
     
     private func setupInputBar() {
-        // Set up inputBar
         messageInputBar.delegate = self
         messageInputBar.backgroundView.backgroundColor = .customKeyboard
         messageInputBar.inputTextView.delegate = self
@@ -157,146 +130,81 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
         messageInputBar.sendButton.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
     }
     
-    private func setupNavbarAndView() {
-        self.view.backgroundColor = .customDarkComments
-        if let workout = workout {
-            detailsView.text = workout.description
-        } else if let post = blogPost {
-            detailsView.text = post.description
-        }
-
-        view.addSubview(containerView)
-        containerView.addSubview(secondContainerView)
-        secondContainerView.addSubview(detailsView)
-   
+//    MARK: - Setup subviews
     
-        messagesCollectionView.contentInset.top = 180
-        messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
+    private func setupDetailsView() {
+       
+        if let workout = workout {
+            detailsView.textView.text = workout.description
+        } else if let post = blogPost {
+            detailsView.textView.text = post.description
+        }
+        detailsView.toAutoLayout()
+        view.addSubview(detailsView)
+
+        let constraints = [
+            detailsView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            detailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            detailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            detailsView.heightAnchor.constraint(equalToConstant: 170)
+        ]
+        
+        NSLayoutConstraint.activate(constraints)
+    }
+    
+    private func setupProgressView() {
+        progressView.toAutoLayout()
+        progressView.isHidden = true
+        self.view.addSubview(progressView)
         
         let constraints = [
-            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
-            secondContainerView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
-            secondContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
-            secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
-            secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
-            
-            detailsView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
-            detailsView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
-            detailsView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
-            detailsView.heightAnchor.constraint(equalToConstant: 130),
-            detailsView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
-          
+            progressView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            progressView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            progressView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            progressView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ]
+        
         NSLayoutConstraint.activate(constraints)
     }
     
-    private func setupProgress() {
-        progress.toAutoLayout()
-        progress.isHidden = true
-        self.view.addSubview(progress)
+    private func setupIndicatorView() {
+        indicatorView.toAutoLayout()
+        progressView.isHidden = true
+        self.view.addSubview(indicatorView)
+        
         let constraints = [
-            progress.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            progress.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            progress.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            progress.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            indicatorView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            indicatorView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            indicatorView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            indicatorView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ]
+        
         NSLayoutConstraint.activate(constraints)
     }
-    private func setupIndicator() {
-        indicator.toAutoLayout()
-        progress.isHidden = true
-        self.view.addSubview(indicator)
-        let constraints = [
-            indicator.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            indicator.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            indicator.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            indicator.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ]
-        NSLayoutConstraint.activate(constraints)
-    }
-//    private func setupProgress() {
-//        self.progressBackgroundView = UIView()
-//        self.progressBackgroundView.backgroundColor = .black
-//        self.progressBackgroundView.alpha = 0.7
-//        self.progressBackgroundView.isHidden = true
-//        self.progressBackgroundView.toAutoLayout()
-//        self.view.addSubview(self.progressBackgroundView)
-//
-//        self.progressView = UIProgressView(progressViewStyle: .default)
-//        self.progressView.progress = 0
-//        self.progressView.progressTintColor = .systemGreen
-//        self.progressView.trackTintColor = .white
-//        self.progressView.toAutoLayout()
-//        self.progressView.layer.cornerRadius = 5
-//        self.progressView.layer.masksToBounds = true
-//        self.progressView.isHidden = true
-//        self.view.addSubview(self.progressView)
-//
-//        self.progressLabel = UILabel()
-//        self.progressLabel.text = "Uploading video"
-//        self.progressLabel.textColor = .white
-//        self.progressLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-//        self.progressLabel.isHidden = true
-//        self.progressLabel.toAutoLayout()
-//        self.view.addSubview(self.progressLabel)
-//
-//        let constraints = [
-//            self.progressBackgroundView.topAnchor.constraint(equalTo: self.view.topAnchor),
-//            self.progressBackgroundView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-//            self.progressBackgroundView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-//            self.progressBackgroundView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-//            self.progressView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-//            self.progressView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
-//            self.progressView.widthAnchor.constraint(equalToConstant: 200),
-//            self.progressView.heightAnchor.constraint(equalToConstant: 12),
-//            self.progressLabel.centerXAnchor.constraint(equalTo: self.progressView.centerXAnchor),
-//            self.progressLabel.bottomAnchor.constraint(equalTo: self.progressView.topAnchor, constant: -10)
-//        ]
-//
-//        NSLayoutConstraint.activate(constraints)
-//    }
+
+//    MARK: - Methods to handle Activity Indicator and Progress view
     
     private func showActivityIndicator() {
-        indicator.isHidden = false
-        indicator.activityIndicator.startAnimating()
+        indicatorView.isHidden = false
+        indicatorView.activityIndicator.startAnimating()
     }
     
     private func hideActivityIndicator() {
-        indicator.isHidden = true
-        indicator.activityIndicator.stopAnimating()
+        indicatorView.isHidden = true
+        indicatorView.activityIndicator.stopAnimating()
     }
     
     private func showProgress(progressLabelText: String, percentComplete: Float){
-        progress.isHidden = false
-//        progress.progressBackgroundView.isHidden = false
-//        progress.progressView.isHidden = false
-//        progress.progressLabel.isHidden = false
-        progress.progressView.progress = percentComplete
-        progress.progressLabel.text = progressLabelText
+        progressView.isHidden = false
+        progressView.progressView.progress = percentComplete
+        progressView.progressLabel.text = progressLabelText
     }
-//    private func showProgress(progressLabelText: String, percentComplete: Float){
-//        self.progressBackgroundView.isHidden = false
-//        self.progressView.isHidden = false
-//        self.progressLabel.isHidden = false
-//        self.progressView.progress = percentComplete
-//        self.progressLabel.text = progressLabelText
-//    }
-    
+
     private func hideProgress() {
-        progress.isHidden = true
-//        progress.progressBackgroundView.isHidden = true
-//        progress.progressView.isHidden = true
-//        progress.progressLabel.isHidden = true
+        progressView.isHidden = true
     }
-    
-//    private func hideProgress() {
-//        self.progressBackgroundView.isHidden = true
-//        self.progressView.isHidden = true
-//        self.progressLabel.isHidden = true
-//    }
+
+    //MARK: - Input options for InputBarAttachButton
     
     private func presentInputOptions() {
         let actionSheet = UIAlertController(title: "Attach media", message: nil, preferredStyle: .actionSheet)
@@ -319,11 +227,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                         self.showProgress(progressLabelText:
                                             String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)),
                                           percentComplete: percentComplete)
-//                        self.progressBackgroundView.isHidden = false
-//                        self.progressView.isHidden = false
-//                        self.progressLabel.isHidden = false
-//                        self.progressView.progress = percentComplete
-//                        self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
                     }) { [weak self] ref in
                         guard let self = self else {return}
                         if let safeRef = ref {
@@ -335,21 +238,12 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.hideProgress()
-//                        self.progressBackgroundView.isHidden = true
-//                        self.progressView.isHidden = true
-//                        self.progressLabel.isHidden = true
-                  //      self.activityIndicator.stopAnimating()
                     }
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)),
                                           percentComplete: percentComplete)
-//                        self.progressBackgroundView.isHidden = false
-//                        self.progressView.isHidden = false
-//                        self.progressLabel.isHidden = false
-//                        self.progressView.progress = percentComplete
-//                        self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
                     }) { [weak self] ref in
                         guard let self = self else {return}
                         if let safeRef = ref {
@@ -361,9 +255,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.hideProgress()
-//                        self.progressBackgroundView.isHidden = true
-//                        self.progressView.isHidden = true
-//                        self.progressLabel.isHidden = true
                     }
                 }
             }
@@ -384,11 +275,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
-//                        self.progressBackgroundView.isHidden = false
-//                        self.progressView.isHidden = false
-//                        self.progressLabel.isHidden = false
-//                        self.progressView.progress = percentComplete
-//                        self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
                     }) { [weak self] ref in
                         guard let self = self else {return}
                         if let safeRef = ref {
@@ -400,19 +286,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.hideProgress()
-//                        self.progressBackgroundView.isHidden = true
-//                        self.progressView.isHidden = true
-//                        self.progressLabel.isHidden = true
                     }
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
-//                        self.progressBackgroundView.isHidden = false
-//                        self.progressView.isHidden = false
-//                        self.progressLabel.isHidden = false
-//                        self.progressView.progress = percentComplete
-//                        self.progressLabel.text = String(format: "Uploading photo (%d%%)", Int(percentComplete * 100))
                     }) { [weak self] ref in
                         guard let self = self else {return}
                         if let safeRef = ref {
@@ -424,13 +302,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.hideProgress()
-//                        self.progressBackgroundView.isHidden = true
-//                        self.progressView.isHidden = true
-//                        self.progressLabel.isHidden = true
                     }
                 }
             }
         }))
+        
         actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
             guard let self = self else { return }
             
@@ -455,11 +331,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                     StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: workout, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.showProgress(progressLabelText: String(format: "Uploading video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
-//                        self.progressBackgroundView.isHidden = false
-//                        self.progressView.isHidden = false
-//                        self.progressLabel.isHidden = false
-//                        self.progressView.progress = percentComplete
-//                        self.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
                     })  { [weak self] ref in
                         guard let self = self else { return }
                         if let safeRef = ref {
@@ -471,19 +342,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             self.showAlert(title: "Warning", message: "Error uploading video to Storage")
                         }
                         self.hideProgress()
-//                        self.progressBackgroundView.isHidden = true
-//                        self.progressView.isHidden = true
-//                        self.progressLabel.isHidden = true
                     }
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadVideoURLForBlogComment(videoID: videoId, videoData: videoData, blogPost: post, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.showProgress(progressLabelText: String(format: "Uploading video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
-//                        self.progressBackgroundView.isHidden = false
-//                        self.progressView.isHidden = false
-//                        self.progressLabel.isHidden = false
-//                        self.progressView.progress = percentComplete
-//                        self.progressLabel.text = String(format: "Uploading video (%d%%)", Int(percentComplete * 100))
                     })  { [weak self] ref in
                         guard let self = self else { return }
                         if let safeRef = ref {
@@ -495,13 +358,11 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                             self.showAlert(title: "Warning", message: "Error uploading video to Storage")
                         }
                         self.hideProgress()
-//                        self.progressBackgroundView.isHidden = true
-//                        self.progressView.isHidden = true
-//                        self.progressLabel.isHidden = true
                     }
                 }
             }
         }))
+        
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         actionSheet.view.tintColor = .darkGray
         present(actionSheet, animated: true)
@@ -769,11 +630,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                 StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.showProgress(progressLabelText: String(format: "Updating photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
-//                                    self?.progressBackgroundView.isHidden = false
-//                                    self?.progressView.isHidden = false
-//                                    self?.progressLabel.isHidden = false
-//                                    self?.progressView.progress = percentComplete
-//                                    self?.progressLabel.text = String(format: "Updating photo (%d%%)", Int(percentComplete * 100))
                                 }) { [weak self] ref in
                                     guard let self = self, let safeRef = ref else { return }
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -786,21 +642,14 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                                 self.showAlert(title: "Warning", message: "Unable to update selected photo comment")
                                             }
                                             self.hideProgress()
-//                                            self.progressBackgroundView.isHidden = true
-//                                            self.progressView.isHidden = true
-//                                            self.progressLabel.isHidden = true
                                         }
                                     }
                                 }
+                                
                             } else if let post = self.blogPost {
                                 StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.showProgress(progressLabelText: String(format: "Updating photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
-//                                    self?.progressBackgroundView.isHidden = false
-//                                    self?.progressView.isHidden = false
-//                                    self?.progressLabel.isHidden = false
-//                                    self?.progressView.progress = percentComplete
-//                                    self?.progressLabel.text = String(format: "Updating photo (%d%%)", Int(percentComplete * 100))
                                 }) { [weak self] ref in
                                     guard let self = self, let safeRef = ref else { return }
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -813,9 +662,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                                 self.showAlert(title: "Warning", message: "Unable to update selected photo comment")
                                             }
                                             self.hideProgress()
-//                                            self.progressBackgroundView.isHidden = true
-//                                            self.progressView.isHidden = true
-//                                            self.progressLabel.isHidden = true
                                         }
                                     }
                                 }
@@ -840,11 +686,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                 StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: workout, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.showProgress(progressLabelText: String(format: "Updating video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
-//                                    self?.progressBackgroundView.isHidden = false
-//                                    self?.progressView.isHidden = false
-//                                    self?.progressLabel.isHidden = false
-//                                    self?.progressView.progress = percentComplete
-//                                    self?.progressLabel.text = String(format: "Updating video (%d%%)", Int(percentComplete * 100))
                                 })  { [weak self] ref in
                                     guard let self = self, let safeRef = ref else {return}
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -858,9 +699,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                                 self.showAlert(title: "Warning", message: "Unable to update selected video comment")
                                             }
                                             self.hideProgress()
-//                                            self.progressBackgroundView.isHidden = true
-//                                            self.progressView.isHidden = true
-//                                            self.progressLabel.isHidden = true
                                         }
                                     }
                                 }
@@ -868,11 +706,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                 StorageManager.shared.uploadVideoURLForBlogComment(videoID: videoId, videoData: videoData, blogPost: post, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.showProgress(progressLabelText: String(format: "Updating video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
-//                                    self?.progressBackgroundView.isHidden = false
-//                                    self?.progressView.isHidden = false
-//                                    self?.progressLabel.isHidden = false
-//                                    self?.progressView.progress = percentComplete
-//                                    self?.progressLabel.text = String(format: "Updating video (%d%%)", Int(percentComplete * 100))
                                 })  { [weak self] ref in
                                     guard let self = self, let safeRef = ref else {return}
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -886,9 +719,6 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
                                                 self.showAlert(title: "Warning", message: "Unable to update selected video comment")
                                             }
                                             self.hideProgress()
-//                                            self.progressBackgroundView.isHidden = true
-//                                            self.progressView.isHidden = true
-//                                            self.progressLabel.isHidden = true
                                         }
                                     }
                                 }
@@ -916,6 +746,7 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     }
 }
 //MARK: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate
+
 extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, MessagesLayoutDelegate {
     
     var currentSender: SenderType {
@@ -1059,18 +890,12 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
         self.hideActivityIndicator()
-//        self.progressBackgroundView.isHidden = true
-//        self.activityIndicator.isHidden = true
-//        self.activityIndicator.stopAnimating()
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         self.onImagePick?(info)
         picker.dismiss(animated: true)
         self.hideActivityIndicator()
-//        self.progressBackgroundView.isHidden = true
-//        self.activityIndicator.isHidden = true
-//        self.activityIndicator.stopAnimating()
     }
 }
 

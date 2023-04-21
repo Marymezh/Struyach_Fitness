@@ -1,5 +1,5 @@
 //
-//  WorkoutDetailsView.swift
+//  DetailsView.swift
 //  Struyach Fitness
 //
 //  Created by Мария Межова on 21/4/23.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class WorkoutDetailsView: UIView {
+class DetailsView: UIView {
     
     let containerView: UIView = {
         let view = UIView()
@@ -31,7 +31,7 @@ class WorkoutDetailsView: UIView {
         return view
     }()
     
-    let detailsView: UITextView = {
+    let textView: UITextView = {
         let textView = UITextView()
         textView.backgroundColor = .systemGray6
         textView.isScrollEnabled = true
@@ -55,7 +55,7 @@ class WorkoutDetailsView: UIView {
     private func setupSubviews() {
         self.addSubview(containerView)
         containerView.addSubview(secondContainerView)
-        secondContainerView.addSubview(detailsView)
+        secondContainerView.addSubview(textView)
         
         let constraints = [
             containerView.topAnchor.constraint(equalTo: self.topAnchor),
@@ -67,11 +67,11 @@ class WorkoutDetailsView: UIView {
             secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
             secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
             
-            detailsView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
-            detailsView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
-            detailsView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
-            detailsView.heightAnchor.constraint(equalToConstant: 130),
-            detailsView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
+            textView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
+            textView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
+            textView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
+            textView.heightAnchor.constraint(equalToConstant: 130),
+            textView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
         ]
         
         NSLayoutConstraint.activate(constraints)
