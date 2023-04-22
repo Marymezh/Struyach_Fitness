@@ -14,7 +14,7 @@ import AVFoundation
 import AVKit
 
 
-class CommentsViewController: MessagesViewController, UITextViewDelegate {
+class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate {
     
 //    MARK: - Properties
     
@@ -54,11 +54,10 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.view.backgroundColor = .customDarkComments
         setupMessageCollectionView()
         setupInputBar()
-        setupDetailsView()
-        setupIndicatorView()
-        setupProgressView()
+        setupSubviews()
         if let workout = self.workout {
             loadComments(workout: workout)
         } else if let post = self.blogPost {
@@ -80,59 +79,27 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
     //MARK: - Message Collection View and InputBarView setup
     
     private func setupMessageCollectionView() {
-        self.view.backgroundColor = .customDarkComments
-        messagesCollectionView.toAutoLayout()
-        messagesCollectionView.backgroundColor = .customDarkComments
         messagesCollectionView.messageCellDelegate = self
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
-        messagesCollectionView.contentInset.top = 180
-        messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 180, left: 0, bottom: 0, right: 0)
-        
-        let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
-        layout?.setMessageOutgoingAvatarSize(CGSize(width: 40, height: 40))
-        layout?.setMessageIncomingAvatarSize(CGSize(width: 40, height: 40))
-        layout?.setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 5, left: 0, bottom: 5, right: 50)))
-        layout?.setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 5, left: 0, bottom: 5, right: 50)))
-        
-        layout?.setMessageIncomingMessageTopLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 5, left: 50, bottom: 5, right: 0)))
-        layout?.setMessageIncomingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 5, left: 50, bottom: 5, right: 0)))
-        
-        layout?.setMessageOutgoingAvatarPosition(AvatarPosition(vertical: .messageBottom))
-        layout?.setMessageIncomingAvatarPosition(AvatarPosition(vertical: .messageBottom))
     }
     
     private func setupInputBar() {
         messageInputBar.delegate = self
-        messageInputBar.backgroundView.backgroundColor = .customKeyboard
         messageInputBar.inputTextView.delegate = self
-        messageInputBar.inputTextView.placeholder = " Write a comment..."
-        messageInputBar.inputTextView.placeholderTextColor = .gray
-        messageInputBar.inputTextView.backgroundColor = .systemGray6
-        messageInputBar.inputTextView.layer.cornerRadius = 15
-        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 5, bottom: 5, right: 0)
-        messageInputBar.tintColor = .systemGray
         let attachButton = InputBarButtonItem()
         attachButton.setSize(CGSize(width: 35, height: 35), animated: false)
         attachButton.setImage(UIImage(systemName: "paperclip", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
         attachButton.onTouchUpInside { [weak self]_ in
             self?.presentInputOptions()
         }
-        messageInputBar.setLeftStackViewWidthConstant(to: 35, animated: false)
-        messageInputBar.setRightStackViewWidthConstant(to: 35, animated: false)
-        messageInputBar.leftStackView.layoutMargins = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 10)
-        messageInputBar.leftStackView.isLayoutMarginsRelativeArrangement = true
-        messageInputBar.rightStackView.isLayoutMarginsRelativeArrangement = true
         messageInputBar.setStackViewItems([attachButton], forStack: .left, animated: false)
-        messageInputBar.sendButton.setTitle(nil, for: .normal)
-        messageInputBar.sendButton.setSize(CGSize(width: 35, height: 35), animated: false)
-        messageInputBar.sendButton.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
     }
     
-//    MARK: - Setup subviews
+    //    MARK: - Setup subviews
     
-    private func setupDetailsView() {
+    private func setupSubviews() {
        
         if let workout = workout {
             detailsView.textView.text = workout.description
@@ -140,39 +107,23 @@ class CommentsViewController: MessagesViewController, UITextViewDelegate {
             detailsView.textView.text = post.description
         }
         detailsView.toAutoLayout()
-        view.addSubview(detailsView)
+        progressView.toAutoLayout()
+        indicatorView.toAutoLayout()
+        progressView.isHidden = true
+        indicatorView.isHidden = true
+        view.addSubviews(detailsView, progressView, indicatorView)
 
         let constraints = [
             detailsView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             detailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             detailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            detailsView.heightAnchor.constraint(equalToConstant: 170)
-        ]
-        
-        NSLayoutConstraint.activate(constraints)
-    }
-    
-    private func setupProgressView() {
-        progressView.toAutoLayout()
-        progressView.isHidden = true
-        self.view.addSubview(progressView)
-        
-        let constraints = [
+            detailsView.heightAnchor.constraint(equalToConstant: 170),
+            
             progressView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             progressView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             progressView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            progressView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ]
-        
-        NSLayoutConstraint.activate(constraints)
-    }
-    
-    private func setupIndicatorView() {
-        indicatorView.toAutoLayout()
-        progressView.isHidden = true
-        self.view.addSubview(indicatorView)
-        
-        let constraints = [
+            progressView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
             indicatorView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             indicatorView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             indicatorView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -896,6 +847,7 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
         self.onImagePick?(info)
         picker.dismiss(animated: true)
         self.hideActivityIndicator()
+        
     }
 }
 
