@@ -288,6 +288,7 @@ class ProfileTableViewController: UITableViewController {
 extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     private func showImagePickerController() {
         let picker = UIImagePickerController()
+        picker.navigationBar.tintColor = UIColor.systemGreen
         picker.allowsEditing = true
         picker.delegate = self
         picker.sourceType = .photoLibrary

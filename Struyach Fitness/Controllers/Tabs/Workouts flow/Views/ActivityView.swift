@@ -25,21 +25,22 @@ class ActivityView: UIView {
     }()
 
     init() {
-           super.init(frame: .zero)
-        setupSubviews() 
-       }
-
-       required init?(coder: NSCoder) {
-           fatalError("init(coder:) has not been implemented")
-       }
+        super.init(frame: .zero)
+        setupSubviews()
+        self.isHidden = true
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private func setupSubviews()  {
         self.addSubviews(backgroundView, activityIndicator)
-
+        
         let constraints = [
             backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-           backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             
             activityIndicator.centerXAnchor.constraint(equalTo: self.centerXAnchor),
@@ -47,6 +48,16 @@ class ActivityView: UIView {
         ]
         
         NSLayoutConstraint.activate(constraints)
+    }
+    
+    func showActivityIndicator() {
+        self.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    func hide() {
+        self.isHidden = true
+        activityIndicator.stopAnimating()
     }
 
 }

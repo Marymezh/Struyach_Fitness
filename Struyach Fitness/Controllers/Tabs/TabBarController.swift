@@ -28,7 +28,7 @@ class TabBarController: UITabBarController {
     }
     
     private func setupNavBarAppearance() {
-        UINavigationBar.appearance().tintColor = .white
+        UINavigationBar.appearance().tintColor = .systemGreen
         UINavigationBar.appearance().barTintColor = .black
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white]
         UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]

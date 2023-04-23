@@ -39,6 +39,7 @@ class ProgressView: UIView {
     init() {
            super.init(frame: .zero)
         setupSubviews()
+        self.isHidden = true
        }
 
        required init?(coder: NSCoder) {
@@ -62,6 +63,16 @@ class ProgressView: UIView {
         ]
         
         NSLayoutConstraint.activate(constraints)
+    }
+    
+    func showProgress(progressLabelText: String, percentComplete: Float){
+        self.isHidden = false
+        self.progressView.progress = percentComplete
+        self.progressLabel.text = progressLabelText
+    }
+    
+    func hide(){
+    self.isHidden = true
     }
 
 }
