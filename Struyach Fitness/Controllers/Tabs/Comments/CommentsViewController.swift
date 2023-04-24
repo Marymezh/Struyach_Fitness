@@ -157,7 +157,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
                                 guard let safeUrl = url else {return}
-                                self.postPhotoComment(photoUrl: safeUrl)
+                                self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
                             self.showAlert(title: "Warning", message: "Error uploading image to Storage")
@@ -174,7 +174,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
                                 guard let safeUrl = url else {return}
-                                self.postPhotoComment(photoUrl: safeUrl)
+                                self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
                             self.showAlert(title: "Warning", message: "Error uploading image to Storage")
@@ -200,16 +200,19 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
                     }) { [weak self] ref in
+                        print("reference for the new photo comment - \(ref)")
                         guard let self = self else {return}
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
                                 guard let safeUrl = url else {return}
-                                self.postPhotoComment(photoUrl: safeUrl)
+                                self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
                             self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.progressView.hide()
+                        self.activityView.showActivityIndicator()
+                        
                     }
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
@@ -220,12 +223,13 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
                                 guard let safeUrl = url else {return}
-                                self.postPhotoComment(photoUrl: safeUrl)
+                                self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
                             self.showAlert(title: "Warning", message: "Error uploading image to Storage")
                         }
                         self.progressView.hide()
+                        self.activityView.showActivityIndicator()
                     }
                 }
             }
@@ -254,12 +258,13 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
                                 guard let safeUrl = url else {return}
-                                self.postVideoComment(videoUrl: safeUrl)
+                                self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
                             }
                         } else {
                             self.showAlert(title: "Warning", message: "Error uploading video to Storage")
                         }
                         self.progressView.hide()
+                        self.activityView.showActivityIndicator()
                     }
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadVideoURLForBlogComment(videoID: videoId, videoData: videoData, blogPost: post, progressHandler: { [weak self] percentComplete in
@@ -270,18 +275,19 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in
                                 guard let safeUrl = url else {return}
-                                self.postVideoComment(videoUrl: safeUrl)
+                                self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
                             }
                         } else {
                             self.showAlert(title: "Warning", message: "Error uploading video to Storage")
                         }
                         self.progressView.hide()
+                        self.activityView.showActivityIndicator()
                     }
                 }
             }
         }
         
-        let videoImage = UIImage(systemName: "playpause")?.withRenderingMode(.alwaysOriginal)
+        let videoImage = UIImage(named: "popcorn")?.withTintColor(.black, renderingMode: .alwaysOriginal)
         videoAction.setValue(videoImage, forKey: "image")
 
         actionSheet.addAction(cameraAction)
@@ -300,7 +306,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
         let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
         let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else { return }
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout?.id, programId: workout?.programID)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: nil)
         
         if let workout = self.workout {
             DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
@@ -326,6 +332,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         if success {
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
+                                
                             }
                         }
                     }
@@ -337,7 +344,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
         }
     }
     
-    private func postPhotoComment(photoUrl: URL) {
+    private func postPhotoComment(photoUrl: URL, photoRef: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
         let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
         let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
@@ -346,7 +353,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
         
         guard let placeholder = UIImage(systemName: "photo") else {return}
         let media = Media(url: photoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout?.id, programId: workout?.programID)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: photoRef)
         
         if let workout = self.workout {
             DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
@@ -355,8 +362,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                     self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
                         if success {
                             DispatchQueue.main.async {
-                                self.messagesCollectionView.scrollToLastItem()
-                            }
+                                self.messagesCollectionView.scrollToLastItem()                            }
                         }
                     }
                 } else {
@@ -381,7 +387,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
         }
     }
     
-    private func postVideoComment(videoUrl: URL) {
+    private func postVideoComment(videoUrl: URL, videoRef: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
         let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
         let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
@@ -390,7 +396,8 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
         
         guard let placeholder = UIImage(systemName: "video.fill") else {return}
         let media = Media(url: videoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: imageData, workoutId: workout?.id, programId: workout?.programID)
+       
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .video(media), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: videoRef)
         if let workout = self.workout {
             DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
                 guard let self = self else {return}
@@ -458,6 +465,10 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                     if let workout = self.workout {
                         DatabaseManager.shared.deleteComment(comment: selectedMessage) { success in
                             if success {
+                                if let messageMediaRef = selectedMessage.mediaRef {
+                                    StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
+                                    print(messageMediaRef)
+                                }
                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                             } else {
                                 self.showAlert(title: "Warning", message: "Unable to delete comment")
@@ -466,6 +477,9 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                     } else if let post = self.blogPost {
                         DatabaseManager.shared.deleteBlogComment(comment: selectedMessage, blogPost: post) { success in
                             if success {
+                                if let messageMediaRef = selectedMessage.mediaRef {
+                                    StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
+                                }
                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                             } else {
                                 self.showAlert(title: "Warning", message: "Unable to delete comment")
@@ -485,7 +499,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         self.navigationController?.pushViewController(commentVC, animated: true)
                         commentVC.onWorkoutSave = { text in
                             if let workout = self.workout {
-                                DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text) { success in
+                                DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text, newMediaRef: nil) { success in
                                     if success{
                                         self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                     } else {
@@ -493,7 +507,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                                     }
                                 }
                             } else if let post = self.blogPost {
-                                DatabaseManager.shared.updateBlogComment(comment: selectedMessage, blogPost: post, newDescription: text) { success in
+                                DatabaseManager.shared.updateBlogComment(comment: selectedMessage, blogPost: post, newDescription: text, newMediaRef: nil) { success in
                                     if success{
                                         self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                     } else {
@@ -510,6 +524,10 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                             guard let imageData = image.jpegData(compressionQuality: 0.6) else { return }
                             let imageId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + UUID().uuidString
                             if let workout = self.workout {
+                                if let messageMediaRef = selectedMessage.mediaRef {
+                                    StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
+                                    print(messageMediaRef)
+                                }
                                 StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -518,7 +536,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
                                         guard let safeUrl = url else {return}
                                         let mediaUrl = safeUrl.absoluteString
-                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl, newMediaRef: safeRef) { success in
                                             if success {
                                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                             } else {
@@ -530,6 +548,9 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                                 }
                                 
                             } else if let post = self.blogPost {
+                                if let messageMediaRef = selectedMessage.mediaRef {
+                                    StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
+                                }
                                 StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -538,7 +559,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
                                         guard let safeUrl = url else {return}
                                         let mediaUrl = safeUrl.absoluteString
-                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl, newMediaRef: safeRef) { success in
                                             if success {
                                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                             } else {
@@ -558,6 +579,9 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                             let videoId = self.sender.displayName.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString) + ".mov"
                             let videoData = try! Data(contentsOf: videoUrl)
                             if let workout = self.workout {
+                                if let messageMediaRef = selectedMessage.mediaRef {
+                                    StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
+                                }
                                 StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: workout, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -567,7 +591,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                                         guard let safeUrl = url else { print("unable to get safeURL")
                                             return}
                                         let mediaUrl = safeUrl.absoluteString
-                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl, newMediaRef: mediaUrl) { success in
                                             if success {
                                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                             } else {
@@ -578,6 +602,9 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                                     }
                                 }
                             } else if let post = self.blogPost {
+                                if let messageMediaRef = selectedMessage.mediaRef {
+                                    StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
+                                }
                                 StorageManager.shared.uploadVideoURLForBlogComment(videoID: videoId, videoData: videoData, blogPost: post, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -587,7 +614,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                                         guard let safeUrl = url else { print("unable to get safeURL")
                                             return}
                                         let mediaUrl = safeUrl.absoluteString
-                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl) { success in
+                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl, newMediaRef: mediaUrl) { success in
                                             if success {
                                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                             } else {
@@ -680,6 +707,7 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
         case .photo(let media):
             guard let imageUrl = media.url else {return}
             imageView.sd_setImage(with: imageUrl)
+            self.activityView.hide()
             
         case .video(let media):
             guard let videoUrl = media.url else { return }
@@ -699,6 +727,7 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
             SDImageCache.shared.store(thumbnailImage, forKey: thumbnailCacheKey, completion: nil)
             
             imageView.image = thumbnailImage
+            self.activityView.hide()
             
         default: break
         }

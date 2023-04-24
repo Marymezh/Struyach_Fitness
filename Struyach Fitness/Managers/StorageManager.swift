@@ -89,6 +89,30 @@ final class StorageManager {
                 }
     }
     
+    
+    
+    public func deleteCommentsPhotoAndVideo(mediaRef: String) {
+        
+        let storageRef = container.reference(withPath: mediaRef)
+        storageRef.delete { error in
+            if let error = error {
+                // Uh-oh, an error occurred!
+                print(error.localizedDescription)
+            } else {
+                // Photo deleted successfully
+                print("Photo deleted successfully!")
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+    
     public func uploadUserProfilePicture(email: String, image: Data?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")

@@ -509,7 +509,8 @@ final class DatabaseManager {
 
             "userImage": comment.userImage,
             "programId": comment.programId ?? "",
-            "workoutId": comment.workoutId ?? ""
+            "workoutId": comment.workoutId ?? "",
+            "mediaRef": comment.mediaRef ?? ""
         ]
 
            database
@@ -545,7 +546,8 @@ final class DatabaseManager {
                           let type = dictionary["type"] as? String,
                           let date = dictionary["sentDate"] as? Timestamp,
                           let workoutId = dictionary["workoutId"] as? String,
-                          let programId = dictionary["programId"] as? String else {print("unable to create comment")
+                          let programId = dictionary["programId"] as? String,
+                          let mediaRef = dictionary["mediaRef"] as? String else {print("unable to create comment")
                         return nil}
                     
                     let sentDate = date.dateValue()
@@ -568,7 +570,7 @@ final class DatabaseManager {
 
                     guard let finalKind = kind else {return nil}
                     let sender = Sender(senderId: senderId, displayName: senderName)
-                    let comment = Comment(sender: sender, messageId: messageId, sentDate: sentDate, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId)
+                    let comment = Comment(sender: sender, messageId: messageId, sentDate: sentDate, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, mediaRef: mediaRef)
                     return comment
                 }
                    completion(comments)
@@ -608,7 +610,7 @@ final class DatabaseManager {
         }
     }
     
-    public func updateBlogComment(comment: Comment, blogPost: Post, newDescription: String, completion: @escaping (Bool)->()){
+    public func updateBlogComment(comment: Comment, blogPost: Post, newDescription: String, newMediaRef: String?, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
 
         let dbRef = database
@@ -621,6 +623,7 @@ final class DatabaseManager {
             guard var data = snapshot?.data(), error == nil else {return}
             
             data["contents"] = newDescription
+            data["mediaRef"] = newMediaRef ?? ""
             dbRef.setData(data) { error in
                 completion(error == nil)
             }
@@ -683,7 +686,9 @@ final class DatabaseManager {
 
             "userImage": comment.userImage,
             "programId": comment.programId ?? "",
-            "workoutId": comment.workoutId ?? ""
+            "workoutId": comment.workoutId ?? "",
+            "mediaRef": comment.mediaRef ?? ""
+            
         ]
 
            database
@@ -727,7 +732,8 @@ final class DatabaseManager {
                           let type = dictionary["type"] as? String,
                           let date = dictionary["sentDate"] as? Timestamp,
                           let workoutId = dictionary["workoutId"] as? String,
-                          let programId = dictionary["programId"] as? String else {print("unable to create comment")
+                          let programId = dictionary["programId"] as? String,
+                    let mediaRef = dictionary["mediaRef"] as? String else {print("unable to create comment")
                         return nil}
                     
                     let sentDate = date.dateValue()
@@ -751,7 +757,7 @@ final class DatabaseManager {
 
                     guard let finalKind = kind else {return nil}
                     let sender = Sender(senderId: senderId, displayName: senderName)
-                    let comment = Comment(sender: sender, messageId: messageId, sentDate: sentDate, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId)
+                    let comment = Comment(sender: sender, messageId: messageId, sentDate: sentDate, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, mediaRef: mediaRef)
                     return comment
                 }
                    completion(comments)
@@ -805,19 +811,8 @@ final class DatabaseManager {
             }
         }
     }
-            
-//            data["comments"] = commentsCount
-//            dbRef.setData(data) { error in
-//                if error == nil {
-//                    var updatedWorkout = workout
-//                    updatedWorkout.comments = commentsCount
-//                    completion(updatedWorkout)
-//                }
-//            }
-//        }
-//    }
     
-    public func updateComment(comment: Comment, newDescription: String, completion: @escaping (Bool)->()){
+    public func updateComment(comment: Comment, newDescription: String, newMediaRef: String?, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         
         guard let programId = comment.programId, let workoutId = comment.workoutId else {return}
@@ -837,6 +832,7 @@ final class DatabaseManager {
             guard var data = snapshot?.data(), error == nil else {return}
             
             data["contents"] = newDescription
+            data["mediaRef"] = newMediaRef ?? ""
             dbRef.setData(data) { error in
                 completion(error == nil)
             }
@@ -894,7 +890,8 @@ final class DatabaseManager {
                               let type = dictionary["type"] as? String,
                               let date = dictionary["sentDate"] as? Timestamp,
                               let workoutId = dictionary["workoutId"] as? String,
-                              let programId = dictionary["programId"] as? String else {print("unable to create comment")
+                              let programId = dictionary["programId"] as? String,
+                              let mediaRef = dictionary["mediaRef"] as? String else {print("unable to create comment")
                             return nil}
                         
                         let sentDate = date.dateValue()
@@ -918,7 +915,7 @@ final class DatabaseManager {
 
                         guard let finalKind = kind else {return nil}
                         let sender = Sender(senderId: senderId, displayName: senderName)
-                        let comment = Comment(sender: sender, messageId: messageId, sentDate: sentDate, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId)
+                        let comment = Comment(sender: sender, messageId: messageId, sentDate: sentDate, kind: finalKind, userImage: userImage, workoutId: workoutId, programId: programId, mediaRef: mediaRef)
                         return comment
                     }
                        completion(comments)
