@@ -108,7 +108,7 @@ class BlogViewController: UIViewController {
     
     @objc private func addNewPost() {
         print("Executing function: \(#function)")
-        let newPostVC = CreateNewWorkoutViewController()
+        let newPostVC = TextViewController()
         newPostVC.title = "Add new post"
         tabBarController?.tabBar.isHidden = true
         navigationController?.pushViewController(newPostVC, animated: true)
@@ -180,7 +180,7 @@ class BlogViewController: UIViewController {
             }
             let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
                 guard let self = self else {return}
-                let workoutVC = CreateNewWorkoutViewController()
+                let workoutVC = TextViewController()
                 workoutVC.title = "Edit post"
                 let selectedPost = self.blogPosts[indexPath.item]
                 workoutVC.text = selectedPost.description

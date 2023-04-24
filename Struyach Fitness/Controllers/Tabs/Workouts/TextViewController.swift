@@ -1,5 +1,5 @@
 //
-//  CreateNewWorkoutViewController.swift
+//  TextViewController.swift
 //  Struyach Fitness
 //
 //  Created by Мария Межова on 8/2/23.
@@ -8,7 +8,7 @@
 import UIKit
 import IQKeyboardManagerSwift
 
-class CreateNewWorkoutViewController: UIViewController, UITextViewDelegate {
+class TextViewController: UIViewController, UITextViewDelegate {
     
     //MARK: - Properties
     

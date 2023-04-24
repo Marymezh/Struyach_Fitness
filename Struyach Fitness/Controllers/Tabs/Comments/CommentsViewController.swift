@@ -479,7 +479,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                     
                     switch selectedMessage.kind {
                     case .text(let textToEdit):
-                        let commentVC = CreateNewWorkoutViewController()
+                        let commentVC = TextViewController()
                         commentVC.title = "Edit comment"
                         commentVC.text = textToEdit
                         self.navigationController?.pushViewController(commentVC, animated: true)
@@ -711,7 +711,6 @@ extension CommentsViewController: MessageCellDelegate {
         guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
         let comment = commentsArray[indexPath.section]
         guard comment.sender.senderId != userEmail else {return}
-//        self.showActivityIndicator()
         self.activityView.showActivityIndicator()
         let profileVC = ProfileTableViewController(email: comment.sender.senderId)
         profileVC.fetchUserRecords()

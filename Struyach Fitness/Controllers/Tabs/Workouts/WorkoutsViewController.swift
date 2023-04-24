@@ -248,7 +248,7 @@ class WorkoutsViewController: UIViewController {
     // only Admin user can add new workout
     @objc private func addNewWorkout() {
         print("Executing function: \(#function)")
-        let newWorkoutVC = CreateNewWorkoutViewController()
+        let newWorkoutVC = TextViewController()
         newWorkoutVC.title = "Add new workout"
         navigationController?.pushViewController(newWorkoutVC, animated: true)
         newWorkoutVC.onWorkoutSave = {[weak self] text in
@@ -343,7 +343,7 @@ class WorkoutsViewController: UIViewController {
             
             let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
                 guard let self = self else {return}
-                let workoutVC = CreateNewWorkoutViewController()
+                let workoutVC = TextViewController()
                 workoutVC.title = "Edit workout"
                 let selectedWorkout = self.listOfWorkouts[indexPath.item]
                 workoutVC.text = selectedWorkout.description
