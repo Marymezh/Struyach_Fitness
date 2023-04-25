@@ -12,4 +12,5 @@ struct User {
     let email: String
     let profilePictureRef: String
     let personalRecords: String?
+    let subscribedPrograms: [String]
 }

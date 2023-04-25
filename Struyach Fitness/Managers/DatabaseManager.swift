@@ -933,10 +933,11 @@ final class DatabaseManager {
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
         
-        let data = [
+        let data: [String : Any] = [
             "email": user.email,
             "name": user.name,
-            "profile_photo": user.profilePictureRef
+            "profile_photo": user.profilePictureRef,
+            "subscribed_programs": user.subscribedPrograms
         ]
         
         database
@@ -958,16 +959,20 @@ final class DatabaseManager {
             .collection("users")
             .document(documentID)
             .getDocument { snapshot, error in
-                guard let data = snapshot?.data() as? [String: String],
-                      let name = data["name"],
-                      let imageRef = data["profile_photo"],
-                      error == nil else {return}
-                
-                let records = data["user_records"]
-                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: records)
-                completion(user)
-            }
-    }
+                guard let data = snapshot?.data(),
+                              let name = data["name"] as? String,
+                              let imageRef = data["profile_photo"] as? String,
+                              let subscribedPrograms = data["subscribed_programs"] as? [String],
+                              error == nil else {
+                            completion(nil)
+                            return
+                        }
+                let personalRecords = data["personal_records"] as? String
+                        
+                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, subscribedPrograms: subscribedPrograms)
+                        completion(user)
+                    }
+                }
     
     public func updateUserName(email: String, newUserName: String,
                                completion: @escaping(Bool)->()

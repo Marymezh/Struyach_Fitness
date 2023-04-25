@@ -11,6 +11,7 @@ import UIKit
 class ProgramsViewController: UITableViewController {
     
     private let programsArray = ProgramDescriptionStorage.programArray
+    private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,7 +44,17 @@ class ProgramsViewController: UITableViewController {
         
         cell.program = programsArray[indexPath.section]
         cell.backgroundView?.alpha = 0.5
+        #if Admin
         cell.backgroundColor = .customDarkGray
+        #else
+        if let safeEmail = currentUserEmail, let programName = cell.programNameLabel.text{
+            DatabaseManager.shared.getUser(email: safeEmail) {currentUser in
+                guard let currentUser = currentUser else {return}
+                let isUserSubscribed = currentUser.subscribedPrograms.contains(programName)
+                cell.backgroundColor = isUserSubscribed ? .customDarkGray : .customLightGray
+            }
+        }
+        #endif
         
         return cell
     }
@@ -65,11 +76,47 @@ class ProgramsViewController: UITableViewController {
         return view
     }
     
+//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//
+//        let programVC = WorkoutsViewController()
+//        programVC.title = programsArray[indexPath.section].programName
+//        navigationController?.pushViewController(programVC, animated: true)
+//        tableView.deselectRow(at: indexPath, animated: true)
+//
+//    }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
-        let programVC = WorkoutsViewController()        
-        programVC.title = programsArray[indexPath.section].programName
+        let program = programsArray[indexPath.section]
+        let programName = program.programName
+        
+        #if Admin
+        // Allow full access to WorkoutsVC for the Admin user
+        let programVC = WorkoutsViewController()
+        programVC.title = programName
         navigationController?.pushViewController(programVC, animated: true)
+        
+        #else
+        // Check if the user is subscribed to the program
+        guard let currentUserEmail = currentUserEmail else { return }
+        DatabaseManager.shared.getUser(email: currentUserEmail) {[weak self] currentUser in
+            guard let self = self, let currentUser = currentUser else { return }
+            
+            let isUserSubscribed = currentUser.subscribedPrograms.contains(programName)
+            
+            if isUserSubscribed {
+                // Push WorkoutsVC if user is subscribed
+                let programVC = WorkoutsViewController()
+                programVC.title = programName
+                self.navigationController?.pushViewController(programVC, animated: true)
+            } else {
+                // Present PaywallViewController if user is not subscribed
+                let paywallVC = PaywallViewController(programName: programName)
+         print(programName)
+                paywallVC.modalPresentationStyle = .popover
+                self.navigationController?.present(paywallVC, animated: true, completion: nil)
+            }
+        }
+        #endif
+        
         tableView.deselectRow(at: indexPath, animated: true)
     }
     

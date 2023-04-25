@@ -200,7 +200,6 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
                     }) { [weak self] ref in
-                        print("reference for the new photo comment - \(ref)")
                         guard let self = self else {return}
                         if let safeRef = ref {
                             StorageManager.shared.downloadUrl(path: safeRef) { url in

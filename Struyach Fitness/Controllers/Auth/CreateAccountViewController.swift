@@ -84,7 +84,7 @@ class CreateAccountViewController: UIViewController {
                 self.activityView.showActivityIndicator()
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
-                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil)
+                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, subscribedPrograms: [K.bodyweight])
                     DatabaseManager.shared.insertUser(user: newUser) { inserted in
                         guard inserted else {
                             print ("cant insert new user")

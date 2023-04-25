@@ -30,7 +30,8 @@ class ProfileHeaderView: UIView {
         label.textColor = .white
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.sizeToFit()
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.5
         label.toAutoLayout()
         return label
     }()
@@ -49,7 +50,7 @@ class ProfileHeaderView: UIView {
     lazy var changeUserNameButton: UIButton = {
         let button = UIButton()
         button.setTitle("Rename user", for: .normal)
-        button.contentEdgeInsets = UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
+        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
         button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 5
@@ -60,7 +61,7 @@ class ProfileHeaderView: UIView {
     private let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
-        stackView.distribution = .fillEqually
+        stackView.distribution = .fill
         stackView.alignment = .center
         stackView.toAutoLayout()
         return stackView
@@ -91,6 +92,7 @@ class ProfileHeaderView: UIView {
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),
             userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2),
             
+            changeUserNameButton.heightAnchor.constraint(equalToConstant: 30),
             stackView.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: baseInset),
             stackView.leadingAnchor.constraint(equalTo: userPhotoImage.trailingAnchor, constant: baseInset),
             stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -baseInset*2),

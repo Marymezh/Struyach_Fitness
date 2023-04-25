@@ -17,7 +17,7 @@ class ProgramTableViewCell: UITableViewCell {
         }
     }
     
-    private let programNameLabel: UILabel = {
+    let programNameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         label.textAlignment = .left
