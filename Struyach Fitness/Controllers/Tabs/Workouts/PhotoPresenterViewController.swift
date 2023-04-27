@@ -10,6 +10,8 @@ import SDWebImage
 
 class PhotoPresenterViewController: UIViewController {
     
+    //MARK: - Properties
+    
     private let url: URL
     
     private let backgroundView: UIView = {
@@ -28,6 +30,8 @@ class PhotoPresenterViewController: UIViewController {
         return view
     }()
     
+    //MARK: - Lifecycle
+    
     init (url: URL) {
         self.url = url
         super.init(nibName: nil, bundle: nil)
@@ -42,6 +46,8 @@ class PhotoPresenterViewController: UIViewController {
         setupSubviews()
         imageView.sd_setImage(with: self.url)
     }
+    
+    //MARK: - Setup subviews
     
     private func setupSubviews() {
         view.addSubviews(backgroundView, imageView)

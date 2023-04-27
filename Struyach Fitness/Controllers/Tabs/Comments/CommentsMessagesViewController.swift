@@ -11,6 +11,8 @@ import InputBarAccessoryView
 
 class CommentsMessagesViewController: MessagesViewController {
     
+    //MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         

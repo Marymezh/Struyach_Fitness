@@ -9,8 +9,12 @@ import UIKit
 
 class CreateAccountViewController: UIViewController {
     
+    //MARK: - Properties
+    
     private let activityView = ActivityView()
     private let signUpView = SignUpView()
+    
+    //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,6 +26,8 @@ class CreateAccountViewController: UIViewController {
         signUpView.passwordTextField.delegate = self
         signUpView.confirmPasswordTextField.delegate = self
     }
+    
+    //MARK: - Setup methods
     
     private func setupNavbar() {
         navigationController?.navigationBar.backgroundColor = .black
@@ -58,6 +64,8 @@ class CreateAccountViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(avatarImageViewTapped))
         signUpView.avatarImageView.addGestureRecognizer(tap)
     }
+    
+    //MARK: - Buttons hangling methods
     
     @objc private func avatarImageViewTapped() {
         
@@ -123,7 +131,7 @@ class CreateAccountViewController: UIViewController {
                 case .passwordTooShort:
                     errorMessage = "Password is too short. Use at least 6 symbols."
                 case .unknownError:
-                    errorMessage = "Please check your Internet connection."
+                    errorMessage = "\(error.localizedDescription)"
                 }
                 self.showErrorAlert(text: errorMessage)
             }
@@ -138,6 +146,7 @@ class CreateAccountViewController: UIViewController {
         navigationController?.present(alert, animated: true)
     }
 }
+//MARK: - UITextField Delegate
 
 extension CreateAccountViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -149,6 +158,8 @@ extension CreateAccountViewController: UITextFieldDelegate {
         }
     }
 }
+
+//MARK: - UIImagePickerControllerDelegate and UINavigationControllerDelegate 
 
 extension CreateAccountViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     private func showImagePickerController() {

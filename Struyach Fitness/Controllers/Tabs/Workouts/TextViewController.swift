@@ -27,6 +27,8 @@ class TextViewController: UIViewController, UITextViewDelegate {
         return textView
     }()
 
+    //MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .customDarkGray
@@ -37,23 +39,11 @@ class TextViewController: UIViewController, UITextViewDelegate {
         setupSubviews()
     }
     
+    //MARK: Setup methods
+    
     private func configureButtons() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "SAVE", style: .done, target: self, action: #selector(addNewWorkout))
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(cancel))
-    }
-    
-    @objc private func addNewWorkout() {
-        if let text = workoutDescriptionTextView.text,
-              text != "" {
-            self.onWorkoutSave?(text)
-            self.navigationController?.popViewController(animated: true)
-        } else {
-            self.showAlert(title: "Warning", message: "Text of the workout can not be blank!")
-        }
-    }
-    
-    @objc private func cancel() {
-        navigationController?.popViewController(animated: true)
     }
     
     private func setupTextView() {
@@ -68,7 +58,6 @@ class TextViewController: UIViewController, UITextViewDelegate {
     }
     
     private func setupSubviews() {
-        
         workoutDescriptionTextView.delegate = self
         workoutDescriptionTextView.becomeFirstResponder()
         
@@ -82,9 +71,24 @@ class TextViewController: UIViewController, UITextViewDelegate {
             workoutDescriptionTextView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
             workoutDescriptionTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
             workoutDescriptionTextView.heightAnchor.constraint(equalToConstant: textViewHeight),
-//            workoutDescriptionTextView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2)
         ]
         NSLayoutConstraint.activate(constraints)
+    }
+    
+    //MARK: - Buttons action methods
+    
+    @objc private func addNewWorkout() {
+        if let text = workoutDescriptionTextView.text,
+              text != "" {
+            self.onWorkoutSave?(text)
+            self.navigationController?.popViewController(animated: true)
+        } else {
+            self.showAlert(title: "Warning", message: "Text of the workout can not be blank!")
+        }
+    }
+    
+    @objc private func cancel() {
+        navigationController?.popViewController(animated: true)
     }
     
     private func showAlert(title: String, message: String) {

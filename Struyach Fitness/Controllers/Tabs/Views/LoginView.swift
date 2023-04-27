@@ -9,6 +9,8 @@ import UIKit
 
 class LoginView: UIView {
     
+    //MARK: - Properties
+    
     let logoImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "struyach-eng-black"))
         imageView.clipsToBounds = true

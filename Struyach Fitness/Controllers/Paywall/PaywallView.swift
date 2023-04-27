@@ -9,6 +9,8 @@ import UIKit
 
 class PaywallView: UIView {
     
+    //MARK: - Properties
+    
     private var smallInset: CGFloat { return 16 }
     private var bigInset: CGFloat { return 32 }
     
@@ -18,6 +20,7 @@ class PaywallView: UIView {
         label.font = UIFont.boldSystemFont(ofSize: 28)
         label.textAlignment = .center
         label.text = "Upgrade to Premium plan"
+        label.adjustsFontSizeToFitWidth = true
         label.toAutoLayout()
         return label
     }()
@@ -26,9 +29,8 @@ class PaywallView: UIView {
         let label = UILabel()
         label.textColor = UIColor.white
         label.font = UIFont.systemFont(ofSize: 18)
-        label.textAlignment = .center
+        label.textAlignment = .justified
         label.numberOfLines = 0
-        label.text = "ECD training plan is the best choise, if you have an access to a gym or crossfit box. \n\nIt is a perfect plan to keep fit and improve your skills in all most common movements. The plan is updated each week day, you can comment your results and ask for support of the experienced coach at any time! \n\nAlso you can compare your results with ones from ECD club members posting their results every evening. \n\nSo don't hesitate and join now!!!"
         label.toAutoLayout()
         return label
     }()
@@ -64,13 +66,15 @@ class PaywallView: UIView {
         return button
     }()
     
-    let backgroundView: UIView = {
-        let view = UIView()
-        view.toAutoLayout()
-        view.backgroundColor = .black
-        view.alpha = 0.5
-        return view
-    }()
+//    let backgroundView: UIView = {
+//        let view = UIView()
+//        view.toAutoLayout()
+//        view.backgroundColor = .black
+//        view.alpha = 0.5
+//        return view
+//    }()
+    
+    //MARK: - Lifecycle
     
     init() {
         super.init(frame: .zero)
@@ -81,15 +85,17 @@ class PaywallView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: setup
+    
     private func setupSubviews() {
-        self.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-        self.addSubviews(backgroundView, titleLabel, descriptionLabel, payButton, otherOptionsButton)
+        self.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        self.addSubviews(titleLabel, descriptionLabel, payButton, otherOptionsButton)
         
         let constraints = [
-            backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
-            backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+//            backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
+//            backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+//            backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+//            backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             
             titleLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: bigInset),
             titleLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
@@ -104,7 +110,7 @@ class PaywallView: UIView {
             payButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -bigInset),
             payButton.heightAnchor.constraint(equalToConstant: 60),
             
-            otherOptionsButton.topAnchor.constraint(equalTo: payButton.bottomAnchor, constant: 10),
+            otherOptionsButton.topAnchor.constraint(equalTo: payButton.bottomAnchor, constant: smallInset),
             otherOptionsButton.trailingAnchor.constraint(equalTo: payButton.trailingAnchor),
             otherOptionsButton.leadingAnchor.constraint(equalTo: payButton.leadingAnchor),
             otherOptionsButton.heightAnchor.constraint(equalToConstant: 40)

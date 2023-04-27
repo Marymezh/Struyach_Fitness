@@ -10,8 +10,12 @@ import UIKit
 
 class ProgramsViewController: UITableViewController {
     
+    //MARK: - Properties
+    
     private let programsArray = ProgramDescriptionStorage.programArray
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
+    
+    //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +27,8 @@ class ProgramsViewController: UITableViewController {
         super.viewWillAppear(animated)
         tabBarController?.tabBar.isHidden = false
     }
+    
+    //MARK: - Setup methods
     
     private func setupTableView () {
         tableView.backgroundColor = .customDarkGray
@@ -75,15 +81,7 @@ class ProgramsViewController: UITableViewController {
         view.backgroundColor = .customDarkGray
         return view
     }
-    
-//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//
-//        let programVC = WorkoutsViewController()
-//        programVC.title = programsArray[indexPath.section].programName
-//        navigationController?.pushViewController(programVC, animated: true)
-//        tableView.deselectRow(at: indexPath, animated: true)
-//
-//    }
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let program = programsArray[indexPath.section]
         let programName = program.programName

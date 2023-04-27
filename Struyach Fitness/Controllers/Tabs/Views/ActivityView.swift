@@ -9,6 +9,8 @@ import UIKit
 
 class ActivityView: UIView {
     
+    //MARK: - Properties
+    
     let backgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = .black

@@ -10,6 +10,8 @@ import UIKit
 
 class ProfileTableViewController: UITableViewController {
     
+    //MARK: - Properties
+    
     private let movements = ["", "Back Squat", "Front Squat", "Squat Clean", "Power Clean", "Clean and Jerk", "Snatch", "Deadlift"]
     
     private var weights = ["", "00", "00", "00", "00", "00", "00", "00"]
@@ -19,6 +21,8 @@ class ProfileTableViewController: UITableViewController {
     let email: String
     let currentUserEmail = UserDefaults.standard.string(forKey: "email")
 
+    //MARK: - Lifecycle
+    
     init(email: String) {
         self.email = email
         super.init(nibName: nil, bundle: nil)
@@ -41,7 +45,7 @@ class ProfileTableViewController: UITableViewController {
             uploadUserRecords()
         }
     }
-    
+    //MARK: - Setup methods
     private func setupTableView() {
         tableView.backgroundColor = .customDarkGray
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: ProfileTableViewCell.self))
@@ -49,6 +53,15 @@ class ProfileTableViewController: UITableViewController {
 //        tableView.estimatedSectionHeaderHeight = 165
 //        tableView.sectionHeaderHeight = UITableView.automaticDimension
     }
+    
+    private func setupNavigationBar () {
+        navigationController?.navigationBar.tintColor = .systemRed
+         navigationItem.rightBarButtonItem = UIBarButtonItem(
+             title: "Sign Out",
+             style: .done,
+             target: self,
+             action: #selector(didTapSignOut))
+     }
     
     private func setupHeaderView() {
         headerView.isUserInteractionEnabled = true
@@ -63,6 +76,8 @@ class ProfileTableViewController: UITableViewController {
         let buttonTap = UITapGestureRecognizer(target: self, action: #selector(changeUserNameTapped))
         headerView.changeUserNameButton.addGestureRecognizer(buttonTap)
     }
+    
+    //MARK: - Buttons methods
     
     @objc private func userPhotoImageTapped() {
         guard currentUserEmail == email else {return}
@@ -97,6 +112,31 @@ class ProfileTableViewController: UITableViewController {
         alertController.view.tintColor = .darkGray
         present(alertController, animated: true)
     }
+    
+    @objc private func didTapSignOut() {
+        let alert = UIAlertController(title: "Sign Out", message: "Are you sure you would like to sign out?", preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Sign Out", style: .destructive, handler: { action in
+            AuthManager.shared.signOut { [weak self] success in
+                if success {
+                    DispatchQueue.main.async {
+                        UserDefaults.standard.set(nil, forKey: "userName")
+                        UserDefaults.standard.set(nil, forKey: "email")
+                        UserDefaults.standard.set(nil, forKey: "userImage")
+                        let signInVC = LoginViewController()
+                        signInVC.navigationItem.largeTitleDisplayMode = .never
+                        let navVC = UINavigationController(rootViewController: signInVC)
+                        navVC.navigationBar.prefersLargeTitles = false
+                        navVC.modalPresentationStyle = .fullScreen
+                        self?.present(navVC, animated: true)
+                    }
+                }
+            }
+        }))
+        present(alert, animated: true)
+    }
+    
+    //MARK: - Fetch and update data methods
     
     func fetchOtherUserData(completion: @escaping (Bool)->()) {
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
@@ -189,38 +229,6 @@ class ProfileTableViewController: UITableViewController {
                 }
             }
         }
-    }
-
-   private func setupNavigationBar () {
-       navigationController?.navigationBar.tintColor = .systemRed
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Sign Out",
-            style: .done,
-            target: self,
-            action: #selector(didTapSignOut))
-    }
-    
-    @objc private func didTapSignOut() {
-        let alert = UIAlertController(title: "Sign Out", message: "Are you sure you would like to sign out?", preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Sign Out", style: .destructive, handler: { action in
-            AuthManager.shared.signOut { [weak self] success in
-                if success {
-                    DispatchQueue.main.async {
-                        UserDefaults.standard.set(nil, forKey: "userName")
-                        UserDefaults.standard.set(nil, forKey: "email")
-                        UserDefaults.standard.set(nil, forKey: "userImage")
-                        let signInVC = LoginViewController()
-                        signInVC.navigationItem.largeTitleDisplayMode = .never
-                        let navVC = UINavigationController(rootViewController: signInVC)
-                        navVC.navigationBar.prefersLargeTitles = false
-                        navVC.modalPresentationStyle = .fullScreen
-                        self?.present(navVC, animated: true)
-                    }
-                }
-            }
-        }))
-        present(alert, animated: true)
     }
     
     private func showErrorAlert(text: String) {

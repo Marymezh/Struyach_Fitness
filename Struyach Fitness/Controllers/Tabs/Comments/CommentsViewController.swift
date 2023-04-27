@@ -27,14 +27,14 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
     private var activityView = ActivityView()
 
     var onFinishPicking:(([UIImagePickerController.InfoKey : Any])-> Void)?
-    var onCommentsClose: (() -> ())?
+    var onCommentPosted: (() -> ())?
     
     private let userName = UserDefaults.standard.string(forKey: "userName")
     private let userEmail = UserDefaults.standard.string(forKey: "email")
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     
-    //MARK: - Initializers
+    //MARK: - Lifecycle
     
     init(workout: Workout) {
         self.workout = workout
@@ -71,10 +71,10 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
         navigationController?.navigationBar.prefersLargeTitles = true
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        self.onCommentsClose?()
-    }
+//    override func viewWillDisappear(_ animated: Bool) {
+//        super.viewWillDisappear(animated)
+//        self.onCommentPosted?()
+//    }
     
     //MARK: - Message Collection View and InputBarView setup
     
@@ -313,6 +313,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                 if success {
                     self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
                         if success {
+                            self.onCommentPosted?()
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
                             }
@@ -329,6 +330,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                 if success {
                     self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
                         if success {
+                            self.onCommentPosted?()
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
                                 
@@ -360,6 +362,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                 if success {
                     self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
                         if success {
+                            self.onCommentPosted?()
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()                            }
                         }
@@ -374,6 +377,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                 if success {
                     self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
                         if success {
+                            self.onCommentPosted?()
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
                             }
@@ -403,6 +407,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                 if success {
                     self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
                         if success {
+                            self.onCommentPosted?()
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
                             }
@@ -418,6 +423,7 @@ class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate
                 if success {
                     self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
                         if success {
+                            self.onCommentPosted?()
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
                             }

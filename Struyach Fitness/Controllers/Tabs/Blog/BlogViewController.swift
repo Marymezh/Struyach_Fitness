@@ -10,6 +10,8 @@ import FirebaseFirestore
 
 class BlogViewController: UIViewController {
     
+    //MARK: - Properties
+    
     private var blogPosts: [Post] = []
     private var selectedPost: Post?
     private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
@@ -35,6 +37,8 @@ class BlogViewController: UIViewController {
         button.toAutoLayout()
         return button
     }()
+    
+    //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,6 +66,8 @@ class BlogViewController: UIViewController {
         super.viewWillDisappear(animated)
         postUpdatesListener?.remove()
     }
+    
+    //MARK: - Setup methods
     
     private func setupNavAndTabBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -98,12 +104,17 @@ class BlogViewController: UIViewController {
         setupGestureRecognizer()
         plusButton.isHidden = false
     }
+    
+    private func setupGestureRecognizer() {
+        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
+        tableView.addGestureRecognizer(longPressRecognizer)
+    }
+    
+    //MARK: - Buttons methods
 
     @objc private func scrollToTheTop() {
-        if !blogPosts.isEmpty {
         let indexPath = IndexPath(row: 0, section: 0)
         tableView.scrollToRow(at: indexPath, at: .top, animated: true)
-        }
     }
     
     @objc private func addNewPost() {
@@ -124,14 +135,17 @@ class BlogViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
+                    if self.blogPosts.count > 1 {
                         self.scrollToTheTop()
-
+                    }
                 } else {
                     self.showAlert(title: "Warning", message: "Unable to add new post")
                 }
             }
         }
     }
+    
+    //MARK: - Methods to fetch, edit and delete blog posts
     
     private func loadBlogPostsWithPagination(pageSize: Int) {
         print ("executing function \(#function)")
@@ -150,11 +164,6 @@ class BlogViewController: UIViewController {
         }
     }
     
-    private func setupGestureRecognizer() {
-        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
-        tableView.addGestureRecognizer(longPressRecognizer)
-    }
-    
     @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
         let touchPoint = gestureRecognizer.location(in: tableView)
         if let indexPath = tableView.indexPathForRow(at: touchPoint) {
@@ -166,8 +175,6 @@ class BlogViewController: UIViewController {
                 DatabaseManager.shared.deletePost(blogPost: post) { [weak self] success in
                     guard let self = self else { return }
                     if success {
-//                        self.blogPosts.remove(at: indexPath.row)
-//                        self.tableView.reloadData()
                         print ("number of posts left - \(self.blogPosts.count)")
                         switch self.blogPosts.isEmpty {
                         case true: self.showAlert(title: "Success", message: "Post is successfully deleted! No more posts left in the Blog")
@@ -189,10 +196,6 @@ class BlogViewController: UIViewController {
                     guard let self = self else {return}
                     DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { [weak self] post in
                         guard let self = self else {return}
-//                        guard let index = self.blogPosts.firstIndex(where: {$0 == selectedPost}) else {return}
-//                        self.blogPosts[index] = post
-//                        print(post.description)
-//                        self.tableView.reloadData()
                         self.showAlert(title: "Success", message: "Post is successfully updated!")
                     }
                 }
@@ -216,7 +219,7 @@ class BlogViewController: UIViewController {
 
 }
 
-    // MARK: - Table view data source and delegate methods
+    // MARK: - Table view dataSource and delegate methods
     
     extension BlogViewController: UITableViewDelegate, UITableViewDataSource {
 
@@ -299,7 +302,7 @@ class BlogViewController: UIViewController {
             self.tabBarController?.tabBar.isHidden = true
             self.navigationController?.pushViewController(commentsVC, animated: true)
             
-            commentsVC.onCommentsClose = {
+            commentsVC.onCommentPosted = {
                 DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
                     DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak self] blogPost in
                         guard let self = self else {return}

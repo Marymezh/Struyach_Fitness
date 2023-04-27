@@ -9,6 +9,8 @@ import UIKit
 
 class DetailsView: UIView {
     
+    //MARK: - Properties
+    
     let containerView: UIView = {
         let view = UIView()
         view.toAutoLayout()

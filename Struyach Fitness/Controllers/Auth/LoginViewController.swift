@@ -10,12 +10,15 @@ import UIKit
 class LoginViewController: UIViewController {
 
     private let loginView = LoginView()
+    
+    //MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavBar()
         setupSubviews()
     }
+    //MARK: - Setup methods
     
     private func setupNavBar () {
         title = "Log In"
@@ -37,11 +40,11 @@ class LoginViewController: UIViewController {
             loginView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             loginView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             loginView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-            
         ]
         
         NSLayoutConstraint.activate(constraints)
     }
+    //MARK: - Buttons handling methods
     
     @objc private func loginTapped() {
         guard let email = loginView.emailTextField.text, !email.isEmpty else {

@@ -9,6 +9,8 @@ import UIKit
 
 class SignUpView: UIView {
     
+    //MARK: - Properties
+    
     let avatarImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(systemName: "person.circle"))
         imageView.layer.cornerRadius = 160/2
@@ -101,7 +103,6 @@ class SignUpView: UIView {
         button.backgroundColor = .systemGreen
         button.setTitle("Create", for: .normal)
         button.setTitleColor(.white, for: .normal)
-//        button.addTarget(self, action: #selector(signUpTapped), for: .touchUpInside)
         return button
     }()
     

@@ -53,6 +53,9 @@ class TabBarController: UITabBarController {
         let profileVC = ProfileTableViewController(email: currentUserEmail)
         profileVC.title = "Profile"
         
+        let settingsVC = SettingsTableViewController(email: currentUserEmail)
+        settingsVC.title = "Settings"
+        
         programsVC.navigationItem.largeTitleDisplayMode = .always
         blogVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always
@@ -62,15 +65,18 @@ class TabBarController: UITabBarController {
         let nav1 = UINavigationController(rootViewController: programsVC)
         let nav2 = UINavigationController(rootViewController: blogVC)
         let nav3 = UINavigationController(rootViewController: profileVC)
+        let nav4 = UINavigationController(rootViewController: settingsVC)
         
         nav1.navigationBar.prefersLargeTitles = true
         nav2.navigationBar.prefersLargeTitles = true
         nav3.navigationBar.prefersLargeTitles = true
+        nav4.navigationBar.prefersLargeTitles = true
         
         nav1.tabBarItem = UITabBarItem(title: "Programs", image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
         nav2.tabBarItem = UITabBarItem(title: "Blog", image: UIImage(named: "character.bubble.fill"), tag: 2)
         nav3.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 3)
+        nav4.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(named: "gearshape.fill"), tag: 3)
 
-        setViewControllers([nav1, nav2, nav3], animated: true)
+        setViewControllers([nav1, nav2, nav3, nav4], animated: true)
     }
 }

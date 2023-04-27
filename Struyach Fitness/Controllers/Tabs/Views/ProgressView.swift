@@ -8,6 +8,9 @@
 import UIKit
 
 class ProgressView: UIView {
+    
+    //MARK: - Properties
+    
     var progressBackgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = .black
@@ -36,6 +39,8 @@ class ProgressView: UIView {
         return label
     }()
 
+    // MARK: - Lifecycle
+    
     init() {
            super.init(frame: .zero)
         setupSubviews()
@@ -45,6 +50,8 @@ class ProgressView: UIView {
        required init?(coder: NSCoder) {
            fatalError("init(coder:) has not been implemented")
        }
+    
+    // MARK: - Methods
     
     private func setupSubviews() {
         self.addSubviews(progressBackgroundView, progressView, progressLabel)

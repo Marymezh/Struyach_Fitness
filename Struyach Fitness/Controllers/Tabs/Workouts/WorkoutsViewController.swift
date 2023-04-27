@@ -103,6 +103,8 @@ class WorkoutsViewController: UIViewController {
         return button
     }()
     
+    //MARK: Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -373,7 +375,7 @@ class WorkoutsViewController: UIViewController {
         commentsVC.title = "Comments"
         navigationController?.pushViewController(commentsVC, animated: true)
         
-        commentsVC.onCommentsClose = {
+        commentsVC.onCommentPosted = {
             DatabaseManager.shared.getCommentsCount(workout: selectedWorkout) { [weak self] numberOfComments in
                 DatabaseManager.shared.updateWorkoutCommentsCount(workout: selectedWorkout, commentsCount: numberOfComments) { [weak self] workout in
                     guard let self = self else {return}

@@ -55,6 +55,8 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
         return textView
     }()
     
+    // MARK: - Lifecycle
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -63,6 +65,8 @@ class SelectedWorkoutView: UIView, UITextViewDelegate {
         setupSubviews()
         randomizeBackgroungImages()
     }
+    
+    //MARK: - Methods
     
     private func setupSubviews() {
         self.addSubviews(backgroundView, workoutView)
