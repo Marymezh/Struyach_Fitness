@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ProgramsViewController: UITableViewController {
+final class ProgramsViewController: UITableViewController {
     
     //MARK: - Properties
     
@@ -109,7 +109,7 @@ class ProgramsViewController: UITableViewController {
                 // Present PaywallViewController if user is not subscribed
                 let paywallVC = PaywallViewController(programName: programName)
          print(programName)
-                paywallVC.modalPresentationStyle = .popover
+                paywallVC.modalPresentationStyle = .automatic
                 self.navigationController?.present(paywallVC, animated: true, completion: nil)
             }
         }

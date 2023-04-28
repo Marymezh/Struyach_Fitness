@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PaywallViewController: UIViewController {
+final class PaywallViewController: UIViewController {
     
     //MARK: - Properties
     

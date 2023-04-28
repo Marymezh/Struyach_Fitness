@@ -7,7 +7,7 @@
 
 import UIKit
 
-class LoginView: UIView {
+final class LoginView: UIView {
     
     //MARK: - Properties
     

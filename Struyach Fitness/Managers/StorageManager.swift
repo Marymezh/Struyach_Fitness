@@ -70,6 +70,7 @@ final class StorageManager {
                     progress(Float(percentComplete))
                 }
     }
+    
     public func uploadVideoURLForBlogComment(videoID: String, videoData: Data, blogPost: Post, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
         
         let videoRef = "blog_comments_photo_and_video/video/\(blogPost.id)/\(videoID)"
@@ -88,9 +89,7 @@ final class StorageManager {
                     progress(Float(percentComplete))
                 }
     }
-    
-    
-    
+  
     public func deleteCommentsPhotoAndVideo(mediaRef: String) {
         
         let storageRef = container.reference(withPath: mediaRef)
@@ -104,14 +103,6 @@ final class StorageManager {
             }
         }
     }
-
-
-
-
-
-
-
-
     
     public func uploadUserProfilePicture(email: String, image: Data?, completion: @escaping (Bool)->()) {
         let path = email

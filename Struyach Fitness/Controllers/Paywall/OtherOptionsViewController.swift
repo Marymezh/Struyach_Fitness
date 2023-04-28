@@ -7,7 +7,7 @@
 
 import UIKit
 
-class OtherOptionsViewController: UIViewController {
+final class OtherOptionsViewController: UIViewController {
     
     private var smallInset: CGFloat { return 16 }
     private var bigInset: CGFloat { return 32 }

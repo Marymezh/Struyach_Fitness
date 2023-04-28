@@ -7,7 +7,7 @@
 
 import UIKit
 
-class SelectedWorkoutView: UIView, UITextViewDelegate {
+final class SelectedWorkoutView: UIView, UITextViewDelegate {
     
     //MARK: - Properties
     

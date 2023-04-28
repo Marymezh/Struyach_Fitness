@@ -7,7 +7,7 @@
 
 import UIKit
 
-class DetailsView: UIView {
+final class DetailsView: UIView {
     
     //MARK: - Properties
     
@@ -44,6 +44,8 @@ class DetailsView: UIView {
         textView.toAutoLayout()
         return textView
     }()
+    
+    //MARK: - Lifecycle
 
     init() {
            super.init(frame: .zero)

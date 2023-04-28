@@ -8,7 +8,7 @@
 import UIKit
 import StoreKit
 
-class RateTableViewCell: UITableViewCell {
+final class RateTableViewCell: UITableViewCell {
     
     // MARK: - Properties
     

@@ -7,7 +7,7 @@
 
 import UIKit
 
-class WorkoutsCollectionViewCell: UICollectionViewCell {
+final class WorkoutsCollectionViewCell: UICollectionViewCell {
 
     var workout: Workout? {
         didSet{

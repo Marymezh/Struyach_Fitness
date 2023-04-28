@@ -7,7 +7,7 @@
 
 import UIKit
 
-class BlogTableViewCell: UITableViewCell {
+final class BlogTableViewCell: UITableViewCell {
     
     private var baseInset: CGFloat { return 15 }
     
@@ -58,50 +58,8 @@ class BlogTableViewCell: UITableViewCell {
         textView.toAutoLayout()
         return textView
     }()
-
-    private lazy var addCommentButton: UIButton = {
-        let button = UIButton()
-        button.toAutoLayout()
-        button.tintColor = .white
-        button.setImage(UIImage(systemName: "message", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-        button.addTarget(self, action: #selector(pushCommentsVC), for: .touchUpInside)
-        return button
-    }()
     
-    lazy var likeButton: UIButton = {
-        let button = UIButton()
-        button.toAutoLayout()
-        button.tintColor = .white
-        button.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-        button.addTarget(self, action: #selector(addLikeToWorkout), for: .touchUpInside)
-        return button
-    }()
-    
-    let likesLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        label.textColor = .white
-        label.text = "0"
-        label.toAutoLayout()
-        return label
-    }()
-
-    let commentsLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        label.textColor = .white
-        label.toAutoLayout()
-        return label
-    }()
-    
-    private let stackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.distribution = .equalSpacing
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.toAutoLayout()
-        return stackView
-    }()
+    let likesAndCommentsView = LikesAndCommentsView()
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -114,13 +72,12 @@ class BlogTableViewCell: UITableViewCell {
     }
     
     private func setupSubviews(){
+        likesAndCommentsView.toAutoLayout()
+        likesAndCommentsView.likeButton.addTarget(self, action: #selector(addLikeToWorkout), for: .touchUpInside)
+        likesAndCommentsView.addCommentButton.addTarget(self, action: #selector(pushCommentsVC), for: .touchUpInside)
         contentView.backgroundColor = .customDarkGray
-        contentView.addSubviews(containerView, stackView)
+        contentView.addSubviews(containerView, likesAndCommentsView)
         containerView.addSubviews(postDateLabel, postDescriptionTextView)
-        stackView.addArrangedSubview(likeButton)
-        stackView.addArrangedSubview(likesLabel)
-        stackView.addArrangedSubview(addCommentButton)
-        stackView.addArrangedSubview(commentsLabel)
         
         let minHeight: CGFloat = postDescriptionTextView.font?.lineHeight ?? 50
         
@@ -128,7 +85,7 @@ class BlogTableViewCell: UITableViewCell {
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
-            containerView.bottomAnchor.constraint(equalTo: stackView.topAnchor, constant: -baseInset),
+            containerView.bottomAnchor.constraint(equalTo: likesAndCommentsView.topAnchor, constant: -baseInset),
             
             postDateLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: baseInset),
             postDateLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: baseInset),
@@ -138,19 +95,11 @@ class BlogTableViewCell: UITableViewCell {
             postDescriptionTextView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: baseInset),
             postDescriptionTextView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -baseInset),
             postDescriptionTextView.heightAnchor.constraint(greaterThanOrEqualToConstant: minHeight),
-            postDescriptionTextView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -baseInset), 
+            postDescriptionTextView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -baseInset),
             
-            likeButton.widthAnchor.constraint(equalToConstant: 35),
-            likeButton.heightAnchor.constraint(equalTo: likeButton.widthAnchor),
-            likesLabel.leadingAnchor.constraint(equalTo: likeButton.trailingAnchor, constant: baseInset),
-            likesLabel.widthAnchor.constraint(equalTo: likeButton.widthAnchor),
-            addCommentButton.widthAnchor.constraint(equalToConstant: 35),
-            addCommentButton.heightAnchor.constraint(equalToConstant: 35),
-            commentsLabel.leadingAnchor.constraint(equalTo: addCommentButton.trailingAnchor, constant: baseInset),
-            
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
-            stackView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset)
+            likesAndCommentsView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
+            likesAndCommentsView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
+            likesAndCommentsView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset)
 
         ]
         

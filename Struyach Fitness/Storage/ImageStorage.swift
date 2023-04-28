@@ -10,7 +10,6 @@ import UIKit
 
 struct ImageStorage {
     static let imageArray: [UIImage?] = [UIImage(named: "assault"),
-                                         UIImage(named:"bmu"),
                                          UIImage(named:"deadlift"),
                                          UIImage(named:"du"),
                                          UIImage(named:"handstandwalk"),
@@ -21,5 +20,17 @@ struct ImageStorage {
                                          UIImage(named:"rowing"),
                                          UIImage(named:"sledge"),
                                          UIImage(named:"snatch"),
-                                         UIImage(named:"snatch2")]
+                                         UIImage(named:"snatch2"),
+                                         UIImage(named:"IMG_2917"),
+                                         UIImage(named:"IMG_2918"),
+                                         UIImage(named:"IMG_2919"),
+                                         UIImage(named:"IMG_2920"),
+                                         UIImage(named:"IMG_2921"),
+                                         UIImage(named:"IMG_2922"),
+                                         UIImage(named:"IMG_2923"),
+                                         UIImage(named:"IMG_2924"),
+                                         UIImage(named:"IMG_2927"),
+                                         UIImage(named:"IMG_2928"),
+                                         UIImage(named:"IMG_2930")
+    ]
 }

@@ -9,7 +9,7 @@ import UIKit
 import SwiftUI
 
 
-class ProfileHeaderView: UIView {
+final class ProfileHeaderView: UIView {
     
     //MARK: - Properties
     

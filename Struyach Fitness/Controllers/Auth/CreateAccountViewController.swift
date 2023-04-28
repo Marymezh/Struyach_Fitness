@@ -7,7 +7,7 @@
 
 import UIKit
 
-class CreateAccountViewController: UIViewController {
+final class CreateAccountViewController: UIViewController {
     
     //MARK: - Properties
     

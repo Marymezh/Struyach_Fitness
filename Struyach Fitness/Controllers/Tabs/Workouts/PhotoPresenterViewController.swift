@@ -8,7 +8,7 @@
 import UIKit
 import SDWebImage
 
-class PhotoPresenterViewController: UIViewController {
+final class PhotoPresenterViewController: UIViewController {
     
     //MARK: - Properties
     

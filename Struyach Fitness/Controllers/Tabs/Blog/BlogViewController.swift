@@ -8,7 +8,7 @@
 import UIKit
 import FirebaseFirestore
 
-class BlogViewController: UIViewController {
+final class BlogViewController: UIViewController {
     
     //MARK: - Properties
     
@@ -22,21 +22,7 @@ class BlogViewController: UIViewController {
     private var postUpdatesListener: ListenerRegistration?
     private var tableView = UITableView(frame: .zero, style: .grouped)
     
-    private lazy var plusButton: UIButton = {
-       let button = UIButton()
-        button.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), for: .normal)
-        button.backgroundColor = .systemGreen
-        button.tintColor = .white
-        button.addTarget(self, action: #selector(addNewPost), for: .touchUpInside)
-        button.layer.cornerRadius = 30
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowRadius = 30
-        button.layer.shadowOffset = CGSize(width: 5, height: 5)
-        button.layer.shadowOpacity = 0.6
-        button.isHidden = true
-        button.toAutoLayout()
-        return button
-    }()
+    private let plusButtonView = PlusButtonView()
     
     //MARK: - Lifecycle
     
@@ -83,18 +69,17 @@ class BlogViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.toAutoLayout()
-        view.addSubviews(tableView, plusButton)
-        view.bringSubviewToFront(plusButton)
+        plusButtonView.toAutoLayout()
+        plusButtonView.plusButton.addTarget(self, action: #selector(addNewPost), for: .touchUpInside)
+        view.addSubviews(tableView, plusButtonView)
         let constraints = [
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            plusButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -25),
-            plusButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -25),
-            plusButton.widthAnchor.constraint(equalToConstant: 60),
-            plusButton.heightAnchor.constraint(equalTo: plusButton.widthAnchor)
+            plusButtonView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -25),
+            plusButtonView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -25)
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -102,7 +87,7 @@ class BlogViewController: UIViewController {
     
     private func setupAdminFunctionality (){
         setupGestureRecognizer()
-        plusButton.isHidden = false
+        plusButtonView.plusButton.isHidden = false
     }
     
     private func setupGestureRecognizer() {
@@ -239,36 +224,36 @@ class BlogViewController: UIViewController {
         
         cell.postDateLabel.text = post.date
         cell.postDescriptionTextView.text = post.description
-        cell.likesLabel.text = "\(post.likes)"
+        cell.likesAndCommentsView.likesLabel.text = "\(post.likes)"
         switch post.comments {
-        case 0: cell.commentsLabel.text = "No comments posted yet"
-        case 1: cell.commentsLabel.text = "\(post.comments) comment "
-        default: cell.commentsLabel.text = "\(post.comments) comments"
+        case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet"
+        case 1: cell.likesAndCommentsView.commentsLabel.text = "\(post.comments) comment "
+        default: cell.likesAndCommentsView.commentsLabel.text = "\(post.comments) comments"
         }
         
         if likedPosts.contains(post.id) {
-            cell.likeButton.isSelected = true
-            cell.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            cell.likeButton.tintColor = .systemRed
+            cell.likesAndCommentsView.likeButton.isSelected = true
+            cell.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            cell.likesAndCommentsView.likeButton.tintColor = .systemRed
         } else {
-            cell.likeButton.isSelected = false
-            cell.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            cell.likeButton.tintColor = .white
+            cell.likesAndCommentsView.likeButton.isSelected = false
+            cell.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            cell.likesAndCommentsView.likeButton.tintColor = .white
         }
         
         cell.onLikeButtonPush = {
-            cell.likeButton.isSelected = !cell.likeButton.isSelected
+            cell.likesAndCommentsView.likeButton.isSelected = !cell.likesAndCommentsView.likeButton.isSelected
 
-            if cell.likeButton.isSelected {
-                cell.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-                cell.likeButton.tintColor = .systemRed
+            if cell.likesAndCommentsView.likeButton.isSelected {
+                cell.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+                cell.likesAndCommentsView.likeButton.tintColor = .systemRed
                 post.likes += 1
                 DatabaseManager.shared.updateBlogLikes(blogPost: post, likesCount: post.likes) {[weak self] blogPost in
                     guard let self = self else {return}
                     print (blogPost.likes)
                     if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
                             self.blogPosts[index] = blogPost
-                    cell.likesLabel.text = "\(blogPost.likes)"
+                        cell.likesAndCommentsView.likesLabel.text = "\(blogPost.likes)"
                     }
 
                     if !self.likedPosts.contains(post.id) {
@@ -277,15 +262,15 @@ class BlogViewController: UIViewController {
                     }
                 }
             } else {
-                cell.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-                cell.likeButton.tintColor = .white
+                cell.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+                cell.likesAndCommentsView.likeButton.tintColor = .white
                 post.likes -= 1
                 DatabaseManager.shared.updateBlogLikes(blogPost: post, likesCount: post.likes) {[weak self] blogPost in
                     guard let self = self else {return}
                     print (blogPost.likes)
                     if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
                             self.blogPosts[index] = blogPost
-                    cell.likesLabel.text = "\(blogPost.likes)"
+                        cell.likesAndCommentsView.likesLabel.text = "\(blogPost.likes)"
                     }
 
                     if let index = self.likedPosts.firstIndex(of: post.id) {
@@ -310,9 +295,9 @@ class BlogViewController: UIViewController {
                         if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
                             self.blogPosts[index] = blogPost
                             switch blogPost.comments {
-                            case 0: cell.commentsLabel.text = "No comments posted yet"
-                            case 1: cell.commentsLabel.text = "\(blogPost.comments) comment "
-                            default: cell.commentsLabel.text = "\(blogPost.comments) comments"
+                            case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet"
+                            case 1: cell.likesAndCommentsView.commentsLabel.text = "\(blogPost.comments) comment "
+                            default: cell.likesAndCommentsView.commentsLabel.text = "\(blogPost.comments) comments"
                             }
                         }
                     }

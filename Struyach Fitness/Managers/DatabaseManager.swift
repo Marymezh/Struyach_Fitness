@@ -996,8 +996,6 @@ final class DatabaseManager {
         }
     }
     
-    
-    
     public func updateProfilePhoto(email: String, completion: @escaping (Bool) ->()){
         let path = email
             .replacingOccurrences(of: ".", with: "_")

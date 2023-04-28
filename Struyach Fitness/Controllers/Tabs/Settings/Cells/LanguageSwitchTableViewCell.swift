@@ -16,7 +16,7 @@ protocol LanguageSwitchDelegate: AnyObject {
     func didSwitchLanguage(to language: Language)
 }
 
-class LanguageSwitchTableViewCell: UITableViewCell {
+final class LanguageSwitchTableViewCell: UITableViewCell {
     
     weak var delegate: LanguageSwitchDelegate?
     

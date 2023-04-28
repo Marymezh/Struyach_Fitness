@@ -8,7 +8,7 @@
 import UIKit
 //import IQKeyboardManagerSwift
 
-class ProfileTableViewController: UITableViewController {
+final class ProfileTableViewController: UITableViewController {
     
     //MARK: - Properties
     

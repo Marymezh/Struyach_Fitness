@@ -7,7 +7,7 @@
 
 import UIKit
 
-class SignUpView: UIView {
+final class SignUpView: UIView {
     
     //MARK: - Properties
     

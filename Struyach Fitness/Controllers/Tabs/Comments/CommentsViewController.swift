@@ -14,7 +14,7 @@ import AVFoundation
 import AVKit
 
 
-class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate {
+final class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate {
     
     //    MARK: - Properties
     

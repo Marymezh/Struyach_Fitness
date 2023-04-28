@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ProgramTableViewCell: UITableViewCell {
+final class ProgramTableViewCell: UITableViewCell {
     
     var program: ProgramDescription? {
         didSet {

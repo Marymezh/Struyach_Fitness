@@ -7,13 +7,13 @@
 
 import UIKit
 
-class AboutViewController: UIViewController {
+final class AboutViewController: UIViewController {
     
     // MARK: - Properties
     
     private let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "deadlift")
+        imageView.image = UIImage(named: "coach")
         imageView.toAutoLayout()
         imageView.contentMode = .scaleAspectFill
         imageView.alpha = 0.3

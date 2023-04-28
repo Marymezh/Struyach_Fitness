@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ActivityView: UIView {
+final class ActivityView: UIView {
     
     //MARK: - Properties
     
@@ -26,6 +26,8 @@ class ActivityView: UIView {
         return indicator
     }()
 
+    //MARK: - Lifecycle
+    
     init() {
         super.init(frame: .zero)
         setupSubviews()

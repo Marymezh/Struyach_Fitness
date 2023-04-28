@@ -8,7 +8,7 @@
 import UIKit
 import IQKeyboardManagerSwift
 
-class TextViewController: UIViewController, UITextViewDelegate {
+final class TextViewController: UIViewController, UITextViewDelegate {
     
     //MARK: - Properties
     

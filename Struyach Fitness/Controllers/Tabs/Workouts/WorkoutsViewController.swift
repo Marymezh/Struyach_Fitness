@@ -8,7 +8,7 @@
 import UIKit
 import FirebaseFirestore
 
-class WorkoutsViewController: UIViewController {
+final class WorkoutsViewController: UIViewController {
     
     //MARK: - Properties
     
@@ -27,88 +27,18 @@ class WorkoutsViewController: UIViewController {
     private var shouldLoadMorePosts = true
     private var workoutsListener: ListenerRegistration?
    
-    private lazy var addCommentButton: UIButton = {
-        let button = UIButton()
-        button.toAutoLayout()
-        button.tintColor = .white
-        button.setImage(UIImage(systemName: "message", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-        button.addTarget(self, action: #selector(pushCommentsVC), for: .touchUpInside)
-        return button
-    }()
+    private let likesAndCommentsView = LikesAndCommentsView()
+    private let searchBarView = SearchBarView()
+    private let plusButtonView = PlusButtonView()
     
-    private lazy var likeButton: UIButton = {
-        let button = UIButton()
-        button.toAutoLayout()
-        button.tintColor = .white
-        button.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-        button.addTarget(self, action: #selector(addLikeToWorkout), for: .touchUpInside)
-        return button
-    }()
     
-    private let likesLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        label.textColor = .white
-        label.text = "0"
-        label.toAutoLayout()
-        return label
-    }()
-
-    private let commentsLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        label.textColor = .white
-        label.toAutoLayout()
-        return label
-    }()
-    
-    private let stackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.distribution = .equalSpacing
-        stackView.axis = .horizontal
-        stackView.alignment = .center
-        stackView.toAutoLayout()
-        return stackView
-    }()
-    
-    private lazy var searchBar: UISearchBar = {
-        let searchBar = UISearchBar()
-        searchBar.placeholder = "Search for workouts"
-        searchBar.searchBarStyle = .minimal
-        searchBar.backgroundColor = .customDarkGray
-        searchBar.searchTextField.textColor = .customDarkGray
-        searchBar.searchTextField.backgroundColor = .white
-        searchBar.barTintColor = .customDarkGray
-        searchBar.tintColor = .customDarkGray
-        searchBar.clipsToBounds = true
-        searchBar.showsCancelButton = true
-        searchBar.isHidden = true
-        searchBar.toAutoLayout()
-        return searchBar
-    }()
-    
-    private lazy var plusButton: UIButton = {
-       let button = UIButton()
-        button.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), for: .normal)
-        button.backgroundColor = .systemGreen
-        button.tintColor = .white
-        button.addTarget(self, action: #selector(addNewWorkout), for: .touchUpInside)
-        button.layer.cornerRadius = 30
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowRadius = 30
-        button.layer.shadowOffset = CGSize(width: 5, height: 5)
-        button.layer.shadowOpacity = 0.6
-        button.isHidden = true
-        button.toAutoLayout()
-        return button
-    }()
     
     //MARK: Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        searchBar.delegate = self
+        searchBarView.searchBar.delegate = self
         setupNavigationAndTabBar()
         setupCollectionView()
         setupSubviews()
@@ -154,7 +84,7 @@ class WorkoutsViewController: UIViewController {
         workoutsListener?.remove()
     }
     
-    //MARK: - Methods to setup Navigation Bar, TableView and load workout data
+    //MARK: - Methods to setup Navigation Bar, TableView and subviews
     
     private func setupNavigationAndTabBar() {
         navigationController?.navigationBar.tintColor = .systemGreen
@@ -165,21 +95,23 @@ class WorkoutsViewController: UIViewController {
     private func setupSubviews(){
         view.backgroundColor = .customDarkGray
         selectedWorkoutView.toAutoLayout()
-        view.addSubviews(searchBar, workoutsCollection, selectedWorkoutView, stackView, plusButton)
-        stackView.addArrangedSubview(likeButton)
-        stackView.addArrangedSubview(likesLabel)
-        stackView.addArrangedSubview(addCommentButton)
-        stackView.addArrangedSubview(commentsLabel)
+        searchBarView.toAutoLayout()
+        likesAndCommentsView.toAutoLayout()
+        likesAndCommentsView.likeButton.addTarget(self, action: #selector(addLikeToWorkout), for: .touchUpInside)
+        likesAndCommentsView.addCommentButton.addTarget(self, action: #selector(pushCommentsVC), for: .touchUpInside)
+        plusButtonView.toAutoLayout()
+        plusButtonView.plusButton.addTarget(self, action: #selector(addNewWorkout), for: .touchUpInside)
         
-        searchBarConstraint = searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -44)
+        view.addSubviews(searchBarView, workoutsCollection, selectedWorkoutView, likesAndCommentsView, plusButtonView)
+        searchBarConstraint = searchBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: -44)
         
         let constraints = [
             searchBarConstraint!,
-            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            searchBar.heightAnchor.constraint(equalToConstant: 44),
+            searchBarView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            searchBarView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            searchBarView.heightAnchor.constraint(equalToConstant: 44),
         
-            workoutsCollection.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 15),
+            workoutsCollection.topAnchor.constraint(equalTo: searchBarView.bottomAnchor, constant: baseInset),
             workoutsCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             workoutsCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             workoutsCollection.heightAnchor.constraint(equalToConstant: 90),
@@ -187,24 +119,14 @@ class WorkoutsViewController: UIViewController {
             selectedWorkoutView.topAnchor.constraint(equalTo: workoutsCollection.bottomAnchor, constant: baseInset),
             selectedWorkoutView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             selectedWorkoutView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            selectedWorkoutView.bottomAnchor.constraint(equalTo: stackView.topAnchor, constant: -baseInset),
+            selectedWorkoutView.bottomAnchor.constraint(equalTo: likesAndCommentsView.topAnchor, constant: -baseInset),
             
-            likeButton.widthAnchor.constraint(equalToConstant: 35),
-            likeButton.heightAnchor.constraint(equalTo: likeButton.widthAnchor),
-            likesLabel.leadingAnchor.constraint(equalTo: likeButton.trailingAnchor, constant: baseInset),
-            likesLabel.widthAnchor.constraint(equalTo: likeButton.widthAnchor),
-            addCommentButton.widthAnchor.constraint(equalToConstant: 35),
-            addCommentButton.heightAnchor.constraint(equalToConstant: 35),
-            commentsLabel.leadingAnchor.constraint(equalTo: addCommentButton.trailingAnchor, constant: baseInset),
+            likesAndCommentsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
+            likesAndCommentsView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
+            likesAndCommentsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
             
-            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: baseInset),
-            stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
-            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
-            
-            plusButton.bottomAnchor.constraint(equalTo: selectedWorkoutView.bottomAnchor, constant: -25),
-            plusButton.trailingAnchor.constraint(equalTo: selectedWorkoutView.trailingAnchor, constant: -25),
-            plusButton.widthAnchor.constraint(equalToConstant: 60),
-            plusButton.heightAnchor.constraint(equalTo: plusButton.widthAnchor)
+            plusButtonView.bottomAnchor.constraint(equalTo: selectedWorkoutView.bottomAnchor, constant: -25),
+            plusButtonView.trailingAnchor.constraint(equalTo: selectedWorkoutView.trailingAnchor, constant: -25)
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -225,24 +147,24 @@ class WorkoutsViewController: UIViewController {
     
     private func setupAdminFunctionality (){
         setupGuestureRecognizer()
-        plusButton.isHidden = false
+        plusButtonView.plusButton.isHidden = false
     }
     
     private func clearUI() {
-        likesLabel.text = "0"
-        likeButton.isSelected = false
-        likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-        likeButton.tintColor = .white
-        commentsLabel.text = "No comments posted yet"
+        likesAndCommentsView.likesLabel.text = "0"
+        likesAndCommentsView.likeButton.isSelected = false
+        likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+        likesAndCommentsView.likeButton.tintColor = .white
+        likesAndCommentsView.commentsLabel.text = "No comments posted yet"
     }
     
     private func updateUI(workout: Workout) {
         selectedWorkoutView.workoutDescriptionTextView.text = workout.description
-        likesLabel.text = "\(workout.likes)"
+        likesAndCommentsView.likesLabel.text = "\(workout.likes)"
         switch workout.comments {
-        case 0: commentsLabel.text = "No comments posted yet"
-        case 1: commentsLabel.text = "1 comment "
-        default: commentsLabel.text = "\(workout.comments) comments"
+        case 0: likesAndCommentsView.commentsLabel.text = "No comments posted yet"
+        case 1: likesAndCommentsView.commentsLabel.text = "1 comment "
+        default: likesAndCommentsView.commentsLabel.text = "\(workout.comments) comments"
         }
     }
     
@@ -382,11 +304,7 @@ class WorkoutsViewController: UIViewController {
                     print ("number of workout comments is \(workout.comments)")
                     if let index = self.filteredWorkouts.firstIndex(where: { $0.id == workout.id }) {
                         self.filteredWorkouts[index] = workout
-                        switch workout.comments {
-                        case 0: self.commentsLabel.text = "No comments posted yet"
-                        case 1: self.commentsLabel.text = "\(workout.comments) comment "
-                        default: self.commentsLabel.text = "\(workout.comments) comments"
-                        }
+                        self.updateUI(workout: workout)
                     }
                 }
             }
@@ -399,35 +317,35 @@ class WorkoutsViewController: UIViewController {
     }
     
     @objc private func addLikeToWorkout() {
-        likeButton.isSelected = !likeButton.isSelected
+        likesAndCommentsView.likeButton.isSelected = !likesAndCommentsView.likeButton.isSelected
         guard var selectedWorkout = selectedWorkout,
               let index = listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
         
-        if likeButton.isSelected {
-            likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likeButton.tintColor = .systemRed
+        if likesAndCommentsView.likeButton.isSelected {
+            likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likesAndCommentsView.likeButton.tintColor = .systemRed
             selectedWorkout.likes += 1
             DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] workout in
                 guard let self = self else {return}
                 print ("likes increase by 1")
                 self.listOfWorkouts[index] = workout
                 self.filteredWorkouts = self.listOfWorkouts
-                self.likesLabel.text = "\(workout.likes)"
+                self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
                 if !self.likedWorkouts.contains(selectedWorkout.id) {
                     self.likedWorkouts.append(selectedWorkout.id)
                     UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
                 }
             }
         } else {
-            likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likeButton.tintColor = .white
+            likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likesAndCommentsView.likeButton.tintColor = .white
             selectedWorkout.likes -= 1
             DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] workout in
                 guard let self = self else {return}
                 print ("likes decrease by 1")
                 self.listOfWorkouts[index] = workout
                 self.filteredWorkouts = self.listOfWorkouts
-                self.likesLabel.text = "\(workout.likes)"
+                self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
                 if let index = self.likedWorkouts.firstIndex(of: selectedWorkout.id) {
                     self.likedWorkouts.remove(at: index)
                     UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
@@ -438,10 +356,10 @@ class WorkoutsViewController: UIViewController {
     }
     
     @objc private func toggleSearchBar() {
-        searchBar.isHidden = !searchBar.isHidden
+        searchBarView.searchBar.isHidden = !searchBarView.searchBar.isHidden
         
-        if searchBar.isHidden {
-            searchBarConstraint?.constant = -searchBar.frame.size.height
+        if searchBarView.searchBar.isHidden {
+            searchBarConstraint?.constant = -searchBarView.searchBar.frame.size.height
         } else {
             searchBarConstraint?.constant = 0
         }
@@ -490,13 +408,13 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
         updateUI(workout: selectedWorkout)
         
         if hasUserLikedWorkout(workout: selectedWorkout) == true {
-            self.likeButton.isSelected = true
-            likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likeButton.tintColor = .systemRed
+            self.likesAndCommentsView.likeButton.isSelected = true
+            likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likesAndCommentsView.likeButton.tintColor = .systemRed
         } else {
-            self.likeButton.isSelected = false
-            likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likeButton.tintColor = .white
+            self.likesAndCommentsView.likeButton.isSelected = false
+            likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+            likesAndCommentsView.likeButton.tintColor = .white
         }
     }
     
@@ -575,7 +493,7 @@ extension WorkoutsViewController: UISearchBarDelegate {
         }
     }
     private func setupSearchBarCancelButton() {
-        if let cancelButton = searchBar.value(forKey: "cancelButton") as? UIButton {
+        if let cancelButton = searchBarView.searchBar.value(forKey: "cancelButton") as? UIButton {
             cancelButton.backgroundColor = .clear
             cancelButton.tintColor = .white
             cancelButton.setTitle(nil, for: .normal)

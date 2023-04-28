@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PaywallView: UIView {
+final class PaywallView: UIView {
     
     //MARK: - Properties
     
@@ -44,6 +44,7 @@ class PaywallView: UIView {
         button.setTitleColor(UIColor.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
         return button
     }()
     
@@ -66,13 +67,15 @@ class PaywallView: UIView {
         return button
     }()
     
-//    let backgroundView: UIView = {
-//        let view = UIView()
-//        view.toAutoLayout()
-//        view.backgroundColor = .black
-//        view.alpha = 0.5
-//        return view
-//    }()
+    private let stackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.distribution = .equalSpacing
+        stackView.alignment = .center
+        stackView.spacing = 32
+        stackView.toAutoLayout()
+        return stackView
+    }()
     
     //MARK: - Lifecycle
     
@@ -89,32 +92,21 @@ class PaywallView: UIView {
     
     private func setupSubviews() {
         self.backgroundColor = UIColor.black.withAlphaComponent(0.8)
-        self.addSubviews(titleLabel, descriptionLabel, payButton, otherOptionsButton)
+        self.addSubview(stackView)
+        self.stackView.addArrangedSubview(titleLabel)
+        self.stackView.addArrangedSubview(descriptionLabel)
+        self.stackView.addArrangedSubview(payButton)
+        self.stackView.addArrangedSubview(otherOptionsButton)
         
         let constraints = [
-//            backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
-//            backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-//            backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-//            backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: self.topAnchor, constant: bigInset),
+            stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
+            stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             
-            titleLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: bigInset),
-            titleLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
-            titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
-            
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: smallInset),
-            descriptionLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
-            descriptionLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
-            
-            payButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: bigInset),
-            payButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: bigInset),
-            payButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -bigInset),
             payButton.heightAnchor.constraint(equalToConstant: 60),
-            
-            otherOptionsButton.topAnchor.constraint(equalTo: payButton.bottomAnchor, constant: smallInset),
-            otherOptionsButton.trailingAnchor.constraint(equalTo: payButton.trailingAnchor),
-            otherOptionsButton.leadingAnchor.constraint(equalTo: payButton.leadingAnchor),
             otherOptionsButton.heightAnchor.constraint(equalToConstant: 40)
         ]
+        
         NSLayoutConstraint.activate(constraints)
     }
     

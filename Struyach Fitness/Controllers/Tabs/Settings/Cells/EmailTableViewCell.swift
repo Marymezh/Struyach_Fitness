@@ -8,7 +8,7 @@
 import UIKit
 import MessageUI
 
-class EmailTableViewCell: UITableViewCell {
+final class EmailTableViewCell: UITableViewCell {
 
     // MARK: - Properties
     
