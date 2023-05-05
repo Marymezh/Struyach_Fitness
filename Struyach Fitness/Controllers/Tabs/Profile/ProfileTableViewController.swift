@@ -45,6 +45,11 @@ final class ProfileTableViewController: UITableViewController {
             uploadUserRecords()
         }
     }
+    
+    deinit {
+           print ("profile vc is deallocated")
+       }
+    
     //MARK: - Setup methods
     private func setupTableView() {
         tableView.backgroundColor = .customDarkGray
@@ -57,7 +62,7 @@ final class ProfileTableViewController: UITableViewController {
     private func setupNavigationBar () {
         navigationController?.navigationBar.tintColor = .systemRed
          navigationItem.rightBarButtonItem = UIBarButtonItem(
-             title: "Sign Out",
+            title: "Sign Out".localized(),
              style: .done,
              target: self,
              action: #selector(didTapSignOut))
@@ -85,12 +90,12 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     @objc private func changeUserNameTapped() {
-        let alertController = UIAlertController(title: "Change user name", message: nil, preferredStyle: .alert)
+        let alertController = UIAlertController(title: "Change user name".localized(), message: nil, preferredStyle: .alert)
         alertController.addTextField { textfield in
-            textfield.placeholder = "Enter new name here"
+            textfield.placeholder = "Enter new name here".localized()
         }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .default)
-        let changeAction = UIAlertAction(title: "Save", style: .default) { action in
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .default)
+        let changeAction = UIAlertAction(title: "Save".localized(), style: .default) { action in
             if let text = alertController.textFields?[0].text,
                text != "" {
                 DatabaseManager.shared.updateUserName(email: self.email, newUserName: text) { success in
@@ -102,7 +107,7 @@ final class ProfileTableViewController: UITableViewController {
                     }
                 }
             } else {
-                self.showErrorAlert(text: "User name can not be blank!")
+                self.showErrorAlert(text: "User name can not be blank!".localized())
             }
         }
         
@@ -114,9 +119,9 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     @objc private func didTapSignOut() {
-        let alert = UIAlertController(title: "Sign Out", message: "Are you sure you would like to sign out?", preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Sign Out", style: .destructive, handler: { action in
+        let alert = UIAlertController(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
+        alert.addAction(UIAlertAction(title: "Sign Out".localized(), style: .destructive, handler: { action in
             AuthManager.shared.signOut { [weak self] success in
                 if success {
                     DispatchQueue.main.async {
@@ -147,7 +152,7 @@ final class ProfileTableViewController: UITableViewController {
 
                 let task = URLSession.shared.dataTask(with: url) { data, response, error in
                     guard let data = data, error == nil else {
-                        print("Error downloading image: \(error?.localizedDescription ?? "unknown error")")
+                        print("Error downloading image: \(error?.localizedDescription ?? "unknown error".localized())")
                         return
                     }
 
@@ -232,8 +237,8 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     private func showErrorAlert(text: String) {
-        let alert = UIAlertController(title: "Error", message: text, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let alert = UIAlertController(title: "Error".localized(), message: text, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
         alert.view.tintColor = .red
         alert.addAction(cancelAction)
         present(alert, animated: true)
@@ -250,7 +255,7 @@ final class ProfileTableViewController: UITableViewController {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
             cell.backgroundColor = .customLightGray
-            cell.textLabel?.text = "PERSONAL RECORDS"
+            cell.textLabel?.text = "PERSONAL RECORDS".localized()
             cell.textLabel?.textColor = .customDarkGray
             cell.textLabel?.textAlignment = .center
             cell.textLabel?.font = UIFont.systemFont(ofSize: 22, weight: .bold)
@@ -260,7 +265,7 @@ final class ProfileTableViewController: UITableViewController {
             cell.backgroundColor = .customLightGray
             if email == currentUserEmail {
                 cell.movementLabel.text = movements[indexPath.row]
-                cell.weightLabel.text = "\(weights[indexPath.row]) kg"
+                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
                 cell.weightIsSet = { [weak self] text in
                     guard let self = self else {return}
                     self.weights.remove(at: indexPath.row)
@@ -270,7 +275,7 @@ final class ProfileTableViewController: UITableViewController {
                 }
             } else {
                 cell.movementLabel.text = movements[indexPath.row]
-                cell.weightLabel.text = "\(weights[indexPath.row]) kg"
+                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
                 cell.weightTextField.isHidden = true
                 cell.saveButton.isHidden = true
             }

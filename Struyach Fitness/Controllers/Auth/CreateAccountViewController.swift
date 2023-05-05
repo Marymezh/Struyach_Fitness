@@ -124,12 +124,12 @@ final class CreateAccountViewController: UIViewController {
                     }
                 }
             case .failure(let error):
-                var errorMessage = "Unable to create new user."
+                var errorMessage = "Unable to create new user".localized()
                 switch error {
                 case .emailAlreadyExists:
-                    errorMessage = "A user with this email already exists."
+                    errorMessage = "A user with this email already exists".localized()
                 case .passwordTooShort:
-                    errorMessage = "Password is too short. Use at least 6 symbols."
+                    errorMessage = "Password is too short. Use at least 6 symbols".localized()
                 case .unknownError:
                     errorMessage = "\(error.localizedDescription)"
                 }
@@ -139,8 +139,8 @@ final class CreateAccountViewController: UIViewController {
     }
     
     private func showErrorAlert(text: String) {
-        let alert = UIAlertController(title: "Error", message: text, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let alert = UIAlertController(title: "Error".localized(), message: text, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
         alert.view.tintColor = .red
         alert.addAction(cancelAction)
         navigationController?.present(alert, animated: true)
@@ -152,7 +152,7 @@ extension CreateAccountViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == signUpView.confirmPasswordTextField {
             if textField.text != signUpView.passwordTextField.text {
-                showErrorAlert(text: "Passwords don't match!")
+                showErrorAlert(text: "Passwords don't match!".localized())
                 textField.text = ""
             }
         }
@@ -167,6 +167,7 @@ extension CreateAccountViewController: UIImagePickerControllerDelegate, UINaviga
         picker.allowsEditing = true
         picker.delegate = self
         picker.sourceType = .photoLibrary
+        navigationItem.backButtonTitle = "Cancel".localized()
         navigationController?.present(picker, animated: true)
     }
     

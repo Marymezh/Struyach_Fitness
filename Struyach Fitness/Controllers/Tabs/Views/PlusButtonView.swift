@@ -19,7 +19,6 @@ class PlusButtonView: UIView {
         button.layer.shadowRadius = 30
         button.layer.shadowOffset = CGSize(width: 5, height: 5)
         button.layer.shadowOpacity = 0.6
-        button.isHidden = true
         button.toAutoLayout()
         return button
     }()
@@ -43,9 +42,7 @@ class PlusButtonView: UIView {
             plusButton.topAnchor.constraint(equalTo: self.topAnchor),
             plusButton.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             plusButton.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            plusButton.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            plusButton.widthAnchor.constraint(equalToConstant: 60),
-            plusButton.heightAnchor.constraint(equalTo: plusButton.widthAnchor)
+            plusButton.bottomAnchor.constraint(equalTo: self.bottomAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)

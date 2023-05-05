@@ -18,7 +18,7 @@ final class AboutTableViewCell: UITableViewCell {
       override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
           super.init(style: style, reuseIdentifier: reuseIdentifier)
           self.backgroundColor = .customDarkGray
-          textLabel?.text = "About this app"
+          textLabel?.text = "About this app".localized()
           textLabel?.textColor = .white
           imageView?.image = UIImage(systemName: "info.circle")
           imageView?.tintColor = .systemGreen

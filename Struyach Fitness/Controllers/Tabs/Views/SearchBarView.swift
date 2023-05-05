@@ -11,7 +11,7 @@ class SearchBarView: UIView {
 
     let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
-        searchBar.placeholder = "Search for workouts"
+        searchBar.placeholder = "Search for workouts".localized()
         searchBar.searchBarStyle = .minimal
         searchBar.backgroundColor = .customDarkGray
         searchBar.searchTextField.textColor = .customDarkGray

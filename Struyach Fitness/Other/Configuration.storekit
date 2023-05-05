@@ -1,0 +1,56 @@
+{
+  "identifier" : "C1D61F4D",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "9E6BB1E2",
+      "localizations" : [
+
+      ],
+      "name" : "paid plans",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "CAEE2E09",
+          "introductoryOffer" : {
+            "internalID" : "A6A2FD4B",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Месячная подписка на план ",
+              "displayName" : "ECD plan",
+              "locale" : "ru"
+            }
+          ],
+          "productID" : "marymezh.StruyachFitnessClient.ecd",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "ECD plan",
+          "subscriptionGroupID" : "9E6BB1E2",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 1,
+    "minor" : 2
+  }
+}

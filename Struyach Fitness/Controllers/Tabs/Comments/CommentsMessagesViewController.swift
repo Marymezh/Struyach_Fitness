@@ -34,7 +34,7 @@ class CommentsMessagesViewController: MessagesViewController {
         layout?.setMessageIncomingAvatarPosition(AvatarPosition(vertical: .messageBottom))
         
         messageInputBar.backgroundView.backgroundColor = .customKeyboard
-        messageInputBar.inputTextView.placeholder = " Write a comment..."
+        messageInputBar.inputTextView.placeholder = " Write a comment...".localized()
         messageInputBar.inputTextView.placeholderTextColor = .gray
         messageInputBar.inputTextView.backgroundColor = .systemGray6
         messageInputBar.inputTextView.layer.cornerRadius = 15

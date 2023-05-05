@@ -71,10 +71,10 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         navigationController?.navigationBar.prefersLargeTitles = true
     }
     
-//    override func viewWillDisappear(_ animated: Bool) {
-//        super.viewWillDisappear(animated)
-//        self.onCommentPosted?()
-//    }
+    deinit {
+           print ("comments vc is deallocated")
+       }
+    
     
     //MARK: - Message Collection View and InputBarView setup
     
@@ -138,7 +138,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private func presentInputOptions() {
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         actionSheet.view.tintColor = .darkGray
-        let cameraAction = UIAlertAction(title: "Camera", style: .default) { [weak self] _ in
+        let cameraAction = UIAlertAction(title: "Camera".localized(), style: .default) { [weak self] _ in
             guard let self = self else {return}
             self.activityView.showActivityIndicator()
             self.showImagePickerController(type: .camera)
@@ -150,7 +150,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText:
-                                            String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)),
+                                                        String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)),
                                           percentComplete: percentComplete)
                     }) { [weak self] ref in
                         guard let self = self else {return}
@@ -160,14 +160,14 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
-                            self.showAlert(title: "Warning", message: "Error uploading image to Storage")
+                            self.showAlert(title: "Warning".localized(), message: "Error uploading image".localized())
                         }
                         self.progressView.hide()
                     }
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
-                        self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)),
+                        self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)),
                                           percentComplete: percentComplete)
                     }) { [weak self] ref in
                         guard let self = self else {return}
@@ -177,7 +177,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
-                            self.showAlert(title: "Warning", message: "Error uploading image to Storage")
+                            self.showAlert(title: "Warning".localized(), message: "Error uploading image".localized())
                         }
                         self.progressView.hide()
                     }
@@ -187,7 +187,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         let cameraImage = UIImage(systemName: "camera")?.withRenderingMode(.alwaysOriginal)
         cameraAction.setValue(cameraImage, forKey: "image")
         
-        let photoAction = UIAlertAction(title: "Photo", style: .default) { [weak self] _ in
+        let photoAction = UIAlertAction(title: "Photo".localized(), style: .default) { [weak self] _ in
             guard let self = self else {return}
             self.activityView.showActivityIndicator()
             self.showImagePickerController(type: .photo)
@@ -198,7 +198,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 if let workout = self.workout {
                     StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
-                        self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
+                        self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                     }) { [weak self] ref in
                         guard let self = self else {return}
                         if let safeRef = ref {
@@ -207,7 +207,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
-                            self.showAlert(title: "Warning", message: "Error uploading image to Storage")
+                            self.showAlert(title: "Warning".localized(), message: "Error uploading image".localized())
                         }
                         self.progressView.hide()
                         self.activityView.showActivityIndicator()
@@ -216,7 +216,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
-                        self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
+                        self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                     }) { [weak self] ref in
                         guard let self = self else {return}
                         if let safeRef = ref {
@@ -225,7 +225,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
-                            self.showAlert(title: "Warning", message: "Error uploading image to Storage")
+                            self.showAlert(title: "Warning".localized(), message: "Error uploading image".localized())
                         }
                         self.progressView.hide()
                         self.activityView.showActivityIndicator()
@@ -237,13 +237,13 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         let photoImage = UIImage(systemName: "photo")?.withRenderingMode(.alwaysOriginal)
         photoAction.setValue(photoImage, forKey: "image")
         
-        let videoAction = UIAlertAction(title: "Video", style: .default) { [weak self] _ in
+        let videoAction = UIAlertAction(title: "Video".localized(), style: .default) { [weak self] _ in
             guard let self = self else { return }
             self.activityView.showActivityIndicator()
             self.showImagePickerController(type: .video)
             self.onFinishPicking = { info in
                 guard let videoUrl = info[.mediaURL] as? URL else {
-                    self.showAlert(title: "Warning", message: "Couldn't get mediaURL from image picker")
+                    self.showAlert(title: "Warning".localized(), message: "Couldn't get media URL from image picker".localized())
                     return
                 }
                 let videoData = try! Data(contentsOf: videoUrl)
@@ -251,7 +251,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 if let workout = self.workout {
                     StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: workout, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
-                        self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
+                        self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                     })  { [weak self] ref in
                         guard let self = self else { return }
                         if let safeRef = ref {
@@ -260,7 +260,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
                             }
                         } else {
-                            self.showAlert(title: "Warning", message: "Error uploading video to Storage")
+                            self.showAlert(title: "Warning".localized(), message: "Error uploading video".localized())
                         }
                         self.progressView.hide()
                         self.activityView.showActivityIndicator()
@@ -268,7 +268,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 } else if let post = self.blogPost {
                     StorageManager.shared.uploadVideoURLForBlogComment(videoID: videoId, videoData: videoData, blogPost: post, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
-                        self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
+                        self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                     })  { [weak self] ref in
                         guard let self = self else { return }
                         if let safeRef = ref {
@@ -277,7 +277,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
                             }
                         } else {
-                            self.showAlert(title: "Warning", message: "Error uploading video to Storage")
+                            self.showAlert(title: "Warning".localized(), message: "Error uploading video".localized())
                         }
                         self.progressView.hide()
                         self.activityView.showActivityIndicator()
@@ -292,7 +292,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         actionSheet.addAction(cameraAction)
         actionSheet.addAction(photoAction)
         actionSheet.addAction(videoAction)
-        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        actionSheet.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
        
         present(actionSheet, animated: true)
     }
@@ -320,7 +320,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    self.showAlert(title: "Warning", message: "Unable to post comment")
+                    self.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized())
                 }
             }
             messageInputBar.inputTextView.text = nil
@@ -338,7 +338,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    self.showAlert(title: "Warning", message: "Unable to post comment")
+                    self.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized())
                 }
             }
             messageInputBar.inputTextView.text = nil
@@ -368,7 +368,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    self.showAlert(title: "Warning", message: "Unable to post comment")
+                    self.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized())
                 }
             }
         } else if let post = self.blogPost {
@@ -384,7 +384,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    self.showAlert(title: "Warning", message: "Unable to post comment")
+                    self.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized())
                 }
             }
         }
@@ -414,7 +414,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    self.showAlert(title: "Warning", message: "Unable to post comment")
+                    self.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized())
                 }
             }
         } else if let post = self.blogPost {
@@ -430,7 +430,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    self.showAlert(title: "Warning", message: "Unable to post comment")
+                    self.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized())
                 }
             }
         }
@@ -463,9 +463,9 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         if let indexPath = messagesCollectionView.indexPathForItem(at: location) {
             let selectedMessage = self.commentsArray[indexPath.section]
             if userEmail == selectedMessage.sender.senderId {
-                let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
+                let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
                 
-                let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
+                let deleteAction = UIAlertAction(title: "Delete".localized(), style: .destructive) { [weak self] action in
                     guard let self = self else {return}
                     if let workout = self.workout {
                         DatabaseManager.shared.deleteComment(comment: selectedMessage) { success in
@@ -476,7 +476,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 }
                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                             } else {
-                                self.showAlert(title: "Warning", message: "Unable to delete comment")
+                                self.showAlert(title: "Warning".localized(), message: "Unable to delete comment".localized())
                             }
                         }
                     } else if let post = self.blogPost {
@@ -487,19 +487,19 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 }
                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                             } else {
-                                self.showAlert(title: "Warning", message: "Unable to delete comment")
+                                self.showAlert(title: "Warning".localized(), message: "Unable to delete comment".localized())
                             }
                         }
                     }
                 }
                 
-                let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
+                let editAction = UIAlertAction(title: "Edit".localized(), style: .default) { [weak self] action in
                     guard let self = self else {return}
                     
                     switch selectedMessage.kind {
                     case .text(let textToEdit):
                         let commentVC = TextViewController()
-                        commentVC.title = "Edit comment"
+                        commentVC.title = "Edit comment".localized()
                         commentVC.text = textToEdit
                         self.navigationController?.pushViewController(commentVC, animated: true)
                         commentVC.onWorkoutSave = { text in
@@ -508,7 +508,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     if success{
                                         self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                     } else {
-                                        self.showAlert(title: "Warning", message: "Unable to update selected comment")
+                                        self.showAlert(title: "Warning".localized(), message: "Unable to update selected comment".localized())
                                     }
                                 }
                             } else if let post = self.blogPost {
@@ -516,7 +516,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     if success{
                                         self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                     } else {
-                                        self.showAlert(title: "Warning", message: "Unable to update selected comment")
+                                        self.showAlert(title: "Warning".localized(), message: "Unable to update selected comment".localized())
                                     }
                                 }
                             }
@@ -535,7 +535,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 }
                                 StorageManager.shared.uploadImageForComment(image: imageData, imageId: imageId, workout: workout, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
-                                    self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
+                                    self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                                 }) { [weak self] ref in
                                     guard let self = self, let safeRef = ref else { return }
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -545,7 +545,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                             if success {
                                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                             } else {
-                                                self.showAlert(title: "Warning", message: "Unable to update selected photo comment")
+                                                self.showAlert(title: "Warning".localized(), message: "Unable to update selected photo comment".localized())
                                             }
                                             self.progressView.hide()
                                         }
@@ -558,7 +558,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 }
                                 StorageManager.shared.uploadImageForBlogComment(image: imageData, imageId: imageId, blogPost: post, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
-                                    self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
+                                    self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                                 }) { [weak self] ref in
                                     guard let self = self, let safeRef = ref else { return }
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -568,7 +568,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                             if success {
                                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                             } else {
-                                                self.showAlert(title: "Warning", message: "Unable to update selected photo comment")
+                                                self.showAlert(title: "Warning".localized(), message: "Unable to update selected photo comment".localized())
                                             }
                                             self.progressView.hide()
                                         }
@@ -589,7 +589,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 }
                                 StorageManager.shared.uploadVideoURLForComment(videoID: videoId, videoData: videoData, workout: workout, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
-                                    self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
+                                    self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                                 })  { [weak self] ref in
                                     guard let self = self, let safeRef = ref else {return}
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -600,7 +600,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                             if success {
                                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                             } else {
-                                                self.showAlert(title: "Warning", message: "Unable to update selected video comment")
+                                                self.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized())
                                             }
                                             self.progressView.hide()
                                         }
@@ -612,7 +612,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 }
                                 StorageManager.shared.uploadVideoURLForBlogComment(videoID: videoId, videoData: videoData, blogPost: post, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
-                                    self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)", Int(percentComplete * 100)), percentComplete: percentComplete)
+                                    self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                                 })  { [weak self] ref in
                                     guard let self = self, let safeRef = ref else {return}
                                     StorageManager.shared.downloadUrl(path: safeRef) { url in
@@ -623,7 +623,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                             if success {
                                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                             } else {
-                                                self.showAlert(title: "Warning", message: "Unable to update selected video comment")
+                                                self.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized())
                                             }
                                             self.progressView.hide()
                                         }
@@ -634,7 +634,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     default: break
                     }
                 }
-                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+                let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
                 alertController.addAction(editAction)
                 alertController.addAction(deleteAction)
                 alertController.addAction(cancelAction)
@@ -646,7 +646,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
         alert.addAction(cancelAction)
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)

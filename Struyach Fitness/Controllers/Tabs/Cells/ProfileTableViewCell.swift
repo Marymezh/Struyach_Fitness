@@ -32,7 +32,7 @@ final class ProfileTableViewCell: UITableViewCell {
     
     let weightTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "00 kg"
+        textField.placeholder = "00 kg".localized()
         textField.tintColor = .black
         textField.backgroundColor = .white
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
@@ -79,7 +79,7 @@ final class ProfileTableViewCell: UITableViewCell {
                 weightTextField.text = ""
             } else {
                 self.weightIsSet?("00")
-                weightLabel.text = "00 kg"
+                weightLabel.text = "00 kg".localized()
                 weightTextField.text = ""
             }
         }

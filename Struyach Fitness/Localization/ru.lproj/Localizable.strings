@@ -1,0 +1,160 @@
+/* 
+  Localizable.strings
+  Struyach Fitness
+
+  Created by Мария Межова on 1/5/23.
+  
+*/
+
+//MARK: - LAUNCH SCREENS
+"STRUYACH FITNESS" = "СТРУЯЧ ФИТНЕСС";
+
+//MARK: - LOG IN AND SIGN UP
+
+"Log In" = "Войти";
+"Create Account" = "Создать аккаунт";
+"Create new account" = "Создать новый аккаунт";
+"Password" = "Пароль";
+"Full name" = "Имя пользователя (как вас будут видеть другие)";
+"Password (minimum 6 symbols)" = "Пароль (минимум 6 символов)";
+"Confirm password" = "Подтвердите пароль";
+"Create" = "Создать";
+
+
+//MARK: - TAB BAR
+"Training Plans" = "Планы тренировок";
+"Coach Blog" = "Блог тренера";
+"Profile" = "Профиль";
+"Settings" = "Настройки";
+
+"Plans" = "Планы";
+"Blog" = "Блог";
+
+//MARK: - TRAINING PLANS DESCRIPTION
+
+"Get fit and toned with our Bodyweight Training Plan - no equipment needed, perfect for on-the-go workouts!" = "Тренировки с собственным весом, без дополнительного оборудования. В любое время, в любом месте!";
+"Transform your body with our ECD Plan - designed for gym or CrossFit box training" = "Базовый план клуба ECD. Разработан для тренировок в тренажерном зале или кроссфит-клубе";
+"Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes" = "Тренировочный план для соревнующихся атлетов. Присоединяйся, если хочешь достичь большего!";
+"Tone and strengthen your pelvic muscles with our 10 high-intensity workouts" = "10 высокоинтенсивных тренировок, направленных на укрепление мышц ног, бёдер и таза";
+"Get rid of stubborn belly fat and achieve a leaner, fitter body with our 10 high-intensity workouts" = "10 тренировок напралвенных на укрепление мышц пресса.";
+
+//MARK: - LIKES AND COMMENTS
+"No comments posted yet" = "Комментариев пока нет";
+"1 comment" = "1 комментарий";
+"%d comments" = "Всего комментариев - %d";
+" Write a comment..." = " Оставьте свой комментарий...";
+
+//MARK: - WORKOUTS AND POSTS
+"SAVE" = "Сохранить";
+"Add new workout" = "Добавить новую тренировку";
+"Add new post" = "Добавить новый пост";
+"No workouts found for this program" = "Здесь пока нет тренировок";
+"Workout successfully deleted" = "Тренировка успешно удалена";
+"Edit workout" = "Редактировать тренировку";
+"Edit post" = "Редактировать пост";
+
+"Search for workouts" = "Что будем искать?";
+"Ooops! No workouts were found! Change your query and try again." = "Ой! По вашему запросу ничего не нашлось! Измените запрос и попробуйте снова!";
+"Select workout from search results" = "Выберите тренировку из результатов поиска";
+
+
+//MARK: - COMMENTS
+"Back" = "Назад";
+"Comments" = "Комментарии";
+"Camera" = "Камера";
+"Uploading photo (%d%%)" = "Загрузка фото (%d%%)";
+"Error uploading image" = "Не удалось загрузить фото";
+"Photo" = "Фото";
+"Video" = "Видео";
+"Uploading video (%d%%)" = "Загрузка видео (%d%%)";
+"Error uploading video" = "Не удалось загрузить видео";
+"Couldn't get media URL from image picker" = "Не удалось получить адрес видео";
+"Unable to post comment" = "Не удалось добавить комментарий";
+"Unable to delete comment" = "Не удалось удалить комментарий";
+"Edit comment" = "Редактировать комментарий";
+"Unable to update selected comment" = "Не удалось отредактировать выбранный комментарий";
+"Updating photo (%d%%)" = "Загрузка нового фото (%d%%)";
+"Unable to update selected photo comment" = "Не удалось отредактировать фото";
+"Updating video (%d%%)" = "Загрузка нового видео (%d%%)";
+"Unable to update selected video comment" = "Не удалось отредактировать видео";
+
+//MARK: - ALERT CONTROLLERS
+"Error" = "Ошибка";
+"Cancel" = "Отменить";
+"Warning" = "Предупреждение";
+"Success" = "Готово";
+"Done" = "Готово";
+
+"Delete" = "Удалить";
+"Edit" = "Редактировать";
+"Save" = "Сохранить";
+
+"unknown error" = "Неизвестная ошибка";
+
+"Check your email" = "Нет пользователя с указанным адресом электронной почты";
+"Check your password" = "Неправильный пароль";
+"Unable to log in" = "Невозможно выполнить вход";
+"Retry" = "Пробовать снова";
+"Unable to create new user" = "Не удалось добавить нового пользователя";
+"A user with this email already exists" = "Пользователь с этим адресом уже существует";
+"Password is too short. Use at least 6 symbols" = "Пароль должен содержать минимум 6 символов";
+"Passwords don't match!" = "Пароли не совпадают!";
+"Unable to post new workout" = "Не удалось добавить новую тренировку";
+"Unable to delete this workout" = "Не удалось удалить выбранную тренировку";
+"All workouts have been loaded" = "Все тренировки загружены";
+"This textfield can not be blank!" = "Это текстовое поле не может быть пустым!";
+"Workout is successfully updated!" = "Тренировка успешно отредактирована";
+"Post is successfully updated!" = "Пост успешно отредактирован";
+"Unable to add new post" = "Не удалось добавить новый пост";
+"Post is successfully deleted! No more posts left in the Blog" = "Пост успешно удалён! В блоге больше не осталось постов";
+"Post is successfully deleted!" = "Пост успешно удалён!";
+"Unable to delete selected post" = "Не удалось удалить выбранный пост";
+"All posts have been loaded" = "Все посты загружены";
+
+"Change user name" = "Изменить имя пользователя";
+"Enter new name here" = "Введите новое имя";
+"User name can not be blank!" = "Имя пользователя не может быть пустым!";
+"Are you sure you would like to sign out?" = "Вы уверены, что хотите выйти из профиля?";
+
+//MARK: - PROFILE
+"Unknown user" = "Неизвестный пользователь";
+"Rename user" = "Изменить имя";
+"Sign Out" = "Выйти";
+"PERSONAL RECORDS" = "ПЕРСОНАЛЬНЫЕ РЕКОРДЫ";
+"%@ kg" = "%@ кг";
+"00 kg" = "00 кг";
+
+//MARK: - Settings
+
+"App information" = "Информация о приложении";
+"Notifications settings" = "Настройка уведомлений";
+"Log out or delete account" = "Выход и удаление аккаунта";
+"Language settings" = "Выбор языка";
+"About this app" = "О приложении";
+"About this App" = "Об этом приложении";
+"Send email to developer" = "Написать разработчику";
+"App Feedback" = "Отзыв о приложении";
+"Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]" = "Добрый день, \n\nХочу поделиться своим мнением о приложении... \n\nС уважением, \n[Ваше имя]";
+"Rate this app" = "Оценить приложение";
+
+//MARK: - APP DESCRIPTION TEXTS
+
+"Welcome to our cosy fitness app! \n\nWe understand that you want to achieve your fitness goals with a personalized touch, and that's exactly what we provide. Our app is not just another AI-generated workout plan - we believe in the power of experience and empathy. \n\nMeet Roman Mezhov, our experienced coach with over 12 years of coaching in various activities, including cycle, hot iron, cross-training, and more. With almost a decade of experience in creating training programs, Roman has crafted unique and effective plans that cater to your individual needs and abilities. \n\nIn this app, you will have access to three monthly subscription training plans and two lifetime plans that will change your fitness game forever. The best part? Your coach is always available to answer your questions and provide feedback on your technique. Our commenting feature also allows you to share your progress with the coach and other users, creating a supportive community that encourages you every step of the way. \n\nOur Bodyweight plan is perfect for those who are always on-the-go, providing you with quick and effective workouts that require no special equipment. This plan is completely free, so there's no excuse not to get started today. \n\nOur ECD plan is the main training program, suitable for both beginners and intermediate-level athletes. With a full range of movements using common gym equipment, this well-balanced program will never leave you bored. \n\nOur Stryuach plan is for advanced athletes who are serious about pushing their limits and achieving visible progress. This plan is designed for competitive athletes who are in it to win it.By subscribing to this plan, you'll get a premium account with full access to all plans and features. \n\nIn addition to these plans, we also offer two plans with ten high-intensity workouts each - Belly Burner and Pelvic Power. These plans are specifically designed to strengthen the muscles of the press and pelvic muscles, respectively. \n\nBut that's not all - our app also gives you free access to our coach's blog, where you can read his thoughts and insights on working out and doing business in the fitness industry. In the Profile section, you can keep track of your personal records in weightlifting movements and share them with other users. \n\nJoin our community and achieve your fitness goals with the help of our expert coach and personalized training plans. Start your fitness journey with us today!" = "Приветствуем тебя в нашем уютном фитнес-приложении!\n\nМы уверены, что в достижении ваших фитнес-целей требуется индивидуальный подход, и это именно то, что мы можем предложить. Наше приложение - это не еще один план тренировок, сгенерированный AI. Это качестенные продукты, основанные на многолетнем опыте работы тренера и составления тренировочных программ. \n\nНаш главный тренер - Роман Межов - имеет более 12 лет опыта работы по различным фитнес направлениям - от стэп аэробики и сайкла, до кросс-треннинга и гимнастики. Также он имеет богатый опыт написания тренировочных программ, как групповых, так и индивидуальных, учитывающих потребности и возможности каждого конкретного атлета. \n\n В этом приложении представлены три тренировочных плана по подписке и две отдельные программы с пожизненным доступом. Так чем же наше приложение отличается от многих аналогичных? Тренер всегда на связи и ответит на ваши вопросы, или даст оценку вашей технике, если это требуется. Просто не забывайте оставлять комментарии к тренировкам, делитесь своими результатами с тренером и другими участниками!  \n\n Наш план BODYWEIGHT отлично подойдет для тех, кто всгда в движении. Тут вы найдете короткие интенсивные тренировки, для выполнения которых не потребуется дополнительного оборудования, нужно только ваше желание, ваше тело, и капля свободного времени. Доступ к этому плану неограниченный, поэтому у вас нет никаких оправданий, чтобы не попробовать эти тренировки сегодня же ;) \n\nНаш план ECD - это базовый тренировочный план, который подходит как для начинающих, так и для продолжающих атлетов. Здесь представлены все возможные движения и упражнения с оборудованием, которое есть в спортзалах: штанги, гири, гантели, скакалки и турники, и многое другое, так что скучать точно не придётся! \n\nПлан Струяч разрабатывается для более продвинутых атлетов, которые хотят улучшить свои скиллы по всем направленям и участвовать в соревнованиях. Подписываясь на этот план вы также получаете доступ ко всем доступным планам, а дополнительные планы тренировок на пресс и ноги - в подарок!  \n\nВ дополнение к планам по подписке мы также предлагаем два плана, каждый из которых содержит по 10 высокоинтенсивных тренировок направленных на конкретные зоны - мышцы живота и мышцы таза и ног. \n\n Но и это еще не всё - в приложении вы также найдете Блог тренера, где он регулярно делится своими мыслями и инсайтами по поводу тренировок и ведения бизнеса в фитнес-индустрии. В разделе Профиль вы можете фиксировать свои персональные рекорды в основных тяжелоатлетических движениях и делиться ими с другими пользователями. \n\nПрисоединяйтесь к нашему сообществу и добивайтесь своих фитнес-целей при поддержке тренера и других участниковю Начни свой путь с нами сегодня!";
+
+//MARK: - PAYWALL
+
+"Restore purchases" = "Восстановить покупки";
+"Terms of use" = "Условия пользования";
+"Subscribe to ECD Plan" = "Подпишись на план ECD";
+"ECD Plan, the main training program followed by our ECD Fitness Club, is suitable for both beginners and intermediate-level athletes. \n\nWith this well-balanced program of full range movements using common gym equipment, you'll never get bored.  \n\nJoin today and start your fitness journey with us!" = "План ECD - это основной план, по которому тренируются атлеты нашего клуба, он подходит как для начинающих, так и продолжающих атлетов. \n\nТренировки с использованием обычного оборудования для кроссфита, которые не дадут тебе заскучать. \n\nНачни своё фитнес-путешествие с нами сегодня!";
+"Start your 1-Week FREE Trial" = "БЕСПЛАТНЫЙ пробный период - 1 неделя";
+"99 RUB/month after trial" = "Затем 99 РУБ/месяц";
+"Subscribe to STRUYACH Plan" = "Подпишись на план СТРУЯЧ";
+"Struyach plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. This plan is designed for competitive athletes who are in it to win it.\n\nBy subscribing to this plan, you'll get a premium account with full access to all plans and lifetime access to the Pelvic Power and Belly Burner plans! \n\nJoin now!" = "План 'Струяч' разрабатывается для более продвинутых атлетов, которые хотят улучшить свои скиллы по всем направленям и участвовать в соревнованиях. \n\nПодписываясь на этот план вы также получаете доступ ко всем доступным планам, а дополнительные планы тренировок на пресс и ноги - в подарок! \n\nПодпишись сегодня!";
+"799 RUB/month after trial" = "Затем 799 РУБ/месяц";
+"Pelvic Power Plan" = "МОЩНАЯ ЖОПА";
+"Pelvic Power Plan offers 10 high-intensity workouts with detailed movement descriptions and video presentations to help you tone and strengthen your pelvic muscles.  \n\nJoin today for a one-time payment and get lifetime access to a stronger, healthier you!" = "10 классных тренировок с детальным описанием и демонстрацией всех движений, чтобы как следует прокачать мышцы ног и таза и привести их в тонус. \n\nТренер всегда на связи и ответит на любые вопросы по тренировкам!";
+"Buy now for 199 RUB" = "Купить за 199 РУБ";
+"Pay once and get life-time access" = "Заплати один раз и пользуйся";
+"Belly Burner Plan" = "ЖИРОСЖИГАТЕЛЬ";
+"Our high-intensity Belly Burner Plan offers 10 workouts with detailed descriptions and video presentations. \n\nGet rid of stubborn belly fat and achieve a leaner, fitter body with the help of a personal coach who will answer any questions you have." = "10 высокоинтенсивных тренировок, направленных на то, чтобы уничтожить упрямый жирок на животе, прокачать мышцы кора и получить более подтянутое и тренированное тело! \n\nТренер всегда на связи и ответит на любые вопросы по тренировкам!";

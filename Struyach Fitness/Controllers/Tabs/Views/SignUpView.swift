@@ -42,7 +42,7 @@ final class SignUpView: UIView {
         textField.autocapitalizationType = .words
         textField.backgroundColor = .systemGray6
         textField.clipsToBounds = true
-        textField.placeholder = "Full name"
+        textField.placeholder = "Full name (how other users will see you)".localized()
         textField.toAutoLayout()
         return textField
     }()
@@ -73,7 +73,7 @@ final class SignUpView: UIView {
         textField.autocorrectionType = .no
         textField.backgroundColor = .systemGray6
         textField.clipsToBounds = true
-        textField.placeholder = "Password (minimum 6 symbols)"
+        textField.placeholder = "Password (minimum 6 symbols)".localized()
         textField.isSecureTextEntry = true
         textField.toAutoLayout()
         return textField
@@ -89,7 +89,7 @@ final class SignUpView: UIView {
         textField.autocorrectionType = .no
         textField.backgroundColor = .systemGray6
         textField.clipsToBounds = true
-        textField.placeholder = "Confirm password"
+        textField.placeholder = "Confirm password".localized()
         textField.isSecureTextEntry = true
         textField.toAutoLayout()
         return textField
@@ -101,7 +101,7 @@ final class SignUpView: UIView {
         button.layer.cornerRadius = 10
         button.clipsToBounds = true
         button.backgroundColor = .systemGreen
-        button.setTitle("Create", for: .normal)
+        button.setTitle("Create".localized(), for: .normal)
         button.setTitleColor(.white, for: .normal)
         return button
     }()

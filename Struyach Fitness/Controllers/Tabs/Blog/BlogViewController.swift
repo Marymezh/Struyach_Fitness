@@ -51,7 +51,13 @@ final class BlogViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         postUpdatesListener?.remove()
+        print ("blog vc will disappear, listener is removed")
     }
+    
+    deinit {
+           print ("blog vc is deallocated")
+       }
+    
     
     //MARK: - Setup methods
     
@@ -79,7 +85,9 @@ final class BlogViewController: UIViewController {
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             plusButtonView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -25),
-            plusButtonView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -25)
+            plusButtonView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -25),
+            plusButtonView.widthAnchor.constraint(equalToConstant: 60),
+            plusButtonView.heightAnchor.constraint(equalTo: plusButtonView.widthAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -87,7 +95,7 @@ final class BlogViewController: UIViewController {
     
     private func setupAdminFunctionality (){
         setupGestureRecognizer()
-        plusButtonView.plusButton.isHidden = false
+        plusButtonView.isHidden = false
     }
     
     private func setupGestureRecognizer() {
@@ -105,7 +113,7 @@ final class BlogViewController: UIViewController {
     @objc private func addNewPost() {
         print("Executing function: \(#function)")
         let newPostVC = TextViewController()
-        newPostVC.title = "Add new post"
+        newPostVC.title = "Add new post".localized()
         tabBarController?.tabBar.isHidden = true
         navigationController?.pushViewController(newPostVC, animated: true)
         newPostVC.onWorkoutSave = {[weak self] text in
@@ -124,7 +132,7 @@ final class BlogViewController: UIViewController {
                         self.scrollToTheTop()
                     }
                 } else {
-                    self.showAlert(title: "Warning", message: "Unable to add new post")
+                    self.showAlert(title: "Warning".localized(), message: "Unable to add new post".localized())
                 }
             }
         }
@@ -152,9 +160,9 @@ final class BlogViewController: UIViewController {
     @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
         let touchPoint = gestureRecognizer.location(in: tableView)
         if let indexPath = tableView.indexPathForRow(at: touchPoint) {
-            let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
+            let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
             
-            let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
+            let deleteAction = UIAlertAction(title: "Delete".localized(), style: .destructive) { [weak self] action in
                 guard let self = self else { return }
                 let post = self.blogPosts[indexPath.item]
                 DatabaseManager.shared.deletePost(blogPost: post) { [weak self] success in
@@ -162,18 +170,18 @@ final class BlogViewController: UIViewController {
                     if success {
                         print ("number of posts left - \(self.blogPosts.count)")
                         switch self.blogPosts.isEmpty {
-                        case true: self.showAlert(title: "Success", message: "Post is successfully deleted! No more posts left in the Blog")
-                        case false: self.showAlert(title: "Success", message: "Post is successfully deleted!")
+                        case true: self.showAlert(title: "Success".localized(), message: "Post is successfully deleted! No more posts left in the Blog".localized())
+                        case false: self.showAlert(title: "Success".localized(), message: "Post is successfully deleted!".localized())
                         }
                     } else {
-                        self.showAlert(title: "Warning", message: "Unable to delete selected post")
+                        self.showAlert(title: "Warning".localized(), message: "Unable to delete selected post".localized())
                     }
                 }
             }
-            let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
+            let editAction = UIAlertAction(title: "Edit".localized(), style: .default) { [weak self] action in
                 guard let self = self else {return}
                 let workoutVC = TextViewController()
-                workoutVC.title = "Edit post"
+                workoutVC.title = "Edit post".localized()
                 let selectedPost = self.blogPosts[indexPath.item]
                 workoutVC.text = selectedPost.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
@@ -181,11 +189,11 @@ final class BlogViewController: UIViewController {
                     guard let self = self else {return}
                     DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { [weak self] post in
                         guard let self = self else {return}
-                        self.showAlert(title: "Success", message: "Post is successfully updated!")
+                        self.showAlert(title: "Success".localized(), message: "Post is successfully updated!".localized())
                     }
                 }
             }
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+            let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
             alertController.addAction(editAction)
             alertController.addAction(deleteAction)
             alertController.addAction(cancelAction)
@@ -201,8 +209,18 @@ final class BlogViewController: UIViewController {
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
     }
+    
+//    @objc private func manageLikes() {
+//
+//    }
+//
+//        @objc private func pushCommentsVC() {
+//
+//        }
 
 }
+
+
 
     // MARK: - Table view dataSource and delegate methods
     
@@ -222,13 +240,13 @@ final class BlogViewController: UIViewController {
         
         cell.post = post
         
-        cell.postDateLabel.text = post.date
+        cell.postDateLabel.text = post.date.localized()
         cell.postDescriptionTextView.text = post.description
         cell.likesAndCommentsView.likesLabel.text = "\(post.likes)"
         switch post.comments {
-        case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet"
-        case 1: cell.likesAndCommentsView.commentsLabel.text = "\(post.comments) comment "
-        default: cell.likesAndCommentsView.commentsLabel.text = "\(post.comments) comments"
+        case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
+        case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
+        default: cell.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), post.comments)
         }
         
         if likedPosts.contains(post.id) {
@@ -241,7 +259,8 @@ final class BlogViewController: UIViewController {
             cell.likesAndCommentsView.likeButton.tintColor = .white
         }
         
-        cell.onLikeButtonPush = {
+        cell.onLikeButtonPush = { [weak self, weak cell] in
+            guard let self = self, let cell = cell else { return }
             cell.likesAndCommentsView.likeButton.isSelected = !cell.likesAndCommentsView.likeButton.isSelected
 
             if cell.likesAndCommentsView.likeButton.isSelected {
@@ -281,9 +300,10 @@ final class BlogViewController: UIViewController {
             }
         }
         
-        cell.onCommentsPush = {
+        cell.onCommentsPush = { [weak self] in
+            guard let self = self else { return }
             let commentsVC = CommentsViewController(blogPost: post)
-            commentsVC.title = "Comments"
+            commentsVC.title = "Comments".localized()
             self.tabBarController?.tabBar.isHidden = true
             self.navigationController?.pushViewController(commentsVC, animated: true)
             
@@ -295,9 +315,9 @@ final class BlogViewController: UIViewController {
                         if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
                             self.blogPosts[index] = blogPost
                             switch blogPost.comments {
-                            case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet"
-                            case 1: cell.likesAndCommentsView.commentsLabel.text = "\(blogPost.comments) comment "
-                            default: cell.likesAndCommentsView.commentsLabel.text = "\(blogPost.comments) comments"
+                            case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
+                            case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
+                            default: cell.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), post.comments)
                             }
                         }
                     }
@@ -317,7 +337,7 @@ final class BlogViewController: UIViewController {
                 self.loadBlogPostsWithPagination(pageSize: pageSize)
             } else {
                 shouldLoadMorePosts = false
-                print("All posts have been loaded")
+                self.showAlert(title: "Done".localized(), message: "All posts have been loaded".localized())
                 self.tableView.tableFooterView = nil
                 self.tableView.reloadData()
                 scrollView.delegate = nil

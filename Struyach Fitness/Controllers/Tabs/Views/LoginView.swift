@@ -56,7 +56,7 @@ final class LoginView: UIView {
         textField.autocorrectionType = .no
         textField.backgroundColor = .systemGray6
         textField.clipsToBounds = true
-        textField.placeholder = "Password"
+        textField.placeholder = "Password".localized()
         textField.isSecureTextEntry = true
         textField.toAutoLayout()
         return textField
@@ -68,7 +68,7 @@ final class LoginView: UIView {
         button.layer.cornerRadius = 10
         button.clipsToBounds = true
         button.backgroundColor = .systemGreen
-        button.setTitle("Log In", for: .normal)
+        button.setTitle("Log In".localized(), for: .normal)
         button.setTitleColor(.white, for: .normal)
         return button
     }()
@@ -79,7 +79,7 @@ final class LoginView: UIView {
         button.layer.cornerRadius = 10
         button.clipsToBounds = true
         button.backgroundColor = .systemGray
-        button.setTitle("Create new account", for: .normal)
+        button.setTitle("Create new account".localized(), for: .normal)
         button.setTitleColor(.white, for: .normal)
         return button
     }()

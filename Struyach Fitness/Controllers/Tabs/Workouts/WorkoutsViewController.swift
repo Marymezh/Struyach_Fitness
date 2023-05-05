@@ -84,6 +84,11 @@ final class WorkoutsViewController: UIViewController {
         workoutsListener?.remove()
     }
     
+    deinit {
+           print ("workouts vc is deallocated")
+       }
+    
+    
     //MARK: - Methods to setup Navigation Bar, TableView and subviews
     
     private func setupNavigationAndTabBar() {
@@ -126,7 +131,9 @@ final class WorkoutsViewController: UIViewController {
             likesAndCommentsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
             
             plusButtonView.bottomAnchor.constraint(equalTo: selectedWorkoutView.bottomAnchor, constant: -25),
-            plusButtonView.trailingAnchor.constraint(equalTo: selectedWorkoutView.trailingAnchor, constant: -25)
+            plusButtonView.trailingAnchor.constraint(equalTo: selectedWorkoutView.trailingAnchor, constant: -25),
+            plusButtonView.widthAnchor.constraint(equalToConstant: 60),
+            plusButtonView.heightAnchor.constraint(equalTo: plusButtonView.widthAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -147,7 +154,7 @@ final class WorkoutsViewController: UIViewController {
     
     private func setupAdminFunctionality (){
         setupGuestureRecognizer()
-        plusButtonView.plusButton.isHidden = false
+        plusButtonView.isHidden = false
     }
     
     private func clearUI() {
@@ -155,16 +162,16 @@ final class WorkoutsViewController: UIViewController {
         likesAndCommentsView.likeButton.isSelected = false
         likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
         likesAndCommentsView.likeButton.tintColor = .white
-        likesAndCommentsView.commentsLabel.text = "No comments posted yet"
+        likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
     }
     
     private func updateUI(workout: Workout) {
         selectedWorkoutView.workoutDescriptionTextView.text = workout.description
         likesAndCommentsView.likesLabel.text = "\(workout.likes)"
         switch workout.comments {
-        case 0: likesAndCommentsView.commentsLabel.text = "No comments posted yet"
-        case 1: likesAndCommentsView.commentsLabel.text = "1 comment "
-        default: likesAndCommentsView.commentsLabel.text = "\(workout.comments) comments"
+        case 0: likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
+        case 1: likesAndCommentsView.commentsLabel.text = "1 comment".localized()
+        default: likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), workout.comments)
         }
     }
     
@@ -173,7 +180,7 @@ final class WorkoutsViewController: UIViewController {
     @objc private func addNewWorkout() {
         print("Executing function: \(#function)")
         let newWorkoutVC = TextViewController()
-        newWorkoutVC.title = "Add new workout"
+        newWorkoutVC.title = "Add new workout".localized()
         navigationController?.pushViewController(newWorkoutVC, animated: true)
         newWorkoutVC.onWorkoutSave = {[weak self] text in
             guard let title = self?.title else {return}
@@ -192,7 +199,7 @@ final class WorkoutsViewController: UIViewController {
                     self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
                     self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
                 } else {
-                    self.showAlert(title: "Warning", message: "Unable to post new workout")
+                    self.showAlert(title: "Warning".localized(), message: "Unable to post new workout".localized())
                 }
             }
         }
@@ -214,7 +221,7 @@ final class WorkoutsViewController: UIViewController {
                 
                 switch self.listOfWorkouts.isEmpty {
                 case true: self.workoutsCollection.reloadData()
-                    self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
+                    self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program".localized()
                 case false:
                     let indexPath = IndexPath(row: 0, section: 0)
                     self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
@@ -243,9 +250,9 @@ final class WorkoutsViewController: UIViewController {
         print("Executing function: \(#function)")
         let location = sender.location(in: workoutsCollection)
         if let indexPath = workoutsCollection.indexPathForItem(at: location) {
-            let alertController = UIAlertController(title: "EDIT OR DELETE", message: "Please choose edit action, delete action, of cancel", preferredStyle: .actionSheet)
+            let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
             
-            let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] action in
+            let deleteAction = UIAlertAction(title: "Delete".localized(), style: .destructive) { [weak self] action in
                 guard let self = self else {return}
                 let workout = self.listOfWorkouts[indexPath.item]
                 DatabaseManager.shared.deleteWorkout(workout: workout) {[weak self] success in
@@ -255,20 +262,20 @@ final class WorkoutsViewController: UIViewController {
                         print ("number of workouts left - \(self.listOfWorkouts.count)")
                         switch self.listOfWorkouts.isEmpty {
                         case true:
-                            self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program"
+                            self.selectedWorkoutView.workoutDescriptionTextView.text = "No workouts found for this program".localized()
                         case false:
-                            self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout successfully deleted"
+                            self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout successfully deleted".localized()
                         }
                     } else {
-                        self.showAlert(title: "Warning", message: "Unable to delete this workout")
+                        self.showAlert(title: "Warning".localized(), message: "Unable to delete this workout".localized())
                     }
                 }
             }
             
-            let editAction = UIAlertAction(title: "Edit", style: .default) { [weak self] action in
+            let editAction = UIAlertAction(title: "Edit".localized(), style: .default) { [weak self] action in
                 guard let self = self else {return}
                 let workoutVC = TextViewController()
-                workoutVC.title = "Edit workout"
+                workoutVC.title = "Edit workout".localized()
                 let selectedWorkout = self.listOfWorkouts[indexPath.item]
                 workoutVC.text = selectedWorkout.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
@@ -276,12 +283,12 @@ final class WorkoutsViewController: UIViewController {
                     guard let self = self else {return}
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { [weak self] workout in
                         guard let self = self else {return}
-                        let workoutDate = workout.date.replacingOccurrences(of: "\n", with: "")
-                        self.showAlert(title: "Success", message: "Workout for \(workoutDate) is successfully updated!")
+//                        let workoutDate = workout.date.replacingOccurrences(of: "\n", with: "")
+                        self.showAlert(title: "Success".localized(), message: "Workout is successfully updated!".localized())
                     }
                 }
             }
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+            let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
             alertController.addAction(editAction)
             alertController.addAction(deleteAction)
             alertController.addAction(cancelAction)
@@ -294,7 +301,8 @@ final class WorkoutsViewController: UIViewController {
         guard let selectedWorkout = selectedWorkout else { print("workout is not selected")
             return }
         let commentsVC = CommentsViewController(workout: selectedWorkout)
-        commentsVC.title = "Comments"
+        commentsVC.title = "Comments".localized()
+        navigationController?.navigationBar.topItem?.backBarButtonItem = UIBarButtonItem(title: "Back".localized(), style: .plain, target: nil, action: nil)
         navigationController?.pushViewController(commentsVC, animated: true)
         
         commentsVC.onCommentPosted = {
@@ -439,7 +447,7 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
                  self.loadWorkoutsWithPagination(program: title!, pageSize: pageSize)
              } else {
                  shouldLoadMorePosts = false
-                 print("All workouts have been loaded")
+                 self.showAlert(title: "Done".localized(), message: "All workouts have been loaded".localized())
                  self.workoutsCollection.reloadData()
              }
          }
@@ -484,9 +492,9 @@ extension WorkoutsViewController: UISearchBarDelegate {
                 guard let self = self else {return}
                 self.filteredWorkouts = workouts.sorted(by: { $0.timestamp > $1.timestamp })
                 if self.filteredWorkouts.isEmpty {
-                    self.selectedWorkoutView.workoutDescriptionTextView.text = "Ooops! No workouts were found! Change your query and try again."
+                    self.selectedWorkoutView.workoutDescriptionTextView.text = "Ooops! No workouts were found! Change your query and try again.".localized()
                 } else {
-                    self.selectedWorkoutView.workoutDescriptionTextView.text = "Select workout from search results."
+                    self.selectedWorkoutView.workoutDescriptionTextView.text = "Select workout from search results".localized()
                 }
                 self.workoutsCollection.reloadData()
             }

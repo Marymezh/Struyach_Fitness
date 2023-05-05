@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 final class PaywallView: UIView {
     
@@ -19,7 +20,6 @@ final class PaywallView: UIView {
         label.textColor = UIColor.systemGreen
         label.font = UIFont.boldSystemFont(ofSize: 28)
         label.textAlignment = .center
-        label.text = "Upgrade to Premium plan"
         label.adjustsFontSizeToFitWidth = true
         label.toAutoLayout()
         return label
@@ -31,6 +31,7 @@ final class PaywallView: UIView {
         label.font = UIFont.systemFont(ofSize: 18)
         label.textAlignment = .justified
         label.numberOfLines = 0
+        label.adjustsFontForContentSizeCategory = true
         label.toAutoLayout()
         return label
     }()
@@ -40,7 +41,6 @@ final class PaywallView: UIView {
         button.toAutoLayout()
         button.backgroundColor = UIColor.systemGreen
         button.layer.cornerRadius = 8
-        button.setTitle("Upgrade for $9.99/month", for: .normal)
         button.setTitleColor(UIColor.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         button.titleLabel?.adjustsFontSizeToFitWidth = true
@@ -48,31 +48,46 @@ final class PaywallView: UIView {
         return button
     }()
     
-    let otherOptionsButton: UIButton = {
-        let button = UIButton(type: .system)
+    let priceLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.white
+        label.font = UIFont.systemFont(ofSize: 18)
+        label.textAlignment = .center
+        label.numberOfLines = 1
+        label.toAutoLayout()
+        return label
+    }()
+    
+    private let termsLabel: UILabel = {
+        let label = UILabel()
+        label.toAutoLayout()
+        label.text = "Terms of use".localized()
+        label.adjustsFontSizeToFitWidth = true
+        label.textColor = .white
+        label.textAlignment = .center
+        label.font = UIFont.systemFont(ofSize: 16)
+        label.isUserInteractionEnabled = true
+        return label
+    }()
+    
+    private lazy var tapGesture = UITapGestureRecognizer(target: self, action: #selector(openTermsOfUse))
+           
+    
+    private let restorePurchasesButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Restore purchases".localized(), for: .normal)
+        button.setTitleColor(UIColor.white, for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
         button.toAutoLayout()
-        button.setTitle("Show other subscription options", for: .normal)
-        button.setTitleColor(UIColor.systemGreen, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        let image = UIImage(systemName: "chevron.down")?.withRenderingMode(.alwaysTemplate)
-        button.setImage(image, for: .normal)
-        button.tintColor = UIColor.systemGreen
-        button.contentHorizontalAlignment = .center
-        
-        // set title and image insets
-        let spacing: CGFloat = 6
-            button.titleEdgeInsets = UIEdgeInsets(top: 0, left: -image!.size.width, bottom: -(image!.size.height + spacing), right: 0)
-            button.imageEdgeInsets = UIEdgeInsets(top: -(button.titleLabel!.intrinsicContentSize.height + spacing), left: 0, bottom: 0, right: -button.titleLabel!.intrinsicContentSize.width)
-        
         return button
     }()
     
     private let stackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.distribution = .equalSpacing
-        stackView.alignment = .center
-        stackView.spacing = 32
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.alignment = .bottom
         stackView.toAutoLayout()
         return stackView
     }()
@@ -91,23 +106,51 @@ final class PaywallView: UIView {
     //MARK: setup
     
     private func setupSubviews() {
-        self.backgroundColor = UIColor.black.withAlphaComponent(0.8)
-        self.addSubview(stackView)
-        self.stackView.addArrangedSubview(titleLabel)
-        self.stackView.addArrangedSubview(descriptionLabel)
-        self.stackView.addArrangedSubview(payButton)
-        self.stackView.addArrangedSubview(otherOptionsButton)
+        backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        let underlineAttribute = [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue]
+        let underlineAttributedString = NSAttributedString(string: "Terms of use".localized(), attributes: underlineAttribute)
+        termsLabel.attributedText = underlineAttributedString
+        termsLabel.addGestureRecognizer(tapGesture)
+        
+        addSubviews(titleLabel, descriptionLabel, payButton, priceLabel, stackView)
+  
+        stackView.addArrangedSubview(termsLabel)
+        stackView.addArrangedSubview(restorePurchasesButton)
         
         let constraints = [
-            stackView.topAnchor.constraint(equalTo: self.topAnchor, constant: bigInset),
+            titleLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: bigInset),
+            titleLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
+            titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
+            
+            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: bigInset),
+            descriptionLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
+            descriptionLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
+            
+            payButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: bigInset),
+            payButton.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            payButton.widthAnchor.constraint(lessThanOrEqualToConstant: 300),
+            
+            priceLabel.topAnchor.constraint(equalTo: payButton.bottomAnchor, constant: smallInset),
+            priceLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
+            priceLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
+            
             stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
-            
+            stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -bigInset),
+
             payButton.heightAnchor.constraint(equalToConstant: 60),
-            otherOptionsButton.heightAnchor.constraint(equalToConstant: 40)
+            
+            restorePurchasesButton.heightAnchor.constraint(equalToConstant: 40),
+            termsLabel.heightAnchor.constraint(equalToConstant: 40)
         ]
         
         NSLayoutConstraint.activate(constraints)
+    }
+    
+    @objc private func openTermsOfUse() {
+        if let url = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") {
+            UIApplication.shared.open(url)
+        }
     }
     
 }

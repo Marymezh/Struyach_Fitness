@@ -17,7 +17,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
      
-        // TODO: Update VC to sign in VC if not signed it
         let vc: UIViewController
         if AuthManager.shared.isSignedIn {
             vc = TabBarController()
@@ -37,7 +36,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.disabledToolbarClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.toolbarTintColor = .darkGray
-
+        
     }
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.

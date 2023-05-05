@@ -50,6 +50,9 @@
             ReferencedContainer = "container:Struyach Fitness.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../Struyach Fitness/Controllers/Paywall/Configuration.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

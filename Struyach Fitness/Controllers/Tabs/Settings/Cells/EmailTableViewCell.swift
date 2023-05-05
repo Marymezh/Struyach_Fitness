@@ -21,7 +21,7 @@ final class EmailTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         self.backgroundColor = .customDarkGray
-        textLabel?.text = "Send email to developer"
+        textLabel?.text = "Send email to developer".localized()
         textLabel?.textColor = .white
         imageView?.image = UIImage(named: "mail")
         
@@ -42,8 +42,8 @@ final class EmailTableViewCell: UITableViewCell {
     func sendEmail() {
         if MFMailComposeViewController.canSendMail() {
             mailComposer.setToRecipients(["maria.mezhova@yahoo.com"])
-            mailComposer.setSubject("App Feedback")
-            mailComposer.setMessageBody("Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]", isHTML: false)
+            mailComposer.setSubject("App Feedback".localized())
+            mailComposer.setMessageBody("Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]".localized(), isHTML: false)
 
             // Set appearance of the mail composer
             mailComposer.navigationBar.setAppearanceForMailComposer()
@@ -75,7 +75,7 @@ extension UINavigationBar {
         appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
         appearance.shadowColor = nil
-        self.tintColor = .white
+        self.tintColor = .systemGreen
         self.standardAppearance = appearance
 //        self.scrollEdgeAppearance = appearance
     }

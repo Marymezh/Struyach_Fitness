@@ -16,6 +16,10 @@ final class TabBarController: UITabBarController {
         setupNavBarAppearance()
     }
     
+    deinit {
+           print ("tab bar is deallocated")
+       }
+    
     private func setupTabBarAppearance() {
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
@@ -45,16 +49,16 @@ final class TabBarController: UITabBarController {
     private func setupControllers() {
         guard let currentUserEmail = UserDefaults.standard.string(forKey: "email") else {return}
         let programsVC = ProgramsViewController()
-        programsVC.title = "Programs"
+        programsVC.title = "Training Plans".localized()
         
         let blogVC = BlogViewController()
-        blogVC.title = "Coach Blog"
+        blogVC.title = "Coach Blog".localized()
         
         let profileVC = ProfileTableViewController(email: currentUserEmail)
-        profileVC.title = "Profile"
+        profileVC.title = "Profile".localized()
         
         let settingsVC = SettingsTableViewController(email: currentUserEmail)
-        settingsVC.title = "Settings"
+        settingsVC.title = "Settings".localized()
         
         programsVC.navigationItem.largeTitleDisplayMode = .always
         blogVC.navigationItem.largeTitleDisplayMode = .always
@@ -72,10 +76,10 @@ final class TabBarController: UITabBarController {
         nav3.navigationBar.prefersLargeTitles = true
         nav4.navigationBar.prefersLargeTitles = true
         
-        nav1.tabBarItem = UITabBarItem(title: "Programs", image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
-        nav2.tabBarItem = UITabBarItem(title: "Blog", image: UIImage(named: "character.bubble.fill"), tag: 2)
-        nav3.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(named: "figure.strengthtraining.traditional"), tag: 3)
-        nav4.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(named: "gearshape.fill"), tag: 3)
+        nav1.tabBarItem = UITabBarItem(title: "Plans".localized(), image: UIImage(named:"list.bullet.clipboard.fill" ), tag: 1)
+        nav2.tabBarItem = UITabBarItem(title: "Blog".localized(), image: UIImage(named: "character.bubble.fill"), tag: 2)
+        nav3.tabBarItem = UITabBarItem(title: "Profile".localized(), image: UIImage(named: "figure.strengthtraining.traditional"), tag: 3)
+        nav4.tabBarItem = UITabBarItem(title: "Settings".localized(), image: UIImage(named: "gearshape.fill"), tag: 3)
 
         setViewControllers([nav1, nav2, nav3, nav4], animated: true)
     }

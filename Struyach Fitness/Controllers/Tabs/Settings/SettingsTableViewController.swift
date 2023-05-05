@@ -15,13 +15,9 @@ final class SettingsTableViewController: UITableViewController {
     private let emailCellIdentifier = "EmailCell"
     private let rateCellIdentifier = "RateCell"
     private let languageSwitchCellIdentifier = "LanguageSwitchCell"
+    private let signOutCellIdentifier = "SignOutCell"
     private let notificationCellIdentifier = "NotificationCell"
 
-//    private var isEnglishSelected = true
-//    private var isBodyweightNotificationOn = true
-//    private var isECDNotificationOn = true
-//    private var isStryuachNotificationOn = true
-    
     // MARK: - Lifecycle
     
     let email: String
@@ -46,18 +42,22 @@ final class SettingsTableViewController: UITableViewController {
         tableView.register(RateTableViewCell.self, forCellReuseIdentifier: rateCellIdentifier)
         tableView.register(LanguageSwitchTableViewCell.self, forCellReuseIdentifier: languageSwitchCellIdentifier)
         tableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: notificationCellIdentifier)
+        tableView.register(SignOutTableViewCell.self, forCellReuseIdentifier: signOutCellIdentifier)
         
         // Set table view properties
         tableView.backgroundColor = .customDarkGray
         tableView.separatorStyle = .singleLine
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 44
     }
+    
+    deinit {
+           print ("settings vc is deallocated")
+       }
+    
     
     // MARK: - UITableViewDataSource and Delegate
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 4
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -75,18 +75,20 @@ final class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
            switch section {
            case 0:
-               return "App information"
+               return "App information".localized()
            case 1:
-               return "Language settings"
+               return "Notifications settings".localized()
            case 2:
-               return "Notifications settings"
+               return "Language settings".localized()
+           case 3:
+               return "Log out or delete account".localized()
            default:
                return nil
            }
        }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 50
+        return 44
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -94,9 +96,11 @@ final class SettingsTableViewController: UITableViewController {
         case 0:
             return 3
         case 1:
-            return 1
-        case 2:
             return 3
+        case 2:
+            return 1
+        case 3:
+            return 1
         default:
             return 0
         }
@@ -116,10 +120,6 @@ final class SettingsTableViewController: UITableViewController {
                 return cell
             }
         case 1:
-            let cell = tableView.dequeueReusableCell(withIdentifier: languageSwitchCellIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
-            cell.configure(language: .english)
-            return cell
-        default:
             let cell = tableView.dequeueReusableCell(withIdentifier: notificationCellIdentifier, for: indexPath) as! NotificationTableViewCell
             if indexPath.row == 0 {
                 cell.configure(with: "Bodyweight")
@@ -131,6 +131,14 @@ final class SettingsTableViewController: UITableViewController {
                 cell.configure(with: "STRUYACH")
                 return cell
             }
+        case 2:
+            let cell = tableView.dequeueReusableCell(withIdentifier: languageSwitchCellIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
+            cell.delegate = self
+            cell.configure(language: LanguageManager.shared.currentLanguage)
+            return cell
+        default:
+            let cell = tableView.dequeueReusableCell(withIdentifier: signOutCellIdentifier, for: indexPath) as! SignOutTableViewCell
+            return cell
         }
         return UITableViewCell()
     }
@@ -143,20 +151,20 @@ final class SettingsTableViewController: UITableViewController {
             switch indexPath.row {
             case 0:
                 let aboutThisAppVC = AboutViewController()
-                aboutThisAppVC.title = "About this App"
+                aboutThisAppVC.title = "About this App".localized()
                 navigationController?.pushViewController(aboutThisAppVC, animated: true)
             case 1:
                 //    sendEmailToDeveloper()
                 if let cell = tableView.cellForRow(at: indexPath) as? EmailTableViewCell {
                     cell.sendEmail()
-                } 
-            
+                }
+                
             case 2:
                 // go to app rating page
-     //           rateApp()
+                //           rateApp()
                 if let cell = tableView.cellForRow(at: indexPath) as? RateTableViewCell {
-                            cell.openAppRatingPage()
-                        }
+                    cell.openAppRatingPage()
+                }
             default:
                 break
             }
@@ -197,8 +205,25 @@ final class SettingsTableViewController: UITableViewController {
 
 extension SettingsTableViewController: LanguageSwitchDelegate {
     func didSwitchLanguage(to language: Language) {
-        // Handle language change here
-        // You can save the user's language preference to UserDefaults or elsewhere
-        // and update the app's language accordingly
+        LanguageManager.shared.setCurrentLanguage(language)
+        tableView.reloadData()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.updateRootViewController()
+        }
     }
+
+    func updateRootViewController() {
+        let tabBarController = TabBarController()
+        let window = UIApplication.shared.windows.first
+        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+            window?.rootViewController = tabBarController
+        }, completion: nil)
+    }
+//       func updateRootViewController() {
+//           let tabBarController = TabBarController()
+//           let window = UIApplication.shared.windows.first
+//           window?.rootViewController = tabBarController
+//       }
 }
+
+

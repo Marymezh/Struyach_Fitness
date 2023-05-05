@@ -53,6 +53,6 @@ final class NotificationTableViewCell: UITableViewCell {
     
     func configure(with title: String) {
         notificationLabel.text = title
- //           notificationSwitch.isOn = isNotificationOn
+//            notificationSwitch.isOn = isNotificationOn
         }
 }

@@ -59,7 +59,7 @@ final class BlogTableViewCell: UITableViewCell {
         return textView
     }()
     
-    let likesAndCommentsView = LikesAndCommentsView()
+    var likesAndCommentsView = LikesAndCommentsView()
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -71,9 +71,13 @@ final class BlogTableViewCell: UITableViewCell {
         setupSubviews()
     }
     
+    deinit {
+         print ("blog cell is deallocated")
+    }
+    
     private func setupSubviews(){
         likesAndCommentsView.toAutoLayout()
-        likesAndCommentsView.likeButton.addTarget(self, action: #selector(addLikeToWorkout), for: .touchUpInside)
+        likesAndCommentsView.likeButton.addTarget(self, action: #selector(manageLikes), for: .touchUpInside)
         likesAndCommentsView.addCommentButton.addTarget(self, action: #selector(pushCommentsVC), for: .touchUpInside)
         contentView.backgroundColor = .customDarkGray
         contentView.addSubviews(containerView, likesAndCommentsView)
@@ -107,11 +111,11 @@ final class BlogTableViewCell: UITableViewCell {
     }
     
     @objc private func pushCommentsVC() {
-        self.onCommentsPush?()
+        onCommentsPush?()
     }
     
-    @objc private func addLikeToWorkout() {
-        self.onLikeButtonPush?()
+    @objc private func manageLikes() {
+        onLikeButtonPush?()
     }
 
 }

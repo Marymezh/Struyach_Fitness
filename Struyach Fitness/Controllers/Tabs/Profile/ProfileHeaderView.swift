@@ -28,7 +28,7 @@ final class ProfileHeaderView: UIView {
     let userNameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        label.text = "Unknown user"
+        label.text = "Unknown user".localized()
         label.textColor = .white
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -51,7 +51,7 @@ final class ProfileHeaderView: UIView {
     
     lazy var changeUserNameButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Rename user", for: .normal)
+        button.setTitle("Rename user".localized(), for: .normal)
         button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
         button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)

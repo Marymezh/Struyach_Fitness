@@ -32,7 +32,6 @@ final class ProgressView: UIView {
     
     var progressLabel: UILabel = {
         let label  = UILabel()
-        label.text = "Uploading video"
         label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         label.toAutoLayout()

@@ -10,6 +10,7 @@ import SDWebImage
 
 final class PhotoPresenterViewController: UIViewController {
     
+    //TODO: pinch to enlarge photos
     //MARK: - Properties
     
     private let url: URL
@@ -46,6 +47,11 @@ final class PhotoPresenterViewController: UIViewController {
         setupSubviews()
         imageView.sd_setImage(with: self.url)
     }
+    
+    deinit {
+           print ("photo presenter is deallocated")
+       }
+    
     
     //MARK: - Setup subviews
     

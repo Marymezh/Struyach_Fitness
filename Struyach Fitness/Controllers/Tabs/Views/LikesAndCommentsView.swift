@@ -65,6 +65,10 @@ class LikesAndCommentsView: UIView {
         setupSubviews()
     }
     
+    deinit {
+        print("likes and comments view is deallocated")
+    }
+    
     private func setupSubviews() {
         self.addSubview(stackView)
         stackView.addArrangedSubview(likeButton)

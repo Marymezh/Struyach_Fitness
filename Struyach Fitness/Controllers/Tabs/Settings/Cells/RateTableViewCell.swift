@@ -20,7 +20,7 @@ final class RateTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         self.backgroundColor = .customDarkGray
-        textLabel?.text = "Rate this app"
+        textLabel?.text = "Rate this app".localized()
         textLabel?.textColor = .white
         imageView?.image = UIImage(systemName: "star")
         imageView?.tintColor = .systemGreen

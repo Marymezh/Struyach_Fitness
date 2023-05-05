@@ -7,13 +7,37 @@
 
 import UIKit
 import FirebaseCore
+import Purchases
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
+        //setting up Firebase
         FirebaseApp.configure()
+        
+        //setting up Purchases
+        var apiKey: String {
+          get {
+            guard let filePath = Bundle.main.path(forResource: "Purchases-Info", ofType: "plist") else {
+              fatalError("Couldn't find file 'Purchases-Info.plist'.")
+            }
+            let plist = NSDictionary(contentsOfFile: filePath)
+            guard let value = plist?.object(forKey: "API_KEY") as? String else {
+              fatalError("Couldn't find key 'API_KEY' in 'Purchases-Info.plist'.")
+            }
+            return value
+          }
+        }
+            Purchases.configure(withAPIKey: apiKey)
+            print(apiKey)
+        
+        // setting up App Language
+        let currentLanguage = LanguageManager.shared.currentLanguage
+        LanguageManager.shared.setCurrentLanguage(currentLanguage)
+        print("print language on app launch \(currentLanguage)")
+        
         return true
     }
 

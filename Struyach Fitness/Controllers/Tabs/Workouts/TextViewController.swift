@@ -39,11 +39,16 @@ final class TextViewController: UIViewController, UITextViewDelegate {
         setupSubviews()
     }
     
+    deinit {
+           print ("text view controller is deallocated")
+       }
+    
+    
     //MARK: Setup methods
     
     private func configureButtons() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "SAVE", style: .done, target: self, action: #selector(addNewWorkout))
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(cancel))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "SAVE".localized(), style: .done, target: self, action: #selector(addNewWorkout))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel".localized(), style: .done, target: self, action: #selector(cancel))
     }
     
     private func setupTextView() {
@@ -83,7 +88,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
             self.onWorkoutSave?(text)
             self.navigationController?.popViewController(animated: true)
         } else {
-            self.showAlert(title: "Warning", message: "Text of the workout can not be blank!")
+            self.showAlert(title: "Warning".localized(), message: "This textfield can not be blank!".localized())
         }
     }
     
@@ -93,7 +98,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
         alert.addAction(cancelAction)
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)

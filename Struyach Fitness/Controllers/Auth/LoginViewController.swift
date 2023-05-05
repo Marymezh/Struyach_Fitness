@@ -21,7 +21,7 @@ final class LoginViewController: UIViewController {
     //MARK: - Setup methods
     
     private func setupNavBar () {
-        title = "Log In"
+        title = "Log In".localized()
         navigationController?.navigationBar.backgroundColor = .black
         navigationController?.navigationBar.barTintColor = .black
         navigationController?.navigationBar.alpha = 0.9
@@ -48,10 +48,10 @@ final class LoginViewController: UIViewController {
     
     @objc private func loginTapped() {
         guard let email = loginView.emailTextField.text, !email.isEmpty else {
-            self.showAlert(title: "Warning", message: "Check your email")
+            self.showAlert(title: "Warning".localized(), message: "Check your email".localized())
             return}
         guard let password = loginView.passwordTextField.text, !password.isEmpty, password.count > 6 else {
-            self.showAlert(title: "Warning", message: "Check your password")
+            self.showAlert(title: "Warning".localized(), message: "Check your password".localized())
             return}
         
         AuthManager.shared.signIn(email: email, password: password) { [weak self] success in
@@ -65,14 +65,14 @@ final class LoginViewController: UIViewController {
                     self.present(vc, animated: true)
                 }
             } else {
-                self.showAlert(title: "Warning", message: "Unable to log in")
+                self.showAlert(title: "Warning", message: "Unable to log in".localized())
             }
         }
     }
     
     @objc private func createAccountTapped() {
         let createAccountVC = CreateAccountViewController()
-        createAccountVC.title = "Create Account"
+        createAccountVC.title = "Create Account".localized()
         createAccountVC.navigationItem.largeTitleDisplayMode = .never
         navigationController?.navigationBar.tintColor = .systemGreen
         navigationController?.pushViewController(createAccountVC, animated: true)
@@ -80,7 +80,7 @@ final class LoginViewController: UIViewController {
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Retry", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Retry".localized(), style: .cancel)
         alert.addAction(cancelAction)
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)

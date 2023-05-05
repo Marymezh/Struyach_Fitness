@@ -124,32 +124,6 @@ final class DatabaseManager {
             }
     }
     
-//    public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Workout)->()){
-//        print("Executing function: \(#function)")
-//        let documentID = workout.programID
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        let dbRef = database
-//            .collection("programs")
-//            .document(documentID)
-//            .collection("workouts")
-//            .document(workout.id)
-//
-//        dbRef.getDocument { snapshot, error in
-//            guard var data = snapshot?.data(), error == nil else {return}
-//
-//            data["description"] = newDescription
-//            dbRef.setData(data)  { error in
-//                if error == nil {
-//                    var updatedWorkout = workout
-//                    updatedWorkout.description = newDescription
-//                    completion(updatedWorkout)
-//                }
-//            }
-//        }
-//    }
-    
     public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Workout)->()){
         print("Executing function: \(#function)")
         let documentID = workout.programID
@@ -242,32 +216,7 @@ final class DatabaseManager {
             }
         }
     }
-//    public func updateLikes(workout: Workout, likesCount: Int, completion: @escaping (Workout)->()){
-//        print("Executing function: \(#function)")
-//        let documentID = workout.programID
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        let dbRef = database
-//            .collection("programs")
-//            .document(documentID)
-//            .collection("workouts")
-//            .document(workout.id)
-//
-//        dbRef.getDocument { snapshot, error in
-//            guard var data = snapshot?.data(), error == nil else {return}
-//
-//            data["likes"] = likesCount
-//            dbRef.setData(data) { error in
-//                if error == nil {
-//                    var updatedWorkout = workout
-//                    updatedWorkout.likes = likesCount
-//                    completion(updatedWorkout)
-//                }
-//            }
-//        }
-//    }
-    
+
     func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
         print("Executing function: \(#function)")
 
@@ -315,32 +264,6 @@ final class DatabaseManager {
             completion(false)
         }
     }
-    
-//    public func getAllPosts(completion: @escaping([Post])->()){
-//        print("Executing function: \(#function)")
-//        database
-//            .collection("blogPosts")
-//            .order(by: "timestamp", descending: true)
-//            .getDocuments { snapshot, error in
-//                guard let documents = snapshot?.documents else {
-//                    print("Error fetching documents: \(error!)")
-//                    return
-//                }
-//
-//                let posts: [Post] = documents.compactMap { document in
-//                    do {
-//                        let post = try Firestore.Decoder().decode(Post.self, from: document.data())
-//
-//                        return post
-//                    } catch {
-//                        print("Error decoding workout: \(error)")
-//                        return nil
-//                    }
-//                }
-//                completion(posts)
-//                print (posts.count)
-//            }
-//    }
     
     func getBlogPostsWithPagination(pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Post], DocumentSnapshot?) -> ()) {
         var query = database
@@ -397,7 +320,7 @@ final class DatabaseManager {
  
     public func deletePost(blogPost: Post, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
-
+        
         let commentsRef = database
             .collection("blogPosts")
             .document(blogPost.id)
@@ -988,6 +911,27 @@ final class DatabaseManager {
         dbRef.getDocument { snapshot, error in
             guard var data = snapshot?.data(), error == nil else {return}
             data["name"] = newUserName
+            dbRef.setData(data) { error in
+                if error == nil {
+                    completion(true)
+                }
+            }
+        }
+    }
+    
+    public func updateUserSubscriptions(email: String, subscription: String, completion: @escaping(Bool) ->()
+    ){
+        let documentID = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let dbRef = database
+            .collection("users")
+            .document(documentID)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            data["subscribed_programs"] = ["BODYWEIGHT", subscription]
             dbRef.setData(data) { error in
                 if error == nil {
                     completion(true)

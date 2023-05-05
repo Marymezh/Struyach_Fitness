@@ -11,7 +11,7 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
 
     var workout: Workout? {
         didSet{
-            self.workoutDateLabel.text = workout?.date
+            self.workoutDateLabel.text = workout?.date.localized()
         }
     }
     
@@ -37,6 +37,10 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
         
         setupUI()
     //    prepareForReuse()
+    }
+    
+    deinit {
+         print ("workout cell is deallocated")
     }
 
     private func setupUI() {

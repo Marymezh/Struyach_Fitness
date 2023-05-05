@@ -26,7 +26,13 @@ final class ProgramsViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tabBarController?.tabBar.isHidden = false
+        tableView.reloadData()
     }
+    
+    deinit {
+           print ("programs vc is deallocated")
+       }
+    
     
     //MARK: - Setup methods
     
@@ -37,12 +43,12 @@ final class ProgramsViewController: UITableViewController {
     }
     
     private func setupNavbar() {
-        navigationItem.backBarButtonItem = UIBarButtonItem(title: "Programs", style: .plain, target: nil, action: nil)
-        navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 30, weight: .bold)]
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "Training Plans".localized(), style: .plain, target: nil, action: nil)
+        navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 28, weight: .bold)]
         navigationController?.navigationBar.barTintColor =  .customTabBar
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
     }
-
+   
     //MARK: - Table View datasource and delegate methods
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -107,8 +113,7 @@ final class ProgramsViewController: UITableViewController {
                 self.navigationController?.pushViewController(programVC, animated: true)
             } else {
                 // Present PaywallViewController if user is not subscribed
-                let paywallVC = PaywallViewController(programName: programName)
-         print(programName)
+                let paywallVC = PaywallViewController(programName: programName, user: currentUser)
                 paywallVC.modalPresentationStyle = .automatic
                 self.navigationController?.present(paywallVC, animated: true, completion: nil)
             }

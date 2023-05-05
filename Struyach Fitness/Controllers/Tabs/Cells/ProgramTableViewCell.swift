@@ -23,6 +23,7 @@ final class ProgramTableViewCell: UITableViewCell {
         label.textAlignment = .left
         label.textColor = .white
         label.numberOfLines = 1
+        label.adjustsFontSizeToFitWidth = true
         label.toAutoLayout()
         return label
     }()
@@ -38,6 +39,15 @@ final class ProgramTableViewCell: UITableViewCell {
         return label
     }()
     
+    private let stackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.distribution = .fillProportionally
+        stackView.alignment = .leading
+        stackView.toAutoLayout()
+        return stackView
+    }()
+    
     private var baseInset: CGFloat { return 16 }
     
     required init?(coder: NSCoder) {
@@ -47,16 +57,15 @@ final class ProgramTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        contentView.addSubviews(programNameLabel, descriptionLabel)
-        
+        contentView.addSubview(stackView)
+        stackView.addArrangedSubview(programNameLabel)
+        stackView.addArrangedSubview(descriptionLabel)
+
         let constraints = [
-            programNameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
-            programNameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
-            programNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
-            
-            descriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
-            descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
-            descriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
+            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
+            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
         ]
         
         NSLayoutConstraint.activate(constraints)
