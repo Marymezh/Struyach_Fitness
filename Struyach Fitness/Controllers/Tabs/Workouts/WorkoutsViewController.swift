@@ -187,7 +187,7 @@ final class WorkoutsViewController: UIViewController {
             let timestamp = Date().timeIntervalSince1970
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
-            formatter.dateFormat = "EE \n d MMM \n yyyy"
+            formatter.dateFormat = "dd.MM \n yyyy"
             let dateString = formatter.string(from: date)
             let workoutID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
             let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp, likes: 0)

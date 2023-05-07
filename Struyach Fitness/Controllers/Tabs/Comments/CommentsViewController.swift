@@ -660,6 +660,7 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
         return sender
     }
     
+    
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
         return commentsArray[indexPath.section]
     }
@@ -692,8 +693,7 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
     func messageBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
         let sentDate = message.sentDate
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "d MMM YYYY HH:mm"
-        dateFormatter.locale = .current
+        dateFormatter.dateFormat = "dd.MM.YYYY HH:mm"
         let dateString = dateFormatter.string(from: sentDate)
         return NSAttributedString(
             string: dateString,

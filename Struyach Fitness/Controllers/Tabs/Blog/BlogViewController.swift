@@ -120,7 +120,7 @@ final class BlogViewController: UIViewController {
             let timestamp = Date().timeIntervalSince1970
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
-            formatter.dateFormat = "EE d MMMM yyyy"
+            formatter.dateFormat = "dd.MM.yyyy"
             let dateString = formatter.string(from: date)
             let postID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
             let newPost = Post(id: postID, description: text, date: dateString, timestamp: timestamp, likes: 0, comments: 0)
