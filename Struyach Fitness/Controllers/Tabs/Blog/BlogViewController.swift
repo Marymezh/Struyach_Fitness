@@ -209,18 +209,7 @@ final class BlogViewController: UIViewController {
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
     }
-    
-//    @objc private func manageLikes() {
-//
-//    }
-//
-//        @objc private func pushCommentsVC() {
-//
-//        }
-
 }
-
-
 
     // MARK: - Table view dataSource and delegate methods
     
@@ -299,18 +288,18 @@ final class BlogViewController: UIViewController {
                 }
             }
         }
-        
-        cell.onCommentsPush = { [weak self] in
-            guard let self = self else { return }
+
+        cell.onCommentsPush = { [weak self, weak cell] in
+            guard let self = self, let cell = cell else { return }
             let commentsVC = CommentsViewController(blogPost: post)
             commentsVC.title = "Comments".localized()
             self.tabBarController?.tabBar.isHidden = true
             self.navigationController?.pushViewController(commentsVC, animated: true)
-            
+
             commentsVC.onCommentPosted = {
                 DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
-                    DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak self] blogPost in
-                        guard let self = self else {return}
+                    DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak self, weak cell] blogPost in
+                        guard let self = self, let cell = cell else {return}
                         print ("number of blog post comments is \(blogPost.comments)")
                         if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
                             self.blogPosts[index] = blogPost

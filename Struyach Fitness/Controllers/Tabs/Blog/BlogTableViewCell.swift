@@ -9,6 +9,8 @@ import UIKit
 
 final class BlogTableViewCell: UITableViewCell {
     
+    //MARK: - Properties
+    
     private var baseInset: CGFloat { return 15 }
     
     var post: Post? 
@@ -59,7 +61,9 @@ final class BlogTableViewCell: UITableViewCell {
         return textView
     }()
     
-    var likesAndCommentsView = LikesAndCommentsView()
+    let likesAndCommentsView = LikesAndCommentsView()
+    
+    //MARK: - Lifecycle
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -74,6 +78,8 @@ final class BlogTableViewCell: UITableViewCell {
     deinit {
          print ("blog cell is deallocated")
     }
+    
+    //MARK: - setup subviews and handle buttons 
     
     private func setupSubviews(){
         likesAndCommentsView.toAutoLayout()
@@ -117,5 +123,4 @@ final class BlogTableViewCell: UITableViewCell {
     @objc private func manageLikes() {
         onLikeButtonPush?()
     }
-
 }

@@ -9,13 +9,6 @@ import Foundation
 
 struct ProgramDescription {
     let programName: String
-    let programDetail: String
+    var programDetail: String
     let cellImage: String
-    
-    init(programName: String, programDetail: String, cellImage: String) {
-         self.programName = programName
-         self.programDetail = programDetail
-         self.cellImage = cellImage
-     }
-
 }

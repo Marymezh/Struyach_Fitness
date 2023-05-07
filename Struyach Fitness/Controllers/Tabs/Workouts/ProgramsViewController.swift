@@ -13,6 +13,8 @@ final class ProgramsViewController: UITableViewController {
     //MARK: - Properties
     
     private let programsArray = ProgramDescriptionStorage.programArray
+    
+    private let programsDescriptionArray = ["Get fit and toned with our Bodyweight Training Plan - no equipment needed, perfect for on-the-go workouts!".localized(), "Transform your body with our ECD Plan - designed for gym or CrossFit box training".localized(), "Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes".localized(), "Tone and strengthen your pelvic muscles with our 10 high-intensity workouts".localized(), "Get rid of stubborn belly fat and achieve a leaner, fitter body with our 10 high-intensity workouts".localized()]
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
     
     //MARK: - Lifecycle
@@ -55,6 +57,8 @@ final class ProgramsViewController: UITableViewController {
         let cell: ProgramTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProgramTableViewCell.self), for: indexPath) as! ProgramTableViewCell
         
         cell.program = programsArray[indexPath.section]
+        cell.program?.programDetail = programsDescriptionArray[indexPath.section]
+        
         cell.backgroundView?.alpha = 0.5
         #if Admin
         cell.backgroundColor = .customDarkGray
@@ -124,8 +128,6 @@ final class ProgramsViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        
-       // let screenHeight = UIScreen.main.bounds.height
         let tableViewHeight = Double(tableView.frame.size.height - (navigationController?.navigationBar.frame.size.height)! - (tabBarController?.tabBar.frame.size.height)!)
         let rowHeight = tableViewHeight / (Double(programsArray.count) + 0.5)
         return rowHeight

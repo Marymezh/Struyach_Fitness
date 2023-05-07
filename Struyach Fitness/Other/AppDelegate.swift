@@ -33,7 +33,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             Purchases.configure(withAPIKey: apiKey)
             print(apiKey)
         
-        // setting up App Language
         let currentLanguage = LanguageManager.shared.currentLanguage
         LanguageManager.shared.setCurrentLanguage(currentLanguage)
         print("print language on app launch \(currentLanguage)")

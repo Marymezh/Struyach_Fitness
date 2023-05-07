@@ -92,5 +92,4 @@ class LikesAndCommentsView: UIView {
         ]
         NSLayoutConstraint.activate(constraints)
     }
-
 }
