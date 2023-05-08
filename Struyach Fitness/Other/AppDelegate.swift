@@ -7,17 +7,32 @@
 
 import UIKit
 import FirebaseCore
+import FirebaseMessaging
+import UserNotifications
 import Purchases
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        //setting up Firebase
+        //setting up Firebase and Messaging
         FirebaseApp.configure()
         
-        //setting up Purchases
+        Messaging.messaging().delegate = self
+        UNUserNotificationCenter.current().delegate = self
+        
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { success, error in
+            guard error != nil else {
+                print (error?.localizedDescription)
+                return
+            }
+            print ("success in APNS registry")
+        }
+        
+        application.registerForRemoteNotifications()
+        
+        //setting up Revenue Cat "Purchases"
         var apiKey: String {
           get {
             guard let filePath = Bundle.main.path(forResource: "Purchases-Info", ofType: "plist") else {
@@ -33,6 +48,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             Purchases.configure(withAPIKey: apiKey)
             print(apiKey)
         
+        // setting up application language
         let currentLanguage = LanguageManager.shared.currentLanguage
         LanguageManager.shared.setCurrentLanguage(currentLanguage)
         print("print language on app launch \(currentLanguage)")
@@ -41,6 +57,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     // MARK: UISceneSession Lifecycle
+    
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        messaging.token { token, error in
+            guard error != nil else {
+                print (error?.localizedDescription)
+                return
+            }
+            guard let token = token else {
+                print ("no token")
+                return
+            }
+            print ("Token : \(token)")
+        }
+    }
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         // Called when a new scene session is being created.
