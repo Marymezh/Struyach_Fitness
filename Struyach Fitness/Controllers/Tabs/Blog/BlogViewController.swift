@@ -122,8 +122,8 @@ final class BlogViewController: UIViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy"
             let dateString = formatter.string(from: date)
-            let postID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
-            let newPost = Post(id: postID, description: text, date: dateString, timestamp: timestamp, likes: 0, comments: 0)
+            let postID = dateString + (UUID().uuidString)
+            let newPost = Post(id: postID, description: text, timestamp: timestamp, likes: 0, comments: 0)
             DatabaseManager.shared.saveBlogPost(with: newPost) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
@@ -228,8 +228,20 @@ final class BlogViewController: UIViewController {
         var post = blogPosts[indexPath.row]
         
         cell.post = post
+        let currentLanguage = LanguageManager.shared.currentLanguage
+        let date = Date(timeIntervalSince1970: post.timestamp)
+        let formatter = DateFormatter()
+        if currentLanguage.rawValue == "ru" { // Russian
+            formatter.locale = Locale(identifier: "ru_RU")
+            formatter.dateFormat = "EEEE, dd MMMM yyyy"
+
+        } else { // English (default)
+            formatter.locale = Locale(identifier: "en_US")
+            formatter.dateFormat = "EEEE, MMMM dd, yyyy"
+        }
+        let dateString = formatter.string(from: date)
+        cell.postDateLabel.text = dateString
         
-        cell.postDateLabel.text = post.date.localized()
         cell.postDescriptionTextView.text = post.description
         cell.likesAndCommentsView.likesLabel.text = "\(post.likes)"
         switch post.comments {

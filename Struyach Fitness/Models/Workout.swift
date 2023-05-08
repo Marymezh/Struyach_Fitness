@@ -12,7 +12,6 @@ struct Workout: Codable, Equatable {
     var id: String
     let programID: String
     var description: String
-    let date: String
     let timestamp: TimeInterval
     var likes: Int = 0
     var comments: Int = 0

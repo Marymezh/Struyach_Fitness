@@ -692,9 +692,16 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
     
     func messageBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
         let sentDate = message.sentDate
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.YYYY HH:mm"
-        let dateString = dateFormatter.string(from: sentDate)
+        let formatter = DateFormatter()
+        let currentLanguage = LanguageManager.shared.currentLanguage
+        if currentLanguage.rawValue == "ru" {
+            formatter.locale = Locale(identifier: "ru_RU")
+            formatter.dateFormat = "dd MMM yyyy, HH:mm"
+        } else {
+            formatter.locale = Locale(identifier: "en_US")
+            formatter.dateFormat = "MMM dd yyyy, HH:mm"
+        }
+        let dateString = formatter.string(from: sentDate)
         return NSAttributedString(
             string: dateString,
             attributes: [.font: UIFont.preferredFont(forTextStyle: .caption2),.foregroundColor: UIColor.white]

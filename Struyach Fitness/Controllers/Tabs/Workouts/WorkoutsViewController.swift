@@ -187,10 +187,10 @@ final class WorkoutsViewController: UIViewController {
             let timestamp = Date().timeIntervalSince1970
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
-            formatter.dateFormat = "dd.MM \n yyyy"
+            formatter.dateFormat = "dd.MM.yyyy"
             let dateString = formatter.string(from: date)
             let workoutID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
-            let newWorkout = Workout(id: workoutID, programID: title, description: text, date: dateString, timestamp: timestamp, likes: 0)
+            let newWorkout = Workout(id: workoutID, programID: title, description: text, timestamp: timestamp, likes: 0)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}

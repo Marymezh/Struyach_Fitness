@@ -11,7 +11,19 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
 
     var workout: Workout? {
         didSet{
-            self.workoutDateLabel.text = workout?.date.localized()
+            guard let timeStamp = workout?.timestamp else {return}
+            let currentLanguage = LanguageManager.shared.currentLanguage
+            let date = Date(timeIntervalSince1970: timeStamp)
+            let formatter = DateFormatter()
+            if currentLanguage.rawValue == "ru" {
+                formatter.locale = Locale(identifier: "ru_RU")
+                formatter.dateFormat = "E \ndd MMM \nyyyy"
+            } else {
+                formatter.locale = Locale(identifier: "en_US")
+                formatter.dateFormat = "E \nMMM dd \nyyyy"
+            }
+            let dateString = formatter.string(from: date)
+            self.workoutDateLabel.text = dateString
         }
     }
     
