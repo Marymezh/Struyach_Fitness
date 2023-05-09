@@ -13,9 +13,9 @@ import Purchases
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
-
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
+        
         //setting up Firebase and Messaging
         FirebaseApp.configure()
         
@@ -23,11 +23,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         UNUserNotificationCenter.current().delegate = self
         
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { success, error in
-            guard error != nil else {
-                print (error?.localizedDescription)
-                return
+            if let error = error {
+                print ("Unable to register in APNS \(error.localizedDescription)")
+                
+            } else {
+                print ("success in APNS registry")
             }
-            print ("success in APNS registry")
         }
         
         application.registerForRemoteNotifications()
@@ -60,15 +61,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
     
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         messaging.token { token, error in
-            guard error != nil else {
-                print (error?.localizedDescription)
-                return
+            if let  error = error {
+                print ("Error fetching FCM token \(error.localizedDescription)")
+            } else if let token = token {
+                print ("FCM registration token is received: \(token)")
             }
-            guard let token = token else {
-                print ("no token")
-                return
-            }
-            print ("Token : \(token)")
         }
     }
 
