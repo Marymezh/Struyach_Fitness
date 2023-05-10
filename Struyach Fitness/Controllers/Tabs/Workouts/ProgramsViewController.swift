@@ -7,13 +7,13 @@
 
 
 import UIKit
+import RevenueCat
 
 final class ProgramsViewController: UITableViewController {
     
     //MARK: - Properties
     
     private let programsArray = ProgramDescriptionStorage.programArray
-    
     private let programsDescriptionArray = ["Get fit and toned with our Bodyweight Training Plan - no equipment needed, perfect for on-the-go workouts!".localized(), "Transform your body with our ECD Plan - designed for gym or CrossFit box training".localized(), "Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes".localized(), "Tone and strengthen your pelvic muscles with our 10 high-intensity workouts".localized(), "Get rid of stubborn belly fat and achieve a leaner, fitter body with our 10 high-intensity workouts".localized()]
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
     
@@ -63,13 +63,22 @@ final class ProgramsViewController: UITableViewController {
         #if Admin
         cell.backgroundColor = .customDarkGray
         #else
-        if let safeEmail = currentUserEmail, let programName = cell.programNameLabel.text{
-            DatabaseManager.shared.getUser(email: safeEmail) {currentUser in
-                guard let currentUser = currentUser else {return}
-                let isUserSubscribed = currentUser.subscribedPrograms.contains(programName)
-                cell.backgroundColor = isUserSubscribed ? .customDarkGray : .customLightGray
+        if let programName = cell.programNameLabel.text {
+            if programName == K.bodyweight {
+                cell.backgroundColor = .customDarkGray
+            } else {
+                IAPManager.shared.checkCustomerStatus(program: programName) { success in
+                    cell.backgroundColor = success ? .customDarkGray : .customLightGray
+                }
             }
         }
+//        if let safeEmail = currentUserEmail, let programName = cell.programNameLabel.text{
+//            DatabaseManager.shared.getUser(email: safeEmail) {currentUser in
+//                guard let currentUser = currentUser else {return}
+//                let isUserSubscribed = currentUser.subscribedPrograms.contains(programName)
+//                cell.backgroundColor = isUserSubscribed ? .customDarkGray : .customLightGray
+//            }
+//        }
         #endif
         
         return cell
@@ -104,24 +113,47 @@ final class ProgramsViewController: UITableViewController {
         
         #else
         // Check if the user is subscribed to the program
-        guard let currentUserEmail = currentUserEmail else { return }
-        DatabaseManager.shared.getUser(email: currentUserEmail) {[weak self] currentUser in
-            guard let self = self, let currentUser = currentUser else { return }
-            
-            let isUserSubscribed = currentUser.subscribedPrograms.contains(programName)
-            
-            if isUserSubscribed {
-                // Push WorkoutsVC if user is subscribed
-                let programVC = WorkoutsViewController()
-                programVC.title = programName
-                self.navigationController?.pushViewController(programVC, animated: true)
-            } else {
-                // Present PaywallViewController if user is not subscribed
-                let paywallVC = PaywallViewController(programName: programName, user: currentUser)
-                paywallVC.modalPresentationStyle = .automatic
-                self.navigationController?.present(paywallVC, animated: true, completion: nil)
+        if programName == K.bodyweight {
+            //Push WorkoutsVC for the free program
+            let programVC = WorkoutsViewController()
+            programVC.title = programName
+            self.navigationController?.pushViewController(programVC, animated: true)
+        } else {
+            //cheching customer subscriptions on Revenue cat
+            IAPManager.shared.checkCustomerStatus(program: programName) { success in
+                if success {
+                    //Push WorkoutsVC if user is subscribed
+                    let programVC = WorkoutsViewController()
+                    programVC.title = programName
+                    self.navigationController?.pushViewController(programVC, animated: true)
+                } else {
+                    // Present PaywallViewController if user is not subscribed
+                    let paywallVC = PaywallViewController(programName: programName)
+                    paywallVC.modalPresentationStyle = .automatic
+                    self.navigationController?.present(paywallVC, animated: true, completion: nil)
+                }
             }
         }
+    
+
+//        guard let currentUserEmail = currentUserEmail else { return }
+//        DatabaseManager.shared.getUser(email: currentUserEmail) {[weak self] currentUser in
+//            guard let self = self, let currentUser = currentUser else { return }
+//
+//            let isUserSubscribed = currentUser.subscribedPrograms.contains(programName)
+//
+//            if isUserSubscribed {
+//                // Push WorkoutsVC if user is subscribed
+//                let programVC = WorkoutsViewController()
+//                programVC.title = programName
+//                self.navigationController?.pushViewController(programVC, animated: true)
+//            } else {
+//                // Present PaywallViewController if user is not subscribed
+//                let paywallVC = PaywallViewController(programName: programName, user: currentUser)
+//                paywallVC.modalPresentationStyle = .automatic
+//                self.navigationController?.present(paywallVC, animated: true, completion: nil)
+//            }
+//        }
         #endif
         
         tableView.deselectRow(at: indexPath, animated: true)

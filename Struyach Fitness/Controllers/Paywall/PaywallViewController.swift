@@ -10,6 +10,7 @@ import StoreKit
 
 enum InAppPurcaseID: String {
     case ECD = "marymezh.StruyachFitnessClient.ecd"
+    case PelvicPower = "marymezh.StruyachFitnessClient.pelvic"
 }
 
 
@@ -19,11 +20,11 @@ final class PaywallViewController: UIViewController {
     
     let paywallView = PaywallView()
     private let programName: String
-    private let user: User
+    //private let user: User
     
-    init(programName: String, user: User) {
+    init(programName: String) {
         self.programName = programName
-        self.user = user
+   //     self.user = user
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -88,7 +89,7 @@ final class PaywallViewController: UIViewController {
         case K.pelvicPower:
             paywallView.titleLabel.text = "Pelvic Power Plan".localized()
             paywallView.descriptionLabel.text = "Pelvic Power Plan offers 10 high-intensity workouts with detailed movement descriptions and video presentations to help you tone and strengthen your pelvic muscles.  \n\nJoin today for a one-time payment and get lifetime access to a stronger, healthier you!".localized()
-//            \n\nPlus, you'll have access to a personal coach for any questions you may have, just leave a comment under the workout!
+
             paywallView.payButton.setTitle("Buy now for 199 RUB".localized(), for: .normal)
             paywallView.priceLabel.text = "Pay once and get life-time access".localized()
         case K.bellyBurner:
@@ -105,8 +106,9 @@ final class PaywallViewController: UIViewController {
 //            // can make payments
 //
 //            let paymentRequest = SKMutablePayment()
-//            switch title {
+//            switch programName {
 //            case K.ecd: paymentRequest.productIdentifier = InAppPurcaseID.ECD.rawValue
+//            case K.pelvicPower: paymentRequest.productIdentifier = InAppPurcaseID.PelvicPower.rawValue
 //            default: break
 //            }
 //            SKPaymentQueue.default().add(paymentRequest)
@@ -115,17 +117,20 @@ final class PaywallViewController: UIViewController {
 //        }
 //    }
     @objc private func payButtonPressed() {
-        IAPManager.shared.fetchPackages { package in
-            guard let package = package else {return}
-            print ("get package")
-            IAPManager.shared.subscribe(package: package){success in
-                if success {
-                    let programVC = WorkoutsViewController()
-                    programVC.title = self.programName
-                    self.navigationController?.pushViewController(programVC, animated: true)
-                }
-            }
-        }
+//        print ("pay button is pressed")
+//        IAPManager.shared.fetchPackages { package in
+//            guard let package = package else {return}
+//            print ("get package")
+//            IAPManager.shared.subscribe(package: package){success in
+//                if success {
+//                    let programVC = WorkoutsViewController()
+//                    programVC.title = self.programName
+//                    self.navigationController?.pushViewController(programVC, animated: true)
+//                } else {
+//                    print ("error subscribing to a package")
+//                }
+//            }
+//        }
     }
 }
 

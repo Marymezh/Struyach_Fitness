@@ -1,21 +1,60 @@
 {
-  "identifier" : "C1D61F4D",
+  "identifier" : "DE735E6D",
   "nonRenewingSubscriptions" : [
 
   ],
   "products" : [
-
+    {
+      "displayPrice" : "199",
+      "familyShareable" : false,
+      "internalID" : "E40BFC1C",
+      "localizations" : [
+        {
+          "description" : "10 workouts to strengthen abs",
+          "displayName" : "Belly Burner Plan",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "10 тренировок для укрепления пресса.",
+          "displayName" : "Belly Burner Plan",
+          "locale" : "ru"
+        }
+      ],
+      "productID" : "marymezh.StruyachFitnessClient.belly",
+      "referenceName" : "Belly Burner Plan",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "199",
+      "familyShareable" : false,
+      "internalID" : "8D6CEC5F",
+      "localizations" : [
+        {
+          "description" : "10 тренировок на укрепление ног и таза.",
+          "displayName" : "Pelvic Power Plan",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "10 workouts to strengthen legs and pelvic.",
+          "displayName" : "Pelvic Power Plan",
+          "locale" : "ru"
+        }
+      ],
+      "productID" : "marymezh.StruyachFitnessClient.pelvic",
+      "referenceName" : "Pelvic Power Plan",
+      "type" : "NonConsumable"
+    }
   ],
   "settings" : {
 
   },
   "subscriptionGroups" : [
     {
-      "id" : "9E6BB1E2",
+      "id" : "232E838F",
       "localizations" : [
 
       ],
-      "name" : "paid plans",
+      "name" : "Paid training plans",
       "subscriptions" : [
         {
           "adHocOffers" : [
@@ -24,26 +63,65 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "0.99",
+          "displayPrice" : "99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "CAEE2E09",
+          "internalID" : "28A3AF82",
           "introductoryOffer" : {
-            "internalID" : "A6A2FD4B",
+            "internalID" : "2F9B8D2E",
             "paymentMode" : "free",
             "subscriptionPeriod" : "P1W"
           },
           "localizations" : [
             {
-              "description" : "Месячная подписка на план ",
-              "displayName" : "ECD plan",
+              "description" : "ECD Plan subscription",
+              "displayName" : "ECD Plan",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Подписка на план ECD",
+              "displayName" : "ECD Plan",
               "locale" : "ru"
             }
           ],
           "productID" : "marymezh.StruyachFitnessClient.ecd",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "ECD plan",
-          "subscriptionGroupID" : "9E6BB1E2",
+          "referenceName" : "ECD Plan 149 rub, 1-week-free",
+          "subscriptionGroupID" : "232E838F",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "799",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "836421E7",
+          "introductoryOffer" : {
+            "internalID" : "8C17FACC",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Struyach Plan subscription",
+              "displayName" : "Struyach Plan ",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Подписка на план Струяч",
+              "displayName" : "Struyach Plan",
+              "locale" : "ru"
+            }
+          ],
+          "productID" : "marymezh.StruyachFitnessClient.struyach",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Struyach Plan 799 rub, 1-week-free",
+          "subscriptionGroupID" : "232E838F",
           "type" : "RecurringSubscription"
         }
       ]

@@ -233,11 +233,11 @@ final class BlogViewController: UIViewController {
         let formatter = DateFormatter()
         if currentLanguage.rawValue == "ru" { // Russian
             formatter.locale = Locale(identifier: "ru_RU")
-            formatter.dateFormat = "EEEE, dd MMMM yyyy"
+            formatter.dateFormat = "EEE, d MMMM yyyy"
 
         } else { // English (default)
             formatter.locale = Locale(identifier: "en_US")
-            formatter.dateFormat = "EEEE, MMMM dd, yyyy"
+            formatter.dateFormat = "EEE, MMMM d, yyyy"
         }
         let dateString = formatter.string(from: date)
         cell.postDateLabel.text = dateString

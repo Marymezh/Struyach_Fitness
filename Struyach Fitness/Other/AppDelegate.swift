@@ -9,7 +9,8 @@ import UIKit
 import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
-import Purchases
+import RevenueCat
+
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
@@ -19,21 +20,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         //setting up Firebase and Messaging
         FirebaseApp.configure()
         
-        Messaging.messaging().delegate = self
-        UNUserNotificationCenter.current().delegate = self
-        
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { success, error in
-            if let error = error {
-                print ("Unable to register in APNS \(error.localizedDescription)")
-                
-            } else {
-                print ("success in APNS registry")
-            }
-        }
-        
-        application.registerForRemoteNotifications()
+//        Messaging.messaging().delegate = self
+//        UNUserNotificationCenter.current().delegate = self
+//
+//        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { success, error in
+//            if let error = error {
+//                print ("Unable to register in APNS \(error.localizedDescription)")
+//
+//            } else {
+//                print ("success in APNS registry")
+//            }
+//        }
+//
+//        application.registerForRemoteNotifications()
         
         //setting up Revenue Cat "Purchases"
+        
         var apiKey: String {
           get {
             guard let filePath = Bundle.main.path(forResource: "Purchases-Info", ofType: "plist") else {
@@ -46,8 +48,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
             return value
           }
         }
-            Purchases.configure(withAPIKey: apiKey)
-            print(apiKey)
+//        let pelvicEntitlementId = "PELVIC POWER"
+//        let bellyEntitlementId = "BELLY POWER"
+//        let ecdEntitlementId = "ECD Plan"
+//        let struyachEntitlementId = "STRUYACH PLAN"
+        
+        Purchases.logLevel = .debug
+        Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey)
+            .with(usesStoreKit2IfAvailable: true)
+            .build())
+        Purchases.shared.delegate = self
+        
+//        Purchases.debugLogsEnabled = true
+//            Purchases.configure(withAPIKey: apiKey)
+//            print(apiKey)
         
         // setting up application language
         let currentLanguage = LanguageManager.shared.currentLanguage
@@ -59,26 +73,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
 
     // MARK: UISceneSession Lifecycle
     
-    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        messaging.token { token, error in
-            if let  error = error {
-                print ("Error fetching FCM token \(error.localizedDescription)")
-            } else if let token = token {
-                print ("FCM registration token is received: \(token)")
-            }
-        }
-    }
+//    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+//        messaging.token { token, error in
+//            if let  error = error {
+//                print ("Error fetching FCM token \(error.localizedDescription)")
+//            } else if let token = token {
+//                print ("FCM registration token is received: \(token)")
+//            }
+//        }
+//    }
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        // Called when a new scene session is being created.
-        // Use this method to select a configuration to create the new scene with.
+
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
-        // Called when the user discards a scene session.
-        // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
-        // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
+
     }
 }
 
+extension AppDelegate: PurchasesDelegate {
+    func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
+        print("modified")
+    }
+}

@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import FirebaseMessaging
 import UIKit
 import MessageKit
 
@@ -22,7 +23,6 @@ final class DatabaseManager {
     
     //MARK: - Workouts: adding, fetching, editing, deleting workouts and listen to the changes
     
-    //TODO: - Firebase pagination and caching workouts and comments localy
     public func postWorkout(with workout: Workout, completion: @escaping(Bool) ->()){
         print("Executing function: \(#function)")
         let program = workout.programID
@@ -37,13 +37,60 @@ final class DatabaseManager {
                 .collection("workouts")
                 .document(workout.id)
                 .setData(workoutData) { error in
-                    completion(error == nil)
+                    if let error = error {
+                        print ("Error posting new workout \(error.localizedDescription)")
+                    } else {
+                        // Send notification to users subscribed to the program
+                  //      self.sendNotificationOnNewWorkout(workout: workout)
+                        print("workout posted")
+                    }
                 }
         } catch {
             print("Error encoding workout: \(error)")
             completion(false)
         }
     }
+    
+//    func sendNotificationOnNewWorkout(workout: Workout) {
+//        let programId = workout.programID
+//            .replacingOccurrences(of: "/", with: "_")
+//            .replacingOccurrences(of: " ", with: "_")
+//
+//        let currentUserEmail = UserDefaults.standard.string(forKey: "email") ?? ""
+//
+//        database.collection("users")
+//            .whereField("email", isEqualTo: currentUserEmail)
+//            .getDocuments { (querySnapshot, error) in
+//                guard let documents = querySnapshot?.documents else {
+//                    print("Error fetching user: \(error!)")
+//                    return
+//                }
+//                for document in documents {
+//                    let user = try? document.data(as: User.self)
+//                    if let subscribedPrograms = user?.subscribedPrograms,
+//                       subscribedPrograms.contains(programId) {
+//                        let tokens = document.get("tokens") as? [String] ?? []
+//                        if tokens.isEmpty {
+//                            print("No tokens found for program subscriptions")
+//                            return
+//                        }
+//                        let message = Messaging.messaging()
+//                        let title = "New Workout Available"
+//                        let body = "A new workout has been added to the \(workout.programID)!"
+//                        let notification = ["title": title, "body": body]
+//                        let data: [String: Any] = ["workoutId": workout.id]
+//                        let messageDict: [String: Any] = ["notification": notification, "data": data]
+//                         message.send(messageDict, to: tokens, completion: { (error) in
+//                            if let error = error {
+//                                print("Error sending notification: \(error.localizedDescription)")
+//                            } else {
+//                                print("Notification sent successfully")
+//                            }
+//                        })
+//                    }
+//                }
+//            }
+//    }
     
     func getWorkoutsWithPagination(program: String, pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Workout], DocumentSnapshot?) -> ()) {
         print("Executing function: \(#function)")
