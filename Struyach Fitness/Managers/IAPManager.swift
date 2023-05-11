@@ -15,18 +15,22 @@ final class IAPManager {
 //    
     private init() {}
     
-    public func getOfferings() {
+//    public var offerings: [String: Offering]?
+    
+    public func getOffering(identifier: String, completion: @escaping  (Offering?)->()) {
         Purchases.shared.getOfferings { offerings, error in
             if let error = error {
                 print (error.localizedDescription)
             } else {
-                Purchases.shared.getCustomerInfo { customerInfo, error in
-                    if let error = error {
-                        print (error.localizedDescription)
-                    } else {
-                        print ("got offerings from Revenue Cat")
-                    }
-                }
+               // self.offerings = offerings?.all
+                completion(offerings?.offering(identifier: identifier))
+//                Purchases.shared.getCustomerInfo { customerInfo, error in
+//                    if let error = error {
+//                        print (error.localizedDescription)
+//                    } else {
+//                        print ("got offerings from Revenue Cat")
+//                    }
+//                }
             }
         }
     }
@@ -45,16 +49,7 @@ final class IAPManager {
         }
     }
     
-    
-//    
-//    public func getSubscriptionStatus() {
-//        Purchases.shared.purchaserInfo { info, error in
-//            guard let entitlements = info?.entitlements,
-//                    error == nil else {return}
-//            print(entitlements)
-//        }
-//    }
-//
+
 //    public func subscribe(package: Purchases.Package, completion: @escaping (Bool) ->()) {
 //        Purchases.shared.purchasePackage(package) { transaction, info, error, userCancelled in
 //            guard let transaction = transaction,
@@ -84,17 +79,17 @@ final class IAPManager {
 //
 //    }
 //
-//    public func fetchPackages(completion: @escaping (Purchases.Package?) -> ()) {
-//        Purchases.shared.offerings {offerings, error in
-//            guard let package = offerings?.offering(identifier: "default")?.availablePackages.first,
-//                  error == nil else {
-//            completion(nil)
-//                print ("no fackage fetched")
-//                return
-//            }
-//            completion(package)
-//        }
-//    }
+    public func fetchPackages(completion: @escaping (RevenueCat.Package?) -> ()) {
+        Purchases.shared.getOfferings {offerings, error in
+            guard let package = offerings?.offering(identifier: "default")?.availablePackages.first,
+                  error == nil else {
+            completion(nil)
+                print ("no fackage fetched")
+                return
+            }
+            completion(package)
+        }
+    }
 //
 //    public func restorePurchases() {
 //        Purchases.shared.restoreTransactions { info, error in

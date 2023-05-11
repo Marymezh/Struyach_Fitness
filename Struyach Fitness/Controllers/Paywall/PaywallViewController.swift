@@ -7,6 +7,7 @@
 
 import UIKit
 import StoreKit
+import RevenueCat
 
 enum InAppPurcaseID: String {
     case ECD = "marymezh.StruyachFitnessClient.ecd"
@@ -20,6 +21,7 @@ final class PaywallViewController: UIViewController {
     
     let paywallView = PaywallView()
     private let programName: String
+   
     //private let user: User
     
     init(programName: String) {
@@ -38,7 +40,9 @@ final class PaywallViewController: UIViewController {
         super.viewDidLoad()
         setupSubviews()
         setupPaywallMessageAndPrice()
-        SKPaymentQueue.default().add(self)
+        
+        
+    //    SKPaymentQueue.default().add(self)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -78,9 +82,15 @@ final class PaywallViewController: UIViewController {
             paywallView.titleLabel.text = "Subscribe to ECD Plan".localized()
             paywallView.descriptionLabel.text =
             "ECD Plan, the main training program followed by our ECD Fitness Club, is suitable for both beginners and intermediate-level athletes. \n\nWith this well-balanced program of full range movements using common gym equipment, you'll never get bored.  \n\nJoin today and start your fitness journey with us!".localized()
-            //\n\nPlus, you'll have the opportunity to share your progress with a coach and other users and compare results.
+
             paywallView.payButton.setTitle("Start your 1-Week FREE Trial".localized(), for: .normal)
-            paywallView.priceLabel.text = "99 RUB/month after trial".localized()
+            
+            IAPManager.shared.getOffering(identifier: "default") { offering in
+                if let package = offering?.availablePackages[0] {
+                    self.paywallView.priceLabel.text = "\(package.storeProduct.localizedPriceString) /month after trial"
+                }
+            }
+   //         paywallView.priceLabel.text = "99 RUB/month after trial".localized()
         case K.struyach:
             paywallView.titleLabel.text = "Subscribe to STRUYACH Plan".localized()
             paywallView.descriptionLabel.text = "Struyach plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. This plan is designed for competitive athletes who are in it to win it.\n\nBy subscribing to this plan, you'll get a premium account with full access to all plans and lifetime access to the Pelvic Power and Belly Burner plans! \n\nJoin now!".localized()

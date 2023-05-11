@@ -5,7 +5,7 @@
   ],
   "products" : [
     {
-      "displayPrice" : "199",
+      "displayPrice" : "1.99",
       "familyShareable" : false,
       "internalID" : "E40BFC1C",
       "localizations" : [
@@ -25,7 +25,7 @@
       "type" : "NonConsumable"
     },
     {
-      "displayPrice" : "199",
+      "displayPrice" : "1.99",
       "familyShareable" : false,
       "internalID" : "8D6CEC5F",
       "localizations" : [
@@ -63,7 +63,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "99",
+          "displayPrice" : "0.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "28A3AF82",
@@ -97,7 +97,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "799",
+          "displayPrice" : "9.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "836421E7",
