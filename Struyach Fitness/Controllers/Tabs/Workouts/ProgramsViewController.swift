@@ -67,7 +67,8 @@ final class ProgramsViewController: UITableViewController {
             if programName == K.bodyweight {
                 cell.backgroundColor = .customDarkGray
             } else {
-                IAPManager.shared.checkCustomerStatus(program: programName) { success in
+                IAPManager.shared.checkCustomerStatus(program: programName) {[weak cell] success in
+                    guard let cell = cell else {return}
                     cell.backgroundColor = success ? .customDarkGray : .customLightGray
                 }
             }
@@ -120,7 +121,8 @@ final class ProgramsViewController: UITableViewController {
             self.navigationController?.pushViewController(programVC, animated: true)
         } else {
             //cheching customer subscriptions on Revenue cat
-            IAPManager.shared.checkCustomerStatus(program: programName) { success in
+            IAPManager.shared.checkCustomerStatus(program: programName) {[weak self] success in
+                guard let self = self else {return}
                 if success {
                     //Push WorkoutsVC if user is subscribed
                     let programVC = WorkoutsViewController()

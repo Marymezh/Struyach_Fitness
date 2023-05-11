@@ -25,8 +25,6 @@ final class IAPManager {
                     let productPriceString = package.storeProduct.localizedPriceString
                     completion(productPriceString)
                 }
-                
-//                completion(offerings?.offering(identifier: identifier))
             }
         }
     }
@@ -45,39 +43,36 @@ final class IAPManager {
         }
     }
     
-
-//    public func subscribe(package: Purchases.Package, completion: @escaping (Bool) ->()) {
-//        Purchases.shared.purchasePackage(package) { transaction, info, error, userCancelled in
-//            guard let transaction = transaction,
-//                  let entitlements = info?.entitlements,
-//                  error == nil,
-//                  !userCancelled else {return}
-//            switch transaction.transactionState {
-//                
-//            case .purchasing:
-//                print("purchasing")
-//            case .purchased:
-//                print("purchased \(entitlements)")
-//                guard let email = self.currentUserEmail else {return}
-//                DatabaseManager.shared.updateUserSubscriptions(email: email, subscription: "ECD") { success in
-//                    print("successfully updated users subscriptions")
+//    public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Bool, Error) -> ()) {
+//        Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
+//            if let error = error {
+//                completion (false, error)
+//            } else {
+//                if customerInfo?.entitlements[program]?.isActive == true {
+//                        completion (true, error)
+//                    }
+//
 //                }
-//            case .failed:
-//                print("failed")
-//            case .restored:
-//                print ("restored")
-//            case .deferred:
-//                print ("deferred")
-//            @unknown default:
-//                print ("default case")
 //            }
 //        }
-//
-//    }
-//
-    public func fetchPackages(completion: @escaping (RevenueCat.Package?) -> ()) {
+    public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Result<Bool, Error>) -> ()) {
+        Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                if customerInfo?.entitlements[program]?.isActive == true {
+                    completion(.success(true))
+                } else {
+                    let error = NSError(domain: "com.example.purchase", code: 0, userInfo: [NSLocalizedDescriptionKey: "Purchase succeeded but program is not active"])
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+ 
+    public func fetchPackages(identifier: String, completion: @escaping (RevenueCat.Package?) -> ()) {
         Purchases.shared.getOfferings {offerings, error in
-            guard let package = offerings?.offering(identifier: "default")?.availablePackages.first,
+            guard let package = offerings?.offering(identifier: identifier)?.availablePackages.first,
                   error == nil else {
             completion(nil)
                 print ("no fackage fetched")

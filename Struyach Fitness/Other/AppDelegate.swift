@@ -48,20 +48,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
             return value
           }
         }
-//        let pelvicEntitlementId = "PELVIC POWER"
-//        let bellyEntitlementId = "BELLY POWER"
-//        let ecdEntitlementId = "ECD Plan"
-//        let struyachEntitlementId = "STRUYACH PLAN"
         
-        Purchases.logLevel = .debug
+//        Purchases.logLevel = .debug
         Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey)
             .with(usesStoreKit2IfAvailable: true)
             .build())
         Purchases.shared.delegate = self
-        
-//        Purchases.debugLogsEnabled = true
-//            Purchases.configure(withAPIKey: apiKey)
-//            print(apiKey)
         
         // setting up application language
         let currentLanguage = LanguageManager.shared.currentLanguage

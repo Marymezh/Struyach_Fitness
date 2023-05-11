@@ -84,6 +84,7 @@
 "Warning" = "Предупреждение";
 "Success" = "Готово";
 "Done" = "Готово";
+"Failed" = "Ошибка";
 
 "Delete" = "Удалить";
 "Edit" = "Редактировать";
@@ -115,6 +116,8 @@
 "Enter new name here" = "Введите новое имя";
 "User name can not be blank!" = "Имя пользователя не может быть пустым!";
 "Are you sure you would like to sign out?" = "Вы уверены, что хотите выйти из профиля?";
+
+"Unable to complete in-app purchase: %@" = "Невозможно завершить покупку: %@";
 
 //MARK: - PROFILE
 "Unknown user" = "Неизвестный пользователь";

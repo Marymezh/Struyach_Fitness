@@ -6,14 +6,6 @@
 //
 
 import UIKit
-import StoreKit
-import RevenueCat
-
-enum InAppPurcaseID: String {
-    case ECD = "marymezh.StruyachFitnessClient.ecd"
-    case PelvicPower = "marymezh.StruyachFitnessClient.pelvic"
-}
-
 
 final class PaywallViewController: UIViewController {
     
@@ -21,6 +13,27 @@ final class PaywallViewController: UIViewController {
     
     let paywallView = PaywallView()
     private let programName: String
+    
+    private var packageId: String {
+        switch programName {
+        case K.ecd: return "default"
+        case K.struyach: return "struyach"
+        case K.bellyBurner: return "belly"
+        case K.pelvicPower: return "pelvic"
+        default: return "unknown"
+        }
+    }
+    
+    let currentLanguage = LanguageManager.shared.currentLanguage
+    
+    private var localeId: String {
+        switch currentLanguage {
+        case .english:
+            return "en_US"
+        case .russian:
+            return "ru_RU"
+        }
+    }
    
     //private let user: User
     
@@ -40,22 +53,15 @@ final class PaywallViewController: UIViewController {
         super.viewDidLoad()
         setupSubviews()
         setupPaywallMessageAndPrice()
-        
-        
-    //    SKPaymentQueue.default().add(self)
     }
     
     override func viewWillAppear(_ animated: Bool) {
          super.viewWillAppear(animated)
-         
-         // Hide navigation bar
          navigationController?.navigationBar.isHidden = true
      }
      
      override func viewWillDisappear(_ animated: Bool) {
          super.viewWillDisappear(animated)
-         
-         // Show navigation bar
          navigationController?.navigationBar.isHidden = false
      }
     
@@ -75,8 +81,8 @@ final class PaywallViewController: UIViewController {
         NSLayoutConstraint.activate(constraints)
     }
     
+    
     private func setupPaywallMessageAndPrice() {
-        
         switch programName {
         case K.ecd:
             paywallView.titleLabel.text = "Subscribe to ECD Plan".localized()
@@ -85,26 +91,31 @@ final class PaywallViewController: UIViewController {
 
             paywallView.payButton.setTitle("Start your 1-Week FREE Trial".localized(), for: .normal)
             
-            IAPManager.shared.getOfferingPrice(identifier: "default") { price in
+            IAPManager.shared.getOfferingPrice(identifier: packageId) {[weak self] price in
+                guard let self = self else {return}
                 print ("get package offering")
-                self.paywallView.priceLabel.text = String(format: "%@/month after trial".localized(), price)
+                self.paywallView.priceLabel.text =
+                String(format: "%@/month after trial".localized(), locale: Locale(identifier: self.localeId), price)
+//                String(format: "%@/month after trial".localized(), price)
             }
    //         paywallView.priceLabel.text = "99 RUB/month after trial".localized()
         case K.struyach:
             paywallView.titleLabel.text = "Subscribe to STRUYACH Plan".localized()
             paywallView.descriptionLabel.text = "Struyach plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. This plan is designed for competitive athletes who are in it to win it.\n\nBy subscribing to this plan, you'll get a premium account with full access to all plans and lifetime access to the Pelvic Power and Belly Burner plans! \n\nJoin now!".localized()
             paywallView.payButton.setTitle("Start your 1-Week FREE Trial".localized(), for: .normal)
-            IAPManager.shared.getOfferingPrice(identifier: "struyach") { price in
+            IAPManager.shared.getOfferingPrice(identifier: packageId) { [weak self] price in
+                guard let self = self else {return}
                 print ("get package offering")
-                self.paywallView.priceLabel.text = String(format: "%@/month after trial".localized(), price)
+                self.paywallView.priceLabel.text = String(format: "%@/month after trial".localized(), locale: Locale(identifier: self.localeId), price)
             }
             paywallView.priceLabel.text = "799 RUB/month after trial".localized()
         case K.pelvicPower:
             paywallView.titleLabel.text = "Pelvic Power Plan".localized()
             paywallView.descriptionLabel.text = "Pelvic Power Plan offers 10 high-intensity workouts with detailed movement descriptions and video presentations to help you tone and strengthen your pelvic muscles.  \n\nJoin today for a one-time payment and get lifetime access to a stronger, healthier you!".localized()
-            IAPManager.shared.getOfferingPrice(identifier: "default") { price in
+            IAPManager.shared.getOfferingPrice(identifier: packageId) { [weak self] price in
+                guard let self = self else {return}
                 print ("get package offering")
-                let payButtonTitle = String(format: "Buy now for %@".localized(), price)
+                let payButtonTitle = String(format: "Buy now for %@".localized(), locale: Locale(identifier: self.localeId), price)
                 self.paywallView.payButton.setTitle(payButtonTitle, for: .normal)
             }
 //            paywallView.payButton.setTitle("Buy now for 199 RUB".localized(), for: .normal)
@@ -112,9 +123,10 @@ final class PaywallViewController: UIViewController {
         case K.bellyBurner:
             paywallView.titleLabel.text = "Belly Burner Plan".localized()
             paywallView.descriptionLabel.text = "Our high-intensity Belly Burner Plan offers 10 workouts with detailed descriptions and video presentations. \n\nGet rid of stubborn belly fat and achieve a leaner, fitter body with the help of a personal coach who will answer any questions you have.".localized()
-            IAPManager.shared.getOfferingPrice(identifier: "default") { price in
+            IAPManager.shared.getOfferingPrice(identifier: packageId) { [weak self] price in
+                guard let self = self else {return}
                 print ("get package offering")
-                let payButtonTitle = String(format: "Buy now for %@".localized(), price)
+                let payButtonTitle = String(format: "Buy now for %@".localized(), locale: Locale(identifier: self.localeId), price)
                 self.paywallView.payButton.setTitle(payButtonTitle, for: .normal)
             }
 //            paywallView.payButton.setTitle("Buy now for 199 RUB".localized(), for: .normal)
@@ -122,52 +134,35 @@ final class PaywallViewController: UIViewController {
         default: break
         }
     }
-    
-//    @objc private func payButtonPressed() {
-//        if SKPaymentQueue.canMakePayments() {
-//            // can make payments
-//
-//            let paymentRequest = SKMutablePayment()
-//            switch programName {
-//            case K.ecd: paymentRequest.productIdentifier = InAppPurcaseID.ECD.rawValue
-//            case K.pelvicPower: paymentRequest.productIdentifier = InAppPurcaseID.PelvicPower.rawValue
-//            default: break
-//            }
-//            SKPaymentQueue.default().add(paymentRequest)
-//        } else {
-//            print("user can't make payments")
-//        }
-//    }
+
     @objc private func payButtonPressed() {
-//        print ("pay button is pressed")
-//        IAPManager.shared.fetchPackages { package in
-//            guard let package = package else {return}
-//            print ("get package")
-//            IAPManager.shared.subscribe(package: package){success in
-//                if success {
+        print ("pay button is pressed")
+        IAPManager.shared.fetchPackages(identifier: packageId) { [weak self] package in
+            guard let self = self, let package = package else {return}
+            print ("get package")
+            IAPManager.shared.purchase(program: self.programName, package: package){[weak self] result in
+                guard let self = self else {return}
+                switch result {
+                case .success(let success):
+                    print ("success description: \(success.description)")
+                    self.dismiss(animated: true)
 //                    let programVC = WorkoutsViewController()
+//
 //                    programVC.title = self.programName
 //                    self.navigationController?.pushViewController(programVC, animated: true)
-//                } else {
-//                    print ("error subscribing to a package")
-//                }
-//            }
-//        }
-    }
-}
-
-
-
-extension PaywallViewController: SKPaymentTransactionObserver {
-    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        for transaction in transactions {
-            if transaction.transactionState == .purchased {
-                print("transaction successfull")
-            } else if transaction.transactionState == .failed {
-                print("transaction failed")
+                case .failure(let error):
+                    let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
+                    self.showAlert(title: "Failed".localized(), message: message)
+                }
             }
         }
     }
     
-    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Ok", style: .cancel)
+        alert.addAction(cancelAction)
+        alert.view.tintColor = .systemGreen
+        self.present(alert, animated: true, completion: nil)
+    }
 }
