@@ -148,13 +148,14 @@
 "Subscribe to ECD Plan" = "Подпишись на план ECD";
 "ECD Plan, the main training program followed by our ECD Fitness Club, is suitable for both beginners and intermediate-level athletes. \n\nWith this well-balanced program of full range movements using common gym equipment, you'll never get bored.  \n\nJoin today and start your fitness journey with us!" = "План ECD - это основной план, по которому тренируются атлеты нашего клуба, он подходит как для начинающих, так и продолжающих атлетов. \n\nТренировки с использованием обычного оборудования для кроссфита, которые не дадут тебе заскучать. \n\nНачни своё фитнес-путешествие с нами сегодня!";
 "Start your 1-Week FREE Trial" = "БЕСПЛАТНЫЙ пробный период - 1 неделя";
-"99 RUB/month after trial" = "Затем 99 РУБ/месяц";
+"%@/month after trial" = "Затем %@/месяц";
 "Subscribe to STRUYACH Plan" = "Подпишись на план СТРУЯЧ";
 "Struyach plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. This plan is designed for competitive athletes who are in it to win it.\n\nBy subscribing to this plan, you'll get a premium account with full access to all plans and lifetime access to the Pelvic Power and Belly Burner plans! \n\nJoin now!" = "План 'Струяч' разрабатывается для более продвинутых атлетов, которые хотят улучшить свои скиллы по всем направленям и участвовать в соревнованиях. \n\nПодписываясь на этот план вы также получаете доступ ко всем доступным планам, а дополнительные планы тренировок на пресс и ноги - в подарок! \n\nПодпишись сегодня!";
 "799 RUB/month after trial" = "Затем 799 РУБ/месяц";
 "Pelvic Power Plan" = "МОЩНАЯ ЖОПА";
 "Pelvic Power Plan offers 10 high-intensity workouts with detailed movement descriptions and video presentations to help you tone and strengthen your pelvic muscles.  \n\nJoin today for a one-time payment and get lifetime access to a stronger, healthier you!" = "10 классных тренировок с детальным описанием и демонстрацией всех движений, чтобы как следует прокачать мышцы ног и таза и привести их в тонус. \n\nТренер всегда на связи и ответит на любые вопросы по тренировкам!";
 "Buy now for 199 RUB" = "Купить за 199 РУБ";
+"Buy now for %@" = "Купить за %@";
 "Pay once and get life-time access" = "Заплати один раз и пользуйся";
 "Belly Burner Plan" = "ЖИРОСЖИГАТЕЛЬ";
 "Our high-intensity Belly Burner Plan offers 10 workouts with detailed descriptions and video presentations. \n\nGet rid of stubborn belly fat and achieve a leaner, fitter body with the help of a personal coach who will answer any questions you have." = "10 высокоинтенсивных тренировок, направленных на то, чтобы уничтожить упрямый жирок на животе, прокачать мышцы кора и получить более подтянутое и тренированное тело! \n\nТренер всегда на связи и ответит на любые вопросы по тренировкам!";

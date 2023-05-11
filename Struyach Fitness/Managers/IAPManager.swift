@@ -15,22 +15,18 @@ final class IAPManager {
 //    
     private init() {}
     
-//    public var offerings: [String: Offering]?
-    
-    public func getOffering(identifier: String, completion: @escaping  (Offering?)->()) {
+    public func getOfferingPrice(identifier: String, completion: @escaping  (String)->()) {
         Purchases.shared.getOfferings { offerings, error in
             if let error = error {
                 print (error.localizedDescription)
             } else {
-               // self.offerings = offerings?.all
-                completion(offerings?.offering(identifier: identifier))
-//                Purchases.shared.getCustomerInfo { customerInfo, error in
-//                    if let error = error {
-//                        print (error.localizedDescription)
-//                    } else {
-//                        print ("got offerings from Revenue Cat")
-//                    }
-//                }
+                let currentOffering = offerings?.offering(identifier: identifier)
+                if let package = currentOffering?.availablePackages[0] {
+                    let productPriceString = package.storeProduct.localizedPriceString
+                    completion(productPriceString)
+                }
+                
+//                completion(offerings?.offering(identifier: identifier))
             }
         }
     }

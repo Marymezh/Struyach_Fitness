@@ -85,27 +85,39 @@ final class PaywallViewController: UIViewController {
 
             paywallView.payButton.setTitle("Start your 1-Week FREE Trial".localized(), for: .normal)
             
-            IAPManager.shared.getOffering(identifier: "default") { offering in
-                if let package = offering?.availablePackages[0] {
-                    self.paywallView.priceLabel.text = "\(package.storeProduct.localizedPriceString) /month after trial"
-                }
+            IAPManager.shared.getOfferingPrice(identifier: "default") { price in
+                print ("get package offering")
+                self.paywallView.priceLabel.text = String(format: "%@/month after trial".localized(), price)
             }
    //         paywallView.priceLabel.text = "99 RUB/month after trial".localized()
         case K.struyach:
             paywallView.titleLabel.text = "Subscribe to STRUYACH Plan".localized()
             paywallView.descriptionLabel.text = "Struyach plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. This plan is designed for competitive athletes who are in it to win it.\n\nBy subscribing to this plan, you'll get a premium account with full access to all plans and lifetime access to the Pelvic Power and Belly Burner plans! \n\nJoin now!".localized()
             paywallView.payButton.setTitle("Start your 1-Week FREE Trial".localized(), for: .normal)
+            IAPManager.shared.getOfferingPrice(identifier: "struyach") { price in
+                print ("get package offering")
+                self.paywallView.priceLabel.text = String(format: "%@/month after trial".localized(), price)
+            }
             paywallView.priceLabel.text = "799 RUB/month after trial".localized()
         case K.pelvicPower:
             paywallView.titleLabel.text = "Pelvic Power Plan".localized()
             paywallView.descriptionLabel.text = "Pelvic Power Plan offers 10 high-intensity workouts with detailed movement descriptions and video presentations to help you tone and strengthen your pelvic muscles.  \n\nJoin today for a one-time payment and get lifetime access to a stronger, healthier you!".localized()
-
-            paywallView.payButton.setTitle("Buy now for 199 RUB".localized(), for: .normal)
+            IAPManager.shared.getOfferingPrice(identifier: "default") { price in
+                print ("get package offering")
+                let payButtonTitle = String(format: "Buy now for %@".localized(), price)
+                self.paywallView.payButton.setTitle(payButtonTitle, for: .normal)
+            }
+//            paywallView.payButton.setTitle("Buy now for 199 RUB".localized(), for: .normal)
             paywallView.priceLabel.text = "Pay once and get life-time access".localized()
         case K.bellyBurner:
             paywallView.titleLabel.text = "Belly Burner Plan".localized()
             paywallView.descriptionLabel.text = "Our high-intensity Belly Burner Plan offers 10 workouts with detailed descriptions and video presentations. \n\nGet rid of stubborn belly fat and achieve a leaner, fitter body with the help of a personal coach who will answer any questions you have.".localized()
-            paywallView.payButton.setTitle("Buy now for 199 RUB".localized(), for: .normal)
+            IAPManager.shared.getOfferingPrice(identifier: "default") { price in
+                print ("get package offering")
+                let payButtonTitle = String(format: "Buy now for %@".localized(), price)
+                self.paywallView.payButton.setTitle(payButtonTitle, for: .normal)
+            }
+//            paywallView.payButton.setTitle("Buy now for 199 RUB".localized(), for: .normal)
             paywallView.priceLabel.text = "Pay once and get life-time access".localized()
         default: break
         }
