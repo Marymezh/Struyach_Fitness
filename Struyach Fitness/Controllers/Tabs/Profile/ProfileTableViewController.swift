@@ -122,18 +122,25 @@ final class ProfileTableViewController: UITableViewController {
         let alert = UIAlertController(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
         alert.addAction(UIAlertAction(title: "Sign Out".localized(), style: .destructive, handler: { action in
-            AuthManager.shared.signOut { [weak self] success in
+//            IAPManager.shared.logOutRevenueCat { [weak self] error in
+//                guard let self = self else {return}
+//                self.showErrorAlert(text: "Unable to log out".localized())
+//            }
+            AuthManager.shared.signOut { success in
                 if success {
                     DispatchQueue.main.async {
                         UserDefaults.standard.set(nil, forKey: "userName")
                         UserDefaults.standard.set(nil, forKey: "email")
                         UserDefaults.standard.set(nil, forKey: "userImage")
+                        
+                //update root vc
                         let signInVC = LoginViewController()
-                        signInVC.navigationItem.largeTitleDisplayMode = .never
                         let navVC = UINavigationController(rootViewController: signInVC)
                         navVC.navigationBar.prefersLargeTitles = false
-                        navVC.modalPresentationStyle = .fullScreen
-                        self?.present(navVC, animated: true)
+                        let window = UIApplication.shared.windows.first
+                        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+                            window?.rootViewController = navVC
+                        }, completion: nil)
                     }
                 }
             }

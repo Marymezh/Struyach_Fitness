@@ -50,6 +50,15 @@ final class ProgramsViewController: UITableViewController {
         navigationController?.navigationBar.barTintColor =  .customTabBar
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
     }
+    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Ok", style: .cancel)
+        alert.addAction(cancelAction)
+        alert.view.tintColor = .systemGreen
+        self.present(alert, animated: true, completion: nil)
+    }
+    
    
     //MARK: - Table View datasource and delegate methods
     
@@ -73,13 +82,6 @@ final class ProgramsViewController: UITableViewController {
                 }
             }
         }
-//        if let safeEmail = currentUserEmail, let programName = cell.programNameLabel.text{
-//            DatabaseManager.shared.getUser(email: safeEmail) {currentUser in
-//                guard let currentUser = currentUser else {return}
-//                let isUserSubscribed = currentUser.subscribedPrograms.contains(programName)
-//                cell.backgroundColor = isUserSubscribed ? .customDarkGray : .customLightGray
-//            }
-//        }
         #endif
         
         return cell
@@ -133,29 +135,13 @@ final class ProgramsViewController: UITableViewController {
                     let paywallVC = PaywallViewController(programName: programName)
                     paywallVC.modalPresentationStyle = .automatic
                     self.navigationController?.present(paywallVC, animated: true, completion: nil)
+                    paywallVC.onPaywallClose = {[weak self] in
+                        guard let self = self else {return}
+                        self.tableView.reloadData()
+                    }
                 }
             }
         }
-    
-
-//        guard let currentUserEmail = currentUserEmail else { return }
-//        DatabaseManager.shared.getUser(email: currentUserEmail) {[weak self] currentUser in
-//            guard let self = self, let currentUser = currentUser else { return }
-//
-//            let isUserSubscribed = currentUser.subscribedPrograms.contains(programName)
-//
-//            if isUserSubscribed {
-//                // Push WorkoutsVC if user is subscribed
-//                let programVC = WorkoutsViewController()
-//                programVC.title = programName
-//                self.navigationController?.pushViewController(programVC, animated: true)
-//            } else {
-//                // Present PaywallViewController if user is not subscribed
-//                let paywallVC = PaywallViewController(programName: programName, user: currentUser)
-//                paywallVC.modalPresentationStyle = .automatic
-//                self.navigationController?.present(paywallVC, animated: true, completion: nil)
-//            }
-//        }
         #endif
         
         tableView.deselectRow(at: indexPath, animated: true)

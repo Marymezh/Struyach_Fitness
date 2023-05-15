@@ -7,15 +7,25 @@
 
 import Foundation
 import RevenueCat
+import UIKit
 
 final class IAPManager {
     
     static let shared = IAPManager()
-//    private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
-//    
+
+    private let currentLanguage = LanguageManager.shared.currentLanguage
+    
+    private var localeId: String {
+        switch currentLanguage {
+        case .english:
+            return "en_US"
+        case .russian:
+            return "ru_RU"
+        }
+    }
     private init() {}
     
-    public func getOfferingPrice(identifier: String, completion: @escaping  (String)->()) {
+    public func getOfferingDetails(identifier: String, completion: @escaping  (String, String)->()) {
         Purchases.shared.getOfferings { offerings, error in
             if let error = error {
                 print (error.localizedDescription)
@@ -23,7 +33,22 @@ final class IAPManager {
                 let currentOffering = offerings?.offering(identifier: identifier)
                 if let package = currentOffering?.availablePackages[0] {
                     let productPriceString = package.storeProduct.localizedPriceString
-                    completion(productPriceString)
+                    if let intro = package.storeProduct.introductoryDiscount {
+                        let introValue = intro.subscriptionPeriod.value
+//                        let introUnits = intro.subscriptionPeriod.unit
+                        let introTitle = intro.subscriptionPeriod.durationTitle
+                        
+                        let termsText = String(format: "Start your %d - %@ FREE trial".localized(), introValue, introTitle)
+
+//                        let termsText = "Start your \(introValue) - \(introUnits) FREE trial"
+                        let priceText =  String(format: "%@/month after trial".localized(), locale: Locale(identifier: self.localeId), productPriceString)
+                        completion(priceText, termsText)
+                    } else {
+                        let termsText = "Pay once and get life-time access".localized()
+                        let priceText = String(format: "Buy now for %@".localized(), locale: Locale(identifier: self.localeId), productPriceString)
+                        completion(priceText, termsText)
+                    }
+                    
                 }
             }
         }
@@ -36,6 +61,7 @@ final class IAPManager {
             } else {
                 if customer?.entitlements[program]?.isActive == true {
                     completion(true)
+                    
                 } else {
                     completion(false)
                 }
@@ -43,19 +69,51 @@ final class IAPManager {
         }
     }
     
-//    public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Bool, Error) -> ()) {
-//        Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
-//            if let error = error {
-//                completion (false, error)
-//            } else {
-//                if customerInfo?.entitlements[program]?.isActive == true {
-//                        completion (true, error)
-//                    }
-//
-//                }
-//            }
-//        }
+    public func getSubscriptionStatus(program: String, completion: @escaping (UIColor, String) -> ()) {
+        Purchases.shared.getCustomerInfo {customerInfo, error in
+            
+            if let error = error {
+                print(error.localizedDescription)
+            } else {
+//                guard let identifiers = customerInfo?.allPurchasedProductIdentifiers else {return}
+//                print (identifiers)
+                if customerInfo?.entitlements[program]?.isActive == true {
+                    guard let info = customerInfo?.entitlements[program] else {
+                        print ("error fetching customer info")
+                        return
+                    }
+                    print ("this is the customer info for program \(program):\(info)")
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .medium
+                    let currentLanguage = LanguageManager.shared.currentLanguage
+                    if currentLanguage.rawValue == "ru" {
+                        formatter.locale = Locale(identifier: "ru_RU")
+                    } else {
+                        formatter.locale = Locale(identifier: "en_US")
+                    }
+                    if let date = customerInfo?.expirationDate(forEntitlement: program) {
+                        
+                        let subscriptionPeriod = formatter.string(from: date)
+                        print (subscriptionPeriod + program)
+                        let color = UIColor.systemGreen
+                        let activeUntil = String(format: "until %@".localized(), subscriptionPeriod)
+                        completion(color, activeUntil)
+                    } else {
+                        let purchased = "purchased".localized()
+                        let color = UIColor.systemGreen
+                        completion(color, purchased)
+                    }
+                } else {
+                    let message = String(format: "not active".localized(), program)
+                    let color = UIColor.systemYellow
+                    completion(color, message)
+                }
+            }
+        }
+    }
+    
     public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Result<Bool, Error>) -> ()) {
+       
         Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
             if let error = error {
                 completion(.failure(error))
@@ -69,16 +127,38 @@ final class IAPManager {
             }
         }
     }
- 
-    public func fetchPackages(identifier: String, completion: @escaping (RevenueCat.Package?) -> ()) {
+    
+    public func fetchPackages(identifier: String, completion: @escaping (Result <RevenueCat.Package?, Error>) -> ()) {
         Purchases.shared.getOfferings {offerings, error in
-            guard let package = offerings?.offering(identifier: identifier)?.availablePackages.first,
-                  error == nil else {
-            completion(nil)
-                print ("no fackage fetched")
-                return
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                if let package = offerings?.offering(identifier: identifier)?.availablePackages.first {
+                    completion(.success(package))
+                }
             }
-            completion(package)
+        }
+    }
+    
+    public func logInRevenueCat(userId: String, completion: @escaping (Error) -> ())  {
+        Purchases.shared.logIn(userId) { (customerInfo, created, error) in
+            if let error = error {
+                completion(error)
+            } else {
+                print("user is loged in the Revenue cat!")
+            }
+        }
+    }
+    
+    
+    public func logOutRevenueCat(completion: @escaping (Error) -> ()) {
+        Purchases.shared.logOut { customerInfo, error in
+            
+            if let error = error {
+                completion(error)
+            } else {
+                print("User is loged out from the Revenue cat")
+            }
         }
     }
 //
@@ -90,5 +170,17 @@ final class IAPManager {
 //        }
 //    }
 //
+}
+
+extension SubscriptionPeriod {
+    var durationTitle: String {
+        switch self.unit {
+        case .day: return "day".localized()
+        case .week: return "week".localized()
+        case .month: return "month".localized()
+        case .year: return "year".localized()
+        @unknown default: return "Unknown"
+        }
+    }
 }
 

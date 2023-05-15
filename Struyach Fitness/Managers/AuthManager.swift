@@ -19,11 +19,17 @@ final class AuthManager {
     
     private let auth = Auth.auth()
     
-    private init() {}
+    public var userId = Auth.auth().currentUser?.email
+    
+    public var userUID = Auth.auth().currentUser?.uid
     
     public var isSignedIn: Bool {
         return auth.currentUser != nil
     }
+    
+    private init() {}
+    
+
     
     public func signUp(
         
@@ -71,6 +77,7 @@ final class AuthManager {
             auth.signIn(withEmail: email, password: password) { result, error in
                 guard result != nil, error == nil  else {
                     completion(false)
+                    print (error?.localizedDescription)
                     return
                 }
                 completion(true)

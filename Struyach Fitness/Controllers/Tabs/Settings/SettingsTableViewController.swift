@@ -17,12 +17,16 @@ final class SettingsTableViewController: UITableViewController {
     private let languageSwitchCellIdentifier = "LanguageSwitchCell"
     private let signOutCellIdentifier = "SignOutCell"
     private let notificationCellIdentifier = "NotificationCell"
-
-    // MARK: - Lifecycle
+    private let subscriptionsCellIdentifier = "SubscriptionsCell"
+    private var messages: [String] = []
+    private var messageColors: [UIColor] = []
+    private let programsArray = [K.ecd, K.struyach, K.pelvicPower, K.bellyBurner]
     
     let email: String
     let currentUserEmail = UserDefaults.standard.string(forKey: "email")
 
+    // MARK: - Lifecycle
+    
     init(email: String) {
         self.email = email
         super.init(nibName: nil, bundle: nil)
@@ -43,10 +47,19 @@ final class SettingsTableViewController: UITableViewController {
         tableView.register(LanguageSwitchTableViewCell.self, forCellReuseIdentifier: languageSwitchCellIdentifier)
         tableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: notificationCellIdentifier)
         tableView.register(SignOutTableViewCell.self, forCellReuseIdentifier: signOutCellIdentifier)
+        tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: subscriptionsCellIdentifier)
         
         // Set table view properties
         tableView.backgroundColor = .customDarkGray
         tableView.separatorStyle = .singleLine
+//        updateSubscriptionStatus()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateSubscriptionStatus()
+//        print ("Messages on view will appear: \(messages)")
+//   //     tableView.reloadData()
     }
     
     deinit {
@@ -57,7 +70,7 @@ final class SettingsTableViewController: UITableViewController {
     // MARK: - UITableViewDataSource and Delegate
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return 5
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -79,8 +92,10 @@ final class SettingsTableViewController: UITableViewController {
            case 1:
                return "Notifications settings".localized()
            case 2:
-               return "Language settings".localized()
+               return "Subscription status".localized()
            case 3:
+               return "Language settings".localized()
+           case 4:
                return "Log out or delete account".localized()
            default:
                return nil
@@ -98,8 +113,10 @@ final class SettingsTableViewController: UITableViewController {
         case 1:
             return 3
         case 2:
-            return 1
+            return 4
         case 3:
+            return 1
+        case 4:
             return 1
         default:
             return 0
@@ -132,6 +149,23 @@ final class SettingsTableViewController: UITableViewController {
                 return cell
             }
         case 2:
+            let cell = tableView.dequeueReusableCell(withIdentifier: subscriptionsCellIdentifier, for: indexPath) as! SubscriptionTableViewCell
+            
+            if messages.isEmpty {
+                   cell.titleLabel.text = "Fetching subscription status..."
+                cell.colorLabel.backgroundColor = .yellow
+                cell.termsLabel.text = ""
+               } else {
+                   cell.titleLabel.text = programsArray[indexPath.row]
+                   cell.colorLabel.backgroundColor = messageColors[indexPath.row]
+                   cell.termsLabel.text = messages[indexPath.row]
+               }
+            
+//            cell.textLabel?.font = UIFont.systemFont(ofSize: 14)
+//            cell.textLabel?.adjustsFontSizeToFitWidth = true
+           
+            return cell
+        case 3:
             let cell = tableView.dequeueReusableCell(withIdentifier: languageSwitchCellIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
             cell.delegate = self
             cell.configure(language: LanguageManager.shared.currentLanguage)
@@ -158,7 +192,6 @@ final class SettingsTableViewController: UITableViewController {
                 if let cell = tableView.cellForRow(at: indexPath) as? EmailTableViewCell {
                     cell.sendEmail()
                 }
-                
             case 2:
                 // go to app rating page
                 //           rateApp()
@@ -201,6 +234,31 @@ final class SettingsTableViewController: UITableViewController {
             // Unable to open app rating page - handle error
         }
     }
+    
+    private func updateSubscriptionStatus() {
+       
+        var updatedMessages = [String]()
+        var updatedColors = [UIColor]()
+        
+        let dispatchGroup = DispatchGroup() // create a dispatch group
+        
+        for program in self.programsArray {
+            dispatchGroup.enter() // notify the group that a task has started
+            
+            IAPManager.shared.getSubscriptionStatus(program: program) { color, message in
+                updatedMessages.append(message)
+                updatedColors.append(color)
+                dispatchGroup.leave() // notify the group that a task has finished
+            }
+        }
+        
+        dispatchGroup.notify(queue: DispatchQueue.main) { [weak self] in
+            guard let self = self else { return }// wait for all tasks to finish
+            self.messages = updatedMessages
+            self.messageColors = updatedColors
+            self.tableView.reloadData()
+        }
+    }
 }
 
 extension SettingsTableViewController: LanguageSwitchDelegate {
@@ -219,11 +277,6 @@ extension SettingsTableViewController: LanguageSwitchDelegate {
             window?.rootViewController = tabBarController
         }, completion: nil)
     }
-//       func updateRootViewController() {
-//           let tabBarController = TabBarController()
-//           let window = UIApplication.shared.windows.first
-//           window?.rootViewController = tabBarController
-//       }
 }
 
 

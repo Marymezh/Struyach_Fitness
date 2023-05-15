@@ -44,6 +44,8 @@ final class LoginViewController: UIViewController {
         
         NSLayoutConstraint.activate(constraints)
     }
+    
+   
     //MARK: - Buttons handling methods
     
     @objc private func loginTapped() {
@@ -58,6 +60,15 @@ final class LoginViewController: UIViewController {
             guard let self = self else {return}
             
             if success {
+                let userId = email
+                guard let userUID = AuthManager.shared.userUID else {return}
+                let safeUserId = userId
+                    .replacingOccurrences(of: "@", with: "_")
+                    .replacingOccurrences(of: ".", with: "_") + userUID
+                IAPManager.shared.logInRevenueCat(userId: safeUserId) { error in
+                    print(error.localizedDescription)
+                }
+                
                 DispatchQueue.main.async {
                     UserDefaults.standard.set(email, forKey: "email")
                     let vc = TabBarController()

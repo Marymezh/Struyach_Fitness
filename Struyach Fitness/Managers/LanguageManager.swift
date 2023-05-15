@@ -10,13 +10,22 @@ import Foundation
 class LanguageManager {
     
     static let shared = LanguageManager()
-    var currentLanguage: Language {
+    public var currentLanguage: Language {
         didSet {
             // Save the new language preference to UserDefaults
             UserDefaults.standard.setValue(currentLanguage.rawValue, forKey: "language")
             UserDefaults.standard.synchronize()
             print("saved language in User defaults is \(currentLanguage)")
         }
+    }
+    
+    public var localeId: String {
+            switch currentLanguage {
+            case .english:
+                return "en_US"
+            case .russian:
+                return "ru_RU"
+            }
     }
     
     private init() {
