@@ -52,14 +52,14 @@ final class SettingsTableViewController: UITableViewController {
         // Set table view properties
         tableView.backgroundColor = .customDarkGray
         tableView.separatorStyle = .singleLine
-//        updateSubscriptionStatus()
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        #if Client
         updateSubscriptionStatus()
-//        print ("Messages on view will appear: \(messages)")
-//   //     tableView.reloadData()
+        #endif
     }
     
     deinit {
@@ -70,7 +70,11 @@ final class SettingsTableViewController: UITableViewController {
     // MARK: - UITableViewDataSource and Delegate
     
     override func numberOfSections(in tableView: UITableView) -> Int {
+        #if Admin
+        return 4
+        #else
         return 5
+        #endif
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -87,6 +91,7 @@ final class SettingsTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
            switch section {
+               #if Client
            case 0:
                return "App information".localized()
            case 1:
@@ -99,6 +104,18 @@ final class SettingsTableViewController: UITableViewController {
                return "Log out or delete account".localized()
            default:
                return nil
+               #else
+           case 0:
+               return "App information".localized()
+           case 1:
+               return "Notifications settings".localized()
+           case 2:
+               return "Language settings".localized()
+           case 3:
+               return "Log out or delete account".localized()
+           default:
+               return nil
+               #endif
            }
        }
     
@@ -108,18 +125,31 @@ final class SettingsTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
+            #if Client
         case 0:
             return 3
         case 1:
             return 3
         case 2:
-            return 4
+            return programsArray.count
         case 3:
             return 1
         case 4:
             return 1
         default:
             return 0
+            #else
+        case 0:
+            return 3
+        case 1:
+            return 3
+        case 2:
+            return 1
+        case 3:
+            return 1
+        default:
+            return 0
+            #endif
         }
     }
     
@@ -148,6 +178,7 @@ final class SettingsTableViewController: UITableViewController {
                 cell.configure(with: "STRUYACH")
                 return cell
             }
+            #if Client
         case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: subscriptionsCellIdentifier, for: indexPath) as! SubscriptionTableViewCell
             
@@ -160,9 +191,6 @@ final class SettingsTableViewController: UITableViewController {
                    cell.colorLabel.backgroundColor = messageColors[indexPath.row]
                    cell.termsLabel.text = messages[indexPath.row]
                }
-            
-//            cell.textLabel?.font = UIFont.systemFont(ofSize: 14)
-//            cell.textLabel?.adjustsFontSizeToFitWidth = true
            
             return cell
         case 3:
@@ -173,6 +201,17 @@ final class SettingsTableViewController: UITableViewController {
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: signOutCellIdentifier, for: indexPath) as! SignOutTableViewCell
             return cell
+            
+            #else
+        case 2:
+            let cell = tableView.dequeueReusableCell(withIdentifier: languageSwitchCellIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
+            cell.delegate = self
+            cell.configure(language: LanguageManager.shared.currentLanguage)
+            return cell
+        default:
+            let cell = tableView.dequeueReusableCell(withIdentifier: signOutCellIdentifier, for: indexPath) as! SignOutTableViewCell
+            return cell
+            #endif
         }
         return UITableViewCell()
     }

@@ -60,15 +60,16 @@ final class LoginViewController: UIViewController {
             guard let self = self else {return}
             
             if success {
+                #if Client
                 let userId = email
-                guard let userUID = AuthManager.shared.userUID else {return}
+             //   guard let userUID = AuthManager.shared.userUID else {return}
                 let safeUserId = userId
                     .replacingOccurrences(of: "@", with: "_")
-                    .replacingOccurrences(of: ".", with: "_") + userUID
+                    .replacingOccurrences(of: ".", with: "_")
                 IAPManager.shared.logInRevenueCat(userId: safeUserId) { error in
                     print(error.localizedDescription)
                 }
-                
+                #endif
                 DispatchQueue.main.async {
                     UserDefaults.standard.set(email, forKey: "email")
                     let vc = TabBarController()

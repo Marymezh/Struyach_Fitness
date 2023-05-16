@@ -19,14 +19,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
      
         let vc: UIViewController
         if AuthManager.shared.isSignedIn {
-            guard let userId = AuthManager.shared.userId,
-                  let userUID = AuthManager.shared.userUID else {return}
-            let safeUserId = userId
-                .replacingOccurrences(of: "@", with: "_")
-                .replacingOccurrences(of: ".", with: "_") + userUID
-            IAPManager.shared.logInRevenueCat(userId: safeUserId) { error in
-                print(error.localizedDescription)
-            }
             vc = TabBarController()
         } else {
             let signInVC = LoginViewController()

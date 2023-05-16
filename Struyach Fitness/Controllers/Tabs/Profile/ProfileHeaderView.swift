@@ -17,7 +17,7 @@ final class ProfileHeaderView: UIView {
     
     let userPhotoImage: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(named: "general")
+        image.image = UIImage(systemName: "person.circle")
         image.clipsToBounds = true
         image.layer.cornerRadius = 60
         image.contentMode = .scaleAspectFill

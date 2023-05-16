@@ -90,14 +90,16 @@ final class CreateAccountViewController: UIViewController {
             switch result {
             case .success:
                 self.activityView.showActivityIndicator()
-                let userId = email
-                guard let userUID = AuthManager.shared.userUID else {return}
+                #if Client
+                let userId = email	
+              //  guard let userUID = AuthManager.shared.userUID else {return}
                 let safeUserId = userId
                     .replacingOccurrences(of: "@", with: "_")
-                    .replacingOccurrences(of: ".", with: "_") + userUID
+                    .replacingOccurrences(of: ".", with: "_")
                 IAPManager.shared.logInRevenueCat(userId: safeUserId)  { error in
                     print(error.localizedDescription)
                 }
+                #endif
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
                     let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, subscribedPrograms: [K.bodyweight])

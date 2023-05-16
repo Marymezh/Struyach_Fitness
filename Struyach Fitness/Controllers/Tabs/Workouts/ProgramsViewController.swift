@@ -16,7 +16,7 @@ final class ProgramsViewController: UITableViewController {
     private let programsArray = ProgramDescriptionStorage.programArray
     private let programsDescriptionArray = ["Get fit and toned with our Bodyweight Training Plan - no equipment needed, perfect for on-the-go workouts!".localized(), "Transform your body with our ECD Plan - designed for gym or CrossFit box training".localized(), "Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes".localized(), "Tone and strengthen your pelvic muscles with our 10 high-intensity workouts".localized(), "Get rid of stubborn belly fat and achieve a leaner, fitter body with our 10 high-intensity workouts".localized()]
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
-    
+
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -64,10 +64,10 @@ final class ProgramsViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: ProgramTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProgramTableViewCell.self), for: indexPath) as! ProgramTableViewCell
-        
+
         cell.program = programsArray[indexPath.section]
         cell.program?.programDetail = programsDescriptionArray[indexPath.section]
-        
+
         cell.backgroundView?.alpha = 0.5
         #if Admin
         cell.backgroundColor = .customDarkGray
@@ -83,10 +83,10 @@ final class ProgramsViewController: UITableViewController {
             }
         }
         #endif
-        
+
         return cell
     }
-    
+
     override func numberOfSections(in tableView: UITableView) -> Int {
         return programsArray.count
     }
@@ -107,13 +107,13 @@ final class ProgramsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let program = programsArray[indexPath.section]
         let programName = program.programName
-        
+
         #if Admin
         // Allow full access to WorkoutsVC for the Admin user
         let programVC = WorkoutsViewController()
         programVC.title = programName
         navigationController?.pushViewController(programVC, animated: true)
-        
+
         #else
         // Check if the user is subscribed to the program
         if programName == K.bodyweight {
@@ -126,12 +126,12 @@ final class ProgramsViewController: UITableViewController {
             IAPManager.shared.checkCustomerStatus(program: programName) {[weak self] success in
                 guard let self = self else {return}
                 if success {
-                    //Push WorkoutsVC if user is subscribed
+                    //Push WorkoutsVC if entitlement is active
                     let programVC = WorkoutsViewController()
                     programVC.title = programName
                     self.navigationController?.pushViewController(programVC, animated: true)
                 } else {
-                    // Present PaywallViewController if user is not subscribed
+                    // Present PaywallViewController if entitlement is not active
                     let paywallVC = PaywallViewController(programName: programName)
                     paywallVC.modalPresentationStyle = .automatic
                     self.navigationController?.present(paywallVC, animated: true, completion: nil)

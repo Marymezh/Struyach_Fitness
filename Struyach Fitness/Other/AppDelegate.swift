@@ -48,13 +48,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
             return value
           }
         }
-        
-//        Purchases.logLevel = .debug
+        #if Client
         Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey)
             .with(usesStoreKit2IfAvailable: false)
             .build())
         Purchases.shared.delegate = self
-        
+        #endif
         
         // setting up application language
         let currentLanguage = LanguageManager.shared.currentLanguage

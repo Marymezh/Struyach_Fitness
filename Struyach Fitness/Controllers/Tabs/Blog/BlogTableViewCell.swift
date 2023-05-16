@@ -28,7 +28,7 @@ final class BlogTableViewCell: UITableViewCell {
         view.layer.shadowRadius = 5
         view.layer.shadowOffset = CGSize(width: 5, height: 5)
         view.layer.shadowOpacity = 0.7
-        view.alpha = 0.8
+        //view.alpha = 1
         view.toAutoLayout()
         return view
     }()

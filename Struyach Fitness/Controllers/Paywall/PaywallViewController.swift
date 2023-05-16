@@ -102,7 +102,7 @@ final class PaywallViewController: UIViewController {
  
         case K.struyach:
             paywallView.titleLabel.text = "Subscribe to STRUYACH Plan".localized()
-            paywallView.descriptionLabel.text = "Struyach plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. This plan is designed for competitive athletes who are in it to win it.\n\nBy subscribing to this plan, you'll get a premium account with full access to all plans and lifetime access to the Pelvic Power and Belly Burner plans! \n\nJoin now!".localized()
+            paywallView.descriptionLabel.text = "Struyach plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. This plan is designed for competitive athletes who are in it to win it.\n\nBy subscribing to this plan, you'll get a premium account with full access to all plans! \n\nJoin now!".localized()
            // paywallView.payButton.setTitle("Start your 1-Week FREE Trial".localized(), for: .normal)
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
                 guard let self = self else {return}

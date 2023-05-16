@@ -35,12 +35,8 @@ final class IAPManager {
                     let productPriceString = package.storeProduct.localizedPriceString
                     if let intro = package.storeProduct.introductoryDiscount {
                         let introValue = intro.subscriptionPeriod.value
-//                        let introUnits = intro.subscriptionPeriod.unit
                         let introTitle = intro.subscriptionPeriod.durationTitle
-                        
                         let termsText = String(format: "Start your %d - %@ FREE trial".localized(), introValue, introTitle)
-
-//                        let termsText = "Start your \(introValue) - \(introUnits) FREE trial"
                         let priceText =  String(format: "%@/month after trial".localized(), locale: Locale(identifier: self.localeId), productPriceString)
                         completion(priceText, termsText)
                     } else {
@@ -112,8 +108,19 @@ final class IAPManager {
         }
     }
     
+    public func fetchPackages(identifier: String, completion: @escaping (Result <RevenueCat.Package?, Error>) -> ()) {
+        Purchases.shared.getOfferings {offerings, error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                if let package = offerings?.offering(identifier: identifier)?.availablePackages.first {
+                    completion(.success(package))
+                }
+            }
+        }
+    }
+    
     public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Result<Bool, Error>) -> ()) {
-       
         Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
             if let error = error {
                 completion(.failure(error))
@@ -128,17 +135,7 @@ final class IAPManager {
         }
     }
     
-    public func fetchPackages(identifier: String, completion: @escaping (Result <RevenueCat.Package?, Error>) -> ()) {
-        Purchases.shared.getOfferings {offerings, error in
-            if let error = error {
-                completion(.failure(error))
-            } else {
-                if let package = offerings?.offering(identifier: identifier)?.availablePackages.first {
-                    completion(.success(package))
-                }
-            }
-        }
-    }
+  
     
     public func logInRevenueCat(userId: String, completion: @escaping (Error) -> ())  {
         Purchases.shared.logIn(userId) { (customerInfo, created, error) in
