@@ -71,8 +71,6 @@ final class IAPManager {
             if let error = error {
                 print(error.localizedDescription)
             } else {
-//                guard let identifiers = customerInfo?.allPurchasedProductIdentifiers else {return}
-//                print (identifiers)
                 if customerInfo?.entitlements[program]?.isActive == true {
                     guard let info = customerInfo?.entitlements[program] else {
                         print ("error fetching customer info")
@@ -158,15 +156,17 @@ final class IAPManager {
             }
         }
     }
-//
-//    public func restorePurchases() {
-//        Purchases.shared.restoreTransactions { info, error in
-//            guard let entitlements = info?.entitlements,
-//                    error == nil else {return}
-//            print("restored \(entitlements)")
-//        }
-//    }
-//
+
+    public func restorePurchases(completion: @escaping (Result<Bool, Error>) -> ()) {
+        Purchases.shared.restorePurchases { info, error in
+            if let error = error {
+                completion (.failure(error))
+            } else {
+                completion (.success(true))
+            }
+        }
+    }
+
 }
 
 extension SubscriptionPeriod {

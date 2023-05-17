@@ -175,3 +175,8 @@
 "week" = "неделя";
 "month" = "месяц";
 "year" = "год";
+
+"This is an auto-renewable subscription. It will be charged to your Appstore account after trial and before each pay period. You can cancel anytime by going into your Settings -> Apple ID -> Subscriptions. Restore purchases if previously subscribed." = "Это автоматически продлеваемая подписка. Её стоимость будет списана с вашего счёта в Appstore после окончания пробного периода и перед каждым периодом оплаты. Вы можете отменить её в любое время, зайдя в «Настройки» -> Apple ID -> «Подписки». Восстановите покупки, если они ранее были оформлены.";
+
+"Unable to restore purchases: %@" = "Не удалось восстановить покупки: %@";
+"Your purchases are successfully restored!" = "Ваши покупки успешно восстановлены!";

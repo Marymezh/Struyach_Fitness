@@ -14,7 +14,7 @@ final class ProgramsViewController: UITableViewController {
     //MARK: - Properties
     
     private let programsArray = ProgramDescriptionStorage.programArray
-    private let programsDescriptionArray = ["Get fit and toned with our Bodyweight Training Plan - no equipment needed, perfect for on-the-go workouts!".localized(), "Transform your body with our ECD Plan - designed for gym or CrossFit box training".localized(), "Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes".localized(), "Tone and strengthen your pelvic muscles with our 10 high-intensity workouts".localized(), "Get rid of stubborn belly fat and achieve a leaner, fitter body with our 10 high-intensity workouts".localized()]
+    private let programsDescriptionArray = K.shortPlanDescriptions
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
 
     //MARK: - Lifecycle
@@ -34,7 +34,6 @@ final class ProgramsViewController: UITableViewController {
     deinit {
            print ("programs vc is deallocated")
        }
-    
     
     //MARK: - Setup methods
     

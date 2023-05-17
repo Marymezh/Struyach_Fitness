@@ -28,10 +28,10 @@ final class PaywallView: UIView {
     let descriptionLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.white
-        label.font = UIFont.systemFont(ofSize: 18)
+        label.font = UIFont.systemFont(ofSize: 16)
         label.textAlignment = .justified
         label.numberOfLines = 0
-        label.adjustsFontForContentSizeCategory = true
+        label.adjustsFontSizeToFitWidth = true
         label.toAutoLayout()
         return label
     }()
@@ -58,6 +58,19 @@ final class PaywallView: UIView {
         return label
     }()
     
+    let cancellationLabel: UILabel = {
+        let label = UILabel()
+        label.toAutoLayout()
+        label.text = "This is an auto-renewable subscription. It will be charged to your Appstore account after trial and before each pay period. You can cancel anytime by going into your Settings -> Apple ID -> Subscriptions. Restore purchases if previously subscribed.".localized()
+        label.adjustsFontSizeToFitWidth = true
+        label.textColor = .white
+        label.textAlignment = .justified
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.isUserInteractionEnabled = false
+        label.numberOfLines = 0
+        return label
+    }()
+    
     private let termsLabel: UILabel = {
         let label = UILabel()
         label.toAutoLayout()
@@ -73,7 +86,7 @@ final class PaywallView: UIView {
     private lazy var tapGesture = UITapGestureRecognizer(target: self, action: #selector(openTermsOfUse))
            
     
-    private let restorePurchasesButton: UIButton = {
+    let restorePurchasesButton: UIButton = {
         let button = UIButton()
         button.setTitle("Restore purchases".localized(), for: .normal)
         button.setTitleColor(UIColor.white, for: .normal)
@@ -112,7 +125,7 @@ final class PaywallView: UIView {
         termsLabel.attributedText = underlineAttributedString
         termsLabel.addGestureRecognizer(tapGesture)
         
-        addSubviews(titleLabel, descriptionLabel, payButton, priceLabel, stackView)
+        addSubviews(titleLabel, descriptionLabel, payButton, priceLabel, cancellationLabel, stackView)
   
         stackView.addArrangedSubview(termsLabel)
         stackView.addArrangedSubview(restorePurchasesButton)
@@ -134,6 +147,11 @@ final class PaywallView: UIView {
             priceLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             priceLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             
+            cancellationLabel.topAnchor.constraint(equalTo: priceLabel.bottomAnchor, constant: bigInset),
+            cancellationLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
+            cancellationLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
+            
+            stackView.topAnchor.constraint(equalTo: cancellationLabel.bottomAnchor, constant: smallInset),
             stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -bigInset),
