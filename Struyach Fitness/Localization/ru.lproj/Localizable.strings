@@ -180,3 +180,5 @@
 
 "Unable to restore purchases: %@" = "Не удалось восстановить покупки: %@";
 "Your purchases are successfully restored!" = "Ваши покупки успешно восстановлены!";
+
+"Unable to syncronize purchases: %@" = "Не удалось синхронизировать покупки: %@";

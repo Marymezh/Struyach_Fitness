@@ -166,7 +166,16 @@ final class IAPManager {
             }
         }
     }
-
+    
+    public func syncPurchases(completion: @escaping (Result<Bool, Error>) -> ()) {
+        Purchases.shared.syncPurchases { info, error in
+            if let error = error {
+                completion (.failure(error))
+            } else {
+                completion (.success(true))
+            }
+        }
+    }
 }
 
 extension SubscriptionPeriod {

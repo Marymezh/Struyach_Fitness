@@ -23,6 +23,7 @@ final class ProgramsViewController: UITableViewController {
         super.viewDidLoad()
         setupTableView()
         setupNavbar()
+  //      syncPurchases()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -48,6 +49,19 @@ final class ProgramsViewController: UITableViewController {
         navigationController?.navigationBar.largeTitleTextAttributes = [.backgroundColor: UIColor.customDarkGray ?? UIColor.blue, .foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 28, weight: .bold)]
         navigationController?.navigationBar.barTintColor =  .customTabBar
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
+    }
+    
+    private func syncPurchases() {
+        IAPManager.shared.syncPurchases { [weak self] result in
+            guard let self = self else {return}
+            switch result {
+            case .failure(let error):
+                let message = String(format: "Unable to syncronize purchases: %@".localized(), error.localizedDescription)
+                self.showAlert(title: "Error", message:  message)
+            case .success(_):
+                self.tableView.reloadData()
+            }
+        }
     }
     
     private func showAlert(title: String, message: String) {
@@ -77,6 +91,9 @@ final class ProgramsViewController: UITableViewController {
             } else {
                 IAPManager.shared.checkCustomerStatus(program: programName) {[weak cell] success in
                     guard let cell = cell else {return}
+                    if success {
+                    print ("entitlement for \(programName) is active")
+                    }
                     cell.backgroundColor = success ? .customDarkGray : .customLightGray
                 }
             }

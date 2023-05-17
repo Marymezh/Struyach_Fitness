@@ -132,12 +132,12 @@ final class PaywallViewController: UIViewController {
                         self.dismiss(animated: true)
                     case .failure(let error):
                         let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
-                        self.showAlert(title: "Failed".localized(), message: message)
+                        self.showAlert(title: "Failed".localized(), message: message, completion: nil)
                     }
                 }
             case .failure(let error):
                 let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
-                self.showAlert(title: "Failed".localized(), message: message)
+                self.showAlert(title: "Failed".localized(), message: message, completion: nil)
             }
         }
     }
@@ -148,16 +148,22 @@ final class PaywallViewController: UIViewController {
             switch result {
             case .failure(let error):
                 let message = String(format: "Unable to restore purchases: %@".localized(), error.localizedDescription)
-                self.showAlert(title: "Failed".localized(), message: message)
+                self.showAlert(title: "Failed".localized(), message: message, completion: nil)
             case .success(_):
-                self.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized())
+                self.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized()){_ in
+                    self.onPaywallClose?()
+                    self.dismiss(animated: true)
+                }
+                
+                
             }
         }
     }
     
-    private func showAlert(title: String, message: String) {
+    private func showAlert(title: String, message: String, completion: ((UIAlertAction) -> Void)?
+) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Ok", style: .cancel)
+        let cancelAction = UIAlertAction(title: "Ok", style: .cancel, handler: completion)
         alert.addAction(cancelAction)
         alert.view.tintColor = .systemGreen
         self.present(alert, animated: true, completion: nil)
