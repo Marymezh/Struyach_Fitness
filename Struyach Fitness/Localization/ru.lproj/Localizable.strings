@@ -19,6 +19,7 @@
 "Password (minimum 6 symbols)" = "Пароль (минимум 6 символов)";
 "Confirm password" = "Подтвердите пароль";
 "Create" = "Создать";
+"Enter secret code to create admin account" = "Введите секретный код администратора";
 
 
 //MARK: - TAB BAR
@@ -118,6 +119,8 @@
 "Are you sure you would like to sign out?" = "Вы уверены, что хотите выйти из профиля?";
 "Unable to log out" = "Не удалось выйти";
 "Unable to complete in-app purchase: %@" = "Невозможно завершить покупку: %@";
+"The secret code is wrong, you can not be registered as an admin!" = "Секретный код не верный, вы не можете зарегистрироваться как администратор!";
+"You are not authorized to sign in as an admin!" = "У вас нет прав доступа к этому приложению!";
 
 //MARK: - PROFILE
 "Unknown user" = "Неизвестный пользователь";

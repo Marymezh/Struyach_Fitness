@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Contacts
 
 final class LoginViewController: UIViewController {
 
@@ -55,11 +56,39 @@ final class LoginViewController: UIViewController {
         guard let password = loginView.passwordTextField.text, !password.isEmpty, password.count > 6 else {
             self.showAlert(title: "Warning".localized(), message: "Check your password".localized())
             return}
-        
-        AuthManager.shared.signIn(email: email, password: password) { [weak self] success in
+        #if Admin
+        checkIfAdmin(email: email, password: password)
+        #else
+        logIn(email: email, password: password)
+        #endif
+    }
+    
+    @objc private func createAccountTapped() {
+        let createAccountVC = CreateAccountViewController()
+        createAccountVC.title = "Create Account".localized()
+        createAccountVC.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.navigationBar.tintColor = .systemGreen
+        navigationController?.pushViewController(createAccountVC, animated: true)
+    }
+    
+    private func checkIfAdmin(email: String, password: String) {
+        DatabaseManager.shared.getUser(email: email) {[weak self] user in
             guard let self = self else {return}
-            
-            if success {
+            if let user = user {
+                if user.isAdmin == true {
+                    self.logIn(email: email, password: password)
+                } else {
+                    self.showAlert(title: "Warning".localized(), message: "You are not authorized to sign in as an admin!".localized())
+                }
+            }
+        }
+    }
+    
+    private func logIn(email: String, password: String) {
+        AuthManager.shared.signIn(email: email, password: password) { [weak self] result in
+            guard let self = self else {return}
+            switch result {
+            case .success:
                 #if Client
                 let userId = email
              //   guard let userUID = AuthManager.shared.userUID else {return}
@@ -76,18 +105,11 @@ final class LoginViewController: UIViewController {
                     vc.modalPresentationStyle = .fullScreen
                     self.present(vc, animated: true)
                 }
-            } else {
-                self.showAlert(title: "Warning", message: "Unable to log in".localized())
+            case .failure(let error):
+                let message = String(format: "Unable to log in: %@".localized(), error.localizedDescription)
+                self.showAlert(title: "Warning", message: message)
             }
         }
-    }
-    
-    @objc private func createAccountTapped() {
-        let createAccountVC = CreateAccountViewController()
-        createAccountVC.title = "Create Account".localized()
-        createAccountVC.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.navigationBar.tintColor = .systemGreen
-        navigationController?.pushViewController(createAccountVC, animated: true)
     }
     
     private func showAlert(title: String, message: String) {

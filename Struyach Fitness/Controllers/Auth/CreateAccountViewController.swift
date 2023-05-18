@@ -41,7 +41,9 @@ final class CreateAccountViewController: UIViewController {
         
         signUpView.toAutoLayout()
         signUpView.signUpButton.addTarget(self, action: #selector(signUpTapped), for: .touchUpInside)
-        
+        #if Admin
+        signUpView.secretCodeTextField.isHidden = false
+        #endif
         activityView.toAutoLayout()
         activityView.isHidden = true
         
@@ -79,19 +81,35 @@ final class CreateAccountViewController: UIViewController {
               let password = signUpView.confirmPasswordTextField.text, !password.isEmpty,
               password == signUpView.passwordTextField.text,
               let name = signUpView.userNameTextField.text, !name.isEmpty,
+              let enteredCode = signUpView.secretCodeTextField.text,
               let imageData = signUpView.avatarImageView.image?.jpegData(compressionQuality: 0.5) else {return
         }
         
-        //create User
-        AuthManager.shared.signUp(email: email, password: password) { [weak self] result in
-            
+        //check secretCode for admin sign up
+        #if Admin
+        SecurityCodeChecker.shared.check(enteredCode: enteredCode) { [weak self] success in
             guard let self = self else {return}
-            
+            if success {
+                self.createNewUser(name: name, email: email, password: password, imageData: imageData, isAdmin: true)
+            } else {
+                self.showErrorAlert(text: "The secret code is wrong, you can not be registered as an admin!".localized())
+            }
+        }
+        #else
+        // register new user without checking the code 
+        self.createNewUser(name: name, email: email, password: password, imageData: imageData, isAdmin: false)
+        #endif
+    }
+    //create User
+    private func createNewUser(name: String, email: String, password: String, imageData: Data, isAdmin: Bool) {
+        
+        AuthManager.shared.signUp(email: email, password: password) { [weak self] result in
+            guard let self = self else {return}
             switch result {
             case .success:
                 self.activityView.showActivityIndicator()
                 #if Client
-                let userId = email	
+                let userId = email
               //  guard let userUID = AuthManager.shared.userUID else {return}
                 let safeUserId = userId
                     .replacingOccurrences(of: "@", with: "_")
@@ -100,9 +118,10 @@ final class CreateAccountViewController: UIViewController {
                     print(error.localizedDescription)
                 }
                 #endif
+                
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
-                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, subscribedPrograms: [K.bodyweight])
+                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, isAdmin: isAdmin)
                     DatabaseManager.shared.insertUser(user: newUser) { inserted in
                         guard inserted else {
                             print ("cant insert new user")

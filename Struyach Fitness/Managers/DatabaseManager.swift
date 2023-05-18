@@ -907,7 +907,7 @@ final class DatabaseManager {
             "email": user.email,
             "name": user.name,
             "profile_photo": user.profilePictureRef,
-            "subscribed_programs": user.subscribedPrograms
+            "isAdmin": user.isAdmin
         ]
         
         database
@@ -930,16 +930,16 @@ final class DatabaseManager {
             .document(documentID)
             .getDocument { snapshot, error in
                 guard let data = snapshot?.data(),
-                              let name = data["name"] as? String,
-                              let imageRef = data["profile_photo"] as? String,
-                              let subscribedPrograms = data["subscribed_programs"] as? [String],
+                    let name = data["name"] as? String,
+                    let imageRef = data["profile_photo"] as? String,
+                    let isAdmin = data["isAdmin"] as? Bool,
                               error == nil else {
                             completion(nil)
                             return
                         }
                 let personalRecords = data["personal_records"] as? String
                         
-                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, subscribedPrograms: subscribedPrograms)
+                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin)
                         completion(user)
                     }
                 }
@@ -966,26 +966,6 @@ final class DatabaseManager {
         }
     }
     
-    public func updateUserSubscriptions(email: String, subscription: String, completion: @escaping(Bool) ->()
-    ){
-        let documentID = email
-            .replacingOccurrences(of: ".", with: "_")
-            .replacingOccurrences(of: "@", with: "_")
-        
-        let dbRef = database
-            .collection("users")
-            .document(documentID)
-        
-        dbRef.getDocument { snapshot, error in
-            guard var data = snapshot?.data(), error == nil else {return}
-            data["subscribed_programs"] = ["BODYWEIGHT", subscription]
-            dbRef.setData(data) { error in
-                if error == nil {
-                    completion(true)
-                }
-            }
-        }
-    }
     
     public func updateProfilePhoto(email: String, completion: @escaping (Bool) ->()){
         let path = email

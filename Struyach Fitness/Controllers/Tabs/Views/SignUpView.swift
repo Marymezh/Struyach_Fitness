@@ -95,6 +95,26 @@ final class SignUpView: UIView {
         return textField
     }()
     
+    let secretCodeTextField: UITextField = {
+        let textField = UITextField()
+        textField.font = UIFont.systemFont(ofSize: 16)
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
+        textField.leftViewMode = .always
+        textField.tintColor = .systemGray
+        textField.autocapitalizationType = .none
+        textField.autocorrectionType = .no
+        textField.backgroundColor = .systemGray6
+        textField.layer.borderWidth = 0.5
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.cornerRadius = 10
+        textField.clipsToBounds = true
+        textField.placeholder = "Enter secret code to create admin account".localized()
+        textField.isSecureTextEntry = true
+        textField.isHidden = true
+        textField.toAutoLayout()
+        return textField
+    }()
+    
     let signUpButton: UIButton = {
         let button = UIButton ()
         button.toAutoLayout()
@@ -119,11 +139,18 @@ final class SignUpView: UIView {
 
         self.addSubviews(avatarImageView,
                          autorizationView,
+                         secretCodeTextField,
                          signUpButton)
         autorizationView.addSubviews(userNameTextField,
                                      emailTextField,
                                      passwordTextField,
                                      confirmPasswordTextField)
+        
+        #if Admin
+        let signUpButtonTopConstraint = signUpButton.topAnchor.constraint(equalTo: secretCodeTextField.bottomAnchor, constant: 30)
+        #else
+        let signUpButtonTopConstraint = signUpButton.topAnchor.constraint(equalTo: confirmPasswordTextField.bottomAnchor, constant: 30)
+        #endif
         
         let constraints = [
             avatarImageView.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
@@ -156,7 +183,12 @@ final class SignUpView: UIView {
             confirmPasswordTextField.trailingAnchor.constraint(equalTo: autorizationView.trailingAnchor),
             confirmPasswordTextField.heightAnchor.constraint(equalToConstant: 49.7),
             
-            signUpButton.topAnchor.constraint(equalTo: autorizationView.bottomAnchor, constant: 30),
+            secretCodeTextField.topAnchor.constraint(equalTo: autorizationView.bottomAnchor, constant: 30),
+            secretCodeTextField.leadingAnchor.constraint(equalTo: autorizationView.leadingAnchor),
+            secretCodeTextField.trailingAnchor.constraint(equalTo: autorizationView.trailingAnchor),
+            secretCodeTextField.heightAnchor.constraint(equalToConstant: 49.7),
+            
+            signUpButtonTopConstraint,
             signUpButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
             signUpButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             signUpButton.heightAnchor.constraint(equalToConstant: 50)

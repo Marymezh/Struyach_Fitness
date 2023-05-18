@@ -12,5 +12,5 @@ struct User: Codable {
     let email: String
     let profilePictureRef: String
     let personalRecords: String?
-    let subscribedPrograms: [String]
+    let isAdmin: Bool
 }

@@ -5,6 +5,7 @@
 # Ignore configuration files with sensitive information
 *.xcconfig
 Purchases-Info.plist
+Admin-Info.plist
 
 ## User settings
 xcuserdata/

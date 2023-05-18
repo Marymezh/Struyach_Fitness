@@ -35,7 +35,7 @@ final class AuthManager {
         
         email: String,
         password: String,
-        completion: @escaping (Result<Void, AuthError>) -> Void) {
+        completion: @escaping (Result<Void, AuthError>) -> ()) {
             
             auth.fetchSignInMethods(forEmail: email) { signInMethods, error in
                 if error != nil {
@@ -68,19 +68,18 @@ final class AuthManager {
         
         email: String,
         password: String,
-        completion: @escaping (Bool) -> ()) {
+        completion: @escaping (Result<Void, Error>) -> ()) {
             
             guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
                   !password.trimmingCharacters(in: .whitespaces).isEmpty,
                   password.count >= 6 else {return}
             
             auth.signIn(withEmail: email, password: password) { result, error in
-                guard result != nil, error == nil  else {
-                    completion(false)
-                    print (error?.localizedDescription)
-                    return
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
                 }
-                completion(true)
             }
         }
     
