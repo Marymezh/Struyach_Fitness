@@ -25,6 +25,23 @@ final class IAPManager {
     }
     private init() {}
     
+    // method checking if user has access to a training plan
+    public func checkCustomerStatus(program: String, completion: @escaping (Bool) ->()) {
+        Purchases.shared.getCustomerInfo { customer, error in
+            if let error = error {
+                print (error.localizedDescription)
+            } else {
+                if customer?.entitlements[program]?.isActive == true {
+                    completion(true)
+                    
+                } else {
+                    completion(false)
+                }
+            }
+        }
+    }
+    
+    // method fetching details about offering: price, terms
     public func getOfferingDetails(identifier: String, completion: @escaping  (String, String)->()) {
         Purchases.shared.getOfferings { offerings, error in
             if let error = error {
@@ -49,22 +66,8 @@ final class IAPManager {
             }
         }
     }
-    
-    public func checkCustomerStatus(program: String, completion: @escaping (Bool) ->()) {
-        Purchases.shared.getCustomerInfo { customer, error in
-            if let error = error {
-                print (error.localizedDescription)
-            } else {
-                if customer?.entitlements[program]?.isActive == true {
-                    completion(true)
-                    
-                } else {
-                    completion(false)
-                }
-            }
-        }
-    }
-    
+   
+    // method fetching subscription status for each plan to show it in Settings VC
     public func getSubscriptionStatus(program: String, completion: @escaping (UIColor, String) -> ()) {
         Purchases.shared.getCustomerInfo {customerInfo, error in
             
@@ -106,6 +109,7 @@ final class IAPManager {
         }
     }
     
+    // method fetching available packages in the offering
     public func fetchPackages(identifier: String, completion: @escaping (Result <RevenueCat.Package?, Error>) -> ()) {
         Purchases.shared.getOfferings {offerings, error in
             if let error = error {
@@ -118,6 +122,7 @@ final class IAPManager {
         }
     }
     
+    //method to purchase a package from offering
     public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Result<Bool, Error>) -> ()) {
         Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
             if let error = error {
@@ -133,8 +138,7 @@ final class IAPManager {
         }
     }
     
-  
-    
+  //method logs in a user on app launch (connected with Firebase Authentication)
     public func logInRevenueCat(userId: String, completion: @escaping (Error) -> ())  {
         Purchases.shared.logIn(userId) { (customerInfo, created, error) in
             if let error = error {
@@ -145,7 +149,7 @@ final class IAPManager {
         }
     }
     
-    
+   //method logs out a user on sign out
     public func logOutRevenueCat(completion: @escaping (Error) -> ()) {
         Purchases.shared.logOut { customerInfo, error in
             
@@ -157,6 +161,7 @@ final class IAPManager {
         }
     }
 
+    //method to restore purchases if app accessed from a different device
     public func restorePurchases(completion: @escaping (Result<Bool, Error>) -> ()) {
         Purchases.shared.restorePurchases { info, error in
             if let error = error {
@@ -166,7 +171,8 @@ final class IAPManager {
             }
         }
     }
-    
+   
+    //not used yet, not working on simulator
     public func syncPurchases(completion: @escaping (Result<Bool, Error>) -> ()) {
         Purchases.shared.syncPurchases { info, error in
             if let error = error {
@@ -178,6 +184,7 @@ final class IAPManager {
     }
 }
 
+//method to localize data from RevCat about subscription status
 extension SubscriptionPeriod {
     var durationTitle: String {
         switch self.unit {

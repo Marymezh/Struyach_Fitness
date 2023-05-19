@@ -20,21 +20,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         //setting up Firebase and Messaging
         FirebaseApp.configure()
         
-//        Messaging.messaging().delegate = self
-//        UNUserNotificationCenter.current().delegate = self
-//
-//        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { success, error in
-//            if let error = error {
-//                print ("Unable to register in APNS \(error.localizedDescription)")
-//
-//            } else {
-//                print ("success in APNS registry")
-//            }
-//        }
-//
-//        application.registerForRemoteNotifications()
+        Messaging.messaging().delegate = self
+        UNUserNotificationCenter.current().delegate = self
+
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { success, error in
+            if let error = error {
+                print ("Unable to register in APNS \(error.localizedDescription)")
+
+            } else {
+                print ("success in APNS registry")
+            }
+        }
+
+        application.registerForRemoteNotifications()
         
-        //setting up Revenue Cat "Purchases"
+ //       setting up Revenue Cat "Purchases"
         
         var apiKey: String {
           get {
@@ -65,15 +65,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
 
     // MARK: UISceneSession Lifecycle
     
-//    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-//        messaging.token { token, error in
-//            if let  error = error {
-//                print ("Error fetching FCM token \(error.localizedDescription)")
-//            } else if let token = token {
-//                print ("FCM registration token is received: \(token)")
-//            }
-//        }
-//    }
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        messaging.token { token, error in
+            if let  error = error {
+                print ("Error fetching FCM token \(error.localizedDescription)")
+            } else if let token = token {
+                print ("FCM registration token is received: \(token)")
+                
+                let dataDict: [String: String] = ["token": token]
+                 NotificationCenter.default.post(
+                   name: Notification.Name("FCMToken"),
+                   object: nil,
+                   userInfo: dataDict)
+            }
+        }
+    }
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
 

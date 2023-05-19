@@ -15,27 +15,18 @@ enum AuthError: Error {
 }
 
 final class AuthManager {
+    
     static let shared = AuthManager()
-    
     private let auth = Auth.auth()
-    
     public var userId = Auth.auth().currentUser?.email
-    
     public var userUID = Auth.auth().currentUser?.uid
-    
     public var isSignedIn: Bool {
         return auth.currentUser != nil
     }
     
     private init() {}
     
-
-    
-    public func signUp(
-        
-        email: String,
-        password: String,
-        completion: @escaping (Result<Void, AuthError>) -> ()) {
+    public func signUp(email: String, password: String, completion: @escaping (Result<Void, AuthError>) -> ()) {
             
             auth.fetchSignInMethods(forEmail: email) { signInMethods, error in
                 if error != nil {
@@ -64,11 +55,7 @@ final class AuthManager {
              }
          }
     
-    public func signIn(
-        
-        email: String,
-        password: String,
-        completion: @escaping (Result<Void, Error>) -> ()) {
+    public func signIn(email: String, password: String, completion: @escaping (Result<Void, Error>) -> ()) {
             
             guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
                   !password.trimmingCharacters(in: .whitespaces).isEmpty,
@@ -83,8 +70,7 @@ final class AuthManager {
             }
         }
     
-    public func signOut(
-        completion: (Bool) -> ()) {
+    public func signOut(completion: (Bool) -> ()) {
             do {
                 try auth.signOut()
                 completion(true)

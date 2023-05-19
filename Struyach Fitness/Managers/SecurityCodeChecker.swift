@@ -9,6 +9,7 @@ import Foundation
 
 
 final class SecurityCodeChecker {
+    
     static let shared = SecurityCodeChecker()
     
     private var savedCode: String {
@@ -25,7 +26,6 @@ final class SecurityCodeChecker {
     }
     
     private init() {}
-    
     
     public func check(enteredCode: String, completion: @escaping (Bool) -> ()) {
         if enteredCode == savedCode {

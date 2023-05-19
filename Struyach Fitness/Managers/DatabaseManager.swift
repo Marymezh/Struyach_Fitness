@@ -92,7 +92,7 @@ final class DatabaseManager {
 //            }
 //    }
     
-    func getWorkoutsWithPagination(program: String, pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Workout], DocumentSnapshot?) -> ()) {
+    public func getWorkoutsWithPagination(program: String, pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Workout], DocumentSnapshot?) -> ()) {
         print("Executing function: \(#function)")
         let documentID = program
             .replacingOccurrences(of: "/", with: "_")
@@ -264,7 +264,7 @@ final class DatabaseManager {
         }
     }
 
-    func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
+    public func addWorkoutsListener(for programName: String, completion: @escaping ([Workout]) -> ()) -> ListenerRegistration? {
         print("Executing function: \(#function)")
 
         let documentID = programName
@@ -312,7 +312,7 @@ final class DatabaseManager {
         }
     }
     
-    func getBlogPostsWithPagination(pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Post], DocumentSnapshot?) -> ()) {
+    public func getBlogPostsWithPagination(pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Post], DocumentSnapshot?) -> ()) {
         var query = database
             .collection("blogPosts")
             .order(by: "timestamp", descending: true)
@@ -426,7 +426,7 @@ final class DatabaseManager {
         }
     }
     
-    func addBlogPostsListener(completion: @escaping ([Post]) -> ()) -> ListenerRegistration? {
+    public func addBlogPostsListener(completion: @escaping ([Post]) -> ()) -> ListenerRegistration? {
         print("Executing function: \(#function)")
 
         let postsListener = database
@@ -965,7 +965,6 @@ final class DatabaseManager {
             }
         }
     }
-    
     
     public func updateProfilePhoto(email: String, completion: @escaping (Bool) ->()){
         let path = email
