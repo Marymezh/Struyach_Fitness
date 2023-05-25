@@ -195,9 +195,12 @@ final class WorkoutsViewController: UIViewController {
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
                 if success {
+                    self.workoutsCollection.reloadData()
+                    
                     let indexPath = IndexPath(row: 0, section: 0)
                     self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
                     self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
+                    print ("success! should reload collection view and select first item")
                 } else {
                     self.showAlert(title: "Warning".localized(), message: "Unable to post new workout".localized())
                 }
@@ -447,7 +450,7 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
                  self.loadWorkoutsWithPagination(program: title!, pageSize: pageSize)
              } else {
                  shouldLoadMorePosts = false
-                 self.showAlert(title: "Done".localized(), message: "All workouts have been loaded".localized())
+//                 self.showAlert(title: "Done".localized(), message: "All workouts have been loaded".localized())
                  self.workoutsCollection.reloadData()
              }
          }
@@ -505,7 +508,7 @@ extension WorkoutsViewController: UISearchBarDelegate {
             cancelButton.backgroundColor = .clear
             cancelButton.tintColor = .white
             cancelButton.setTitle(nil, for: .normal)
-            cancelButton.setImage(UIImage(systemName: "clear", withConfiguration: UIImage.SymbolConfiguration(pointSize: 35, weight: .medium)), for: .normal)
+            cancelButton.setImage(UIImage(systemName: "clear", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)), for: .normal)
         }
     }
 

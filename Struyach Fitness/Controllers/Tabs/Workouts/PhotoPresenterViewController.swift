@@ -31,6 +31,17 @@ final class PhotoPresenterViewController: UIViewController {
         return view
     }()
     
+    private lazy var closeButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.layer.cornerRadius = 15
+        button.clipsToBounds = true
+        button.tintColor = .white
+        button.setImage(UIImage(systemName: "xmark.circle"), for: .normal)
+        button.addTarget(self, action: #selector(closeScreen), for: .touchUpInside)
+        return button
+    }()
+    
     //MARK: - Lifecycle
     
     init (url: URL) {
@@ -46,6 +57,7 @@ final class PhotoPresenterViewController: UIViewController {
         super.viewDidLoad()
         setupSubviews()
         imageView.sd_setImage(with: self.url)
+        setupGestureRecognizer()
     }
     
     deinit {
@@ -56,7 +68,7 @@ final class PhotoPresenterViewController: UIViewController {
     //MARK: - Setup subviews
     
     private func setupSubviews() {
-        view.addSubviews(backgroundView, imageView)
+        view.addSubviews(backgroundView, imageView, closeButton)
 
         let constraints = [
             backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -67,9 +79,41 @@ final class PhotoPresenterViewController: UIViewController {
             imageView.topAnchor.constraint(equalTo: view.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            imageView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            imageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            closeButton.topAnchor.constraint(equalTo: backgroundView.topAnchor, constant: 15),
+            closeButton.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor, constant: -15),
+            closeButton.heightAnchor.constraint(equalToConstant: 30),
+            closeButton.widthAnchor.constraint(equalTo: closeButton.heightAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)
     }
+    
+    private func setupGestureRecognizer() {
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
+        imageView.addGestureRecognizer(pinchGesture)
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        imageView.addGestureRecognizer(panGesture)
+        imageView.isUserInteractionEnabled = true
+    }
+    
+    @objc private func handlePinch(_ gestureRecognizer: UIPinchGestureRecognizer) {
+        if let view = gestureRecognizer.view {
+            view.transform = view.transform.scaledBy(x: gestureRecognizer.scale, y: gestureRecognizer.scale)
+            gestureRecognizer.scale = 1.0
+        }
+    }
+    
+    @objc private func handlePan(_ gestureRecognizer: UIPanGestureRecognizer) {
+        guard let view = gestureRecognizer.view else { return }
+        let translation = gestureRecognizer.translation(in: view.superview)
+        view.center = CGPoint(x: view.center.x + translation.x, y: view.center.y + translation.y)
+        gestureRecognizer.setTranslation(CGPoint.zero, in: view.superview)
+    }
+    
+    @objc private func closeScreen() {
+        self.dismiss(animated: true)
+    }
 }
+

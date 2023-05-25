@@ -61,7 +61,7 @@ final class PaywallView: UIView {
     let cancellationLabel: UILabel = {
         let label = UILabel()
         label.toAutoLayout()
-        label.text = "This is an auto-renewable subscription. It will be charged to your Appstore account after trial and before each pay period. You can cancel anytime by going into your Settings -> Apple ID -> Subscriptions. Restore purchases if previously subscribed.".localized()
+        label.text = "This is an auto-renewable subscription. It will be charged to your iTunes Account after trial and before each pay period. You can cancel your subscription without cost during 1-week trial period. You can cancel your paid subscription or turn off auto-renewal at anytime by going into your Settings -> Apple ID -> Subscriptions. Restore purchases if previously subscribed.".localized()
         label.adjustsFontSizeToFitWidth = true
         label.textColor = .white
         label.textAlignment = .justified

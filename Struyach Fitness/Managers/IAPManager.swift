@@ -68,7 +68,7 @@ final class IAPManager {
     }
    
     // method fetching subscription status for each plan to show it in Settings VC
-    public func getSubscriptionStatus(program: String, completion: @escaping (UIColor, String) -> ()) {
+    public func getSubscriptionStatus(program: String, completion: @escaping (Bool, UIColor, String) -> ()) {
         Purchases.shared.getCustomerInfo {customerInfo, error in
             
             if let error = error {
@@ -94,16 +94,16 @@ final class IAPManager {
                         print (subscriptionPeriod + program)
                         let color = UIColor.systemGreen
                         let activeUntil = String(format: "until %@".localized(), subscriptionPeriod)
-                        completion(color, activeUntil)
+                        completion(true, color, activeUntil)
                     } else {
                         let purchased = "purchased".localized()
                         let color = UIColor.systemGreen
-                        completion(color, purchased)
+                        completion(true, color, purchased)
                     }
                 } else {
                     let message = String(format: "not active".localized(), program)
                     let color = UIColor.systemYellow
-                    completion(color, message)
+                    completion(false, color, message)
                 }
             }
         }

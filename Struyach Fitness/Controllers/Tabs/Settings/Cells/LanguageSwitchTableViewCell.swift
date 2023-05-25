@@ -83,14 +83,20 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
         rusButton.isSelected = (language == .russian)
         
         // Set the button labels based on selected state
-        let normalAttributes: [NSAttributedString.Key: Any] = [        .font: UIFont.systemFont(ofSize: 16),        .foregroundColor: UIColor.white    ]
-        let selectedAttributes: [NSAttributedString.Key: Any] = [        .font: UIFont.boldSystemFont(ofSize: 16),        .foregroundColor: UIColor.systemGreen    ]
+        let normalAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 16), .foregroundColor: UIColor.white    ]
+        let selectedAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.boldSystemFont(ofSize: 16), .foregroundColor: UIColor.systemGreen]
         engButton.setAttributedTitle(NSAttributedString(string: "en", attributes: engButton.isSelected ? selectedAttributes : normalAttributes), for: .normal)
         rusButton.setAttributedTitle(NSAttributedString(string: "ru", attributes: rusButton.isSelected ? selectedAttributes : normalAttributes), for: .normal)
     }
     
     @objc func switchLanguage(_ sender: UIButton) {
         let language: Language = sender.tag == Language.english.rawValue.hashValue ? .english : .russian
+        // Check if the selected language is already the current language
+        if language == .english && engButton.isSelected {
+            return // Ignore the click if English is already selected
+        } else if language == .russian && rusButton.isSelected {
+            return // Ignore the click if Russian is already selected
+        }
         delegate?.didSwitchLanguage(to: language)
     }
 }

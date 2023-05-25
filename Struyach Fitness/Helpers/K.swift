@@ -10,14 +10,14 @@ import UIKit
 
 
 struct K {
-    static let ecd = "ECD PLAN"
-    static let bodyweight = "BODYWEIGHT"
-    static let struyach = "STRUYACH PLAN"
-    static let pelvicPower = "PELVIC POWER PLAN"
-    static let bellyBurner = "BELLY BURNER PLAN"
+    static let ecd = "ECD Plan"
+    static let bodyweight = "Bodyweight"
+    static let struyach = "Struyach Plan"
+    static let pelvicPower = "Pelvic Power Plan"
+    static let bellyBurner = "Belly Burner Plan"
     
     static let ecdDescription = "ECD Plan, the main training program followed by our ECD Fitness Club, is suitable for both beginners and intermediate-level athletes. \n\nWith this well-balanced program of full range movements using common gym equipment, you'll never get bored.  \n\nJoin today and start your fitness journey with us!".localized()
-    static let struyachDescription = "Struyach plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. \n\nBy subscribing to this plan, you'll get a premium account with full access to all plans! \n\nJoin now!".localized()
+    static let struyachDescription = "Struyach Plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. \n\nBy subscribing to this plan, you'll get a premium account with full access to all plans! \n\nJoin now!".localized()
     static let pelvicDescription = "Pelvic Power Plan offers 10 high-intensity workouts with detailed movement descriptions and video presentations to help you tone and strengthen your pelvic muscles.  \n\nJoin today for a one-time payment and get lifetime access to a stronger, healthier you!".localized()
     static let bellyDescription = "Our high-intensity Belly Burner Plan offers 10 workouts with detailed descriptions and video presentations. \n\nGet rid of stubborn belly fat and achieve a leaner, fitter body with the help of a personal coach who will answer any questions you have.".localized()
     

@@ -22,13 +22,13 @@ final class DetailsView: UIView {
         let view = UIView()
         view.toAutoLayout()
         view.backgroundColor = .systemGray6
-        view.layer.borderWidth = 0.5
-        view.layer.borderColor = UIColor.black.cgColor
-        view.layer.cornerRadius = 10
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowRadius = 10
-        view.layer.shadowOffset = CGSize(width: 5, height: 5)
-        view.layer.shadowOpacity = 0.7
+//        view.layer.borderWidth = 0.5
+//        view.layer.borderColor = UIColor.black.cgColor
+//        view.layer.cornerRadius = 10
+//        view.layer.shadowColor = UIColor.black.cgColor
+//        view.layer.shadowRadius = 10
+//        view.layer.shadowOffset = CGSize(width: 5, height: 5)
+//        view.layer.shadowOpacity = 0.7
         view.alpha = 0.8
         return view
     }()
@@ -66,15 +66,15 @@ final class DetailsView: UIView {
             containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             
-            secondContainerView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
-            secondContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
-            secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
-            secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+            secondContainerView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            secondContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
             
             textView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
             textView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
             textView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
-            textView.heightAnchor.constraint(equalToConstant: 130),
+            textView.heightAnchor.constraint(equalToConstant: 150),
             textView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
         ]
         

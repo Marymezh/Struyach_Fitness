@@ -9,6 +9,6 @@ import Foundation
 
 struct ProgramDescription {
     let programName: String
-    var programDetail: String
+//    var programDetail: String
     let cellImage: String
 }

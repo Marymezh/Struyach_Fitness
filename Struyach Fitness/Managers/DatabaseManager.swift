@@ -281,7 +281,8 @@ final class DatabaseManager {
                 print("Error fetching workouts: \(error?.localizedDescription ?? "unknown error")")
                 return
             }
-            do {
+                
+                do {
                 let workouts = try snapshot.documents.compactMap { document -> Workout? in
                     let workout = try document.data(as: Workout.self)
                     return workout

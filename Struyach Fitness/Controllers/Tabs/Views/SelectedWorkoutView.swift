@@ -26,13 +26,13 @@ final class SelectedWorkoutView: UIView, UITextViewDelegate {
     private let workoutView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
-        view.layer.borderWidth = 0.5
-        view.layer.borderColor = UIColor.black.cgColor
-        view.layer.cornerRadius = 5
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowRadius = 5
-        view.layer.shadowOffset = CGSize(width: 5, height: 5)
-        view.layer.shadowOpacity = 0.7
+//        view.layer.borderWidth = 0.5
+//        view.layer.borderColor = UIColor.black.cgColor
+//        view.layer.cornerRadius = 5
+//        view.layer.shadowColor = UIColor.black.cgColor
+//        view.layer.shadowRadius = 5
+//        view.layer.shadowOffset = CGSize(width: 5, height: 5)
+//        view.layer.shadowOpacity = 0.7
         view.alpha = 0.8
         view.toAutoLayout()
         return view
@@ -78,10 +78,10 @@ final class SelectedWorkoutView: UIView, UITextViewDelegate {
             backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
-            workoutView.topAnchor.constraint(equalTo: backgroundView.topAnchor, constant: innerInset),
-            workoutView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor, constant: innerInset),
-            workoutView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor, constant: -innerInset),
-            workoutView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor, constant: -innerInset),
+            workoutView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
+            workoutView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
+            workoutView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
+            workoutView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
             workoutDescriptionTextView.topAnchor.constraint(equalTo: workoutView.topAnchor, constant: innerInset),
             workoutDescriptionTextView.leadingAnchor.constraint(equalTo: workoutView.leadingAnchor, constant: innerInset),

@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 final class SettingsTableViewController: UITableViewController {
     
     // MARK: - Properties
@@ -18,8 +19,9 @@ final class SettingsTableViewController: UITableViewController {
     private let signOutCellIdentifier = "SignOutCell"
     private let notificationCellIdentifier = "NotificationCell"
     private let subscriptionsCellIdentifier = "SubscriptionsCell"
-    private var messages: [String] = []
-    private var messageColors: [UIColor] = []
+    private var messages = [String]()
+    private var messageColors = [UIColor]()
+    private var subscriptionStatus = [false, false, false, false]
     private let programsArray = [K.ecd, K.struyach, K.pelvicPower, K.bellyBurner]
     
     let email: String
@@ -168,16 +170,33 @@ final class SettingsTableViewController: UITableViewController {
             }
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: notificationCellIdentifier, for: indexPath) as! NotificationTableViewCell
-            if indexPath.row == 0 {
-                cell.configure(with: "Bodyweight")
-                return cell
-            } else if indexPath.row == 1 {
-                cell.configure(with: "ECD")
-                return cell
-            } else if indexPath.row == 2 {
-                cell.configure(with: "STRUYACH")
-                return cell
-            }
+            let programName: String
+            let isSubscribed: Bool
+                   
+                   switch indexPath.row {
+                   case 0:
+                       programName = K.bodyweight
+                       isSubscribed = true // Assume all users are subscribed to Bodyweight plan
+                       
+                   case 1:
+                       programName = K.ecd
+                       isSubscribed = subscriptionStatus[0]
+                   case 2:
+                       programName = K.struyach
+                       isSubscribed = subscriptionStatus[1]
+                   default:
+                       programName = ""
+                       isSubscribed = false
+                   }
+                   
+                 //  let isNotificationOn = NotificationsManager.shared.checkNotificationPermissions() && isSubscribed
+                   cell.configure(with: programName, isSubscribed: isSubscribed)
+            print (cell.programName ?? "no program")
+            cell.notificationSwitch.programName = cell.programName
+                   cell.notificationSwitch.addTarget(self, action: #selector(notificationSwitchChanged(_:)), for: .valueChanged)
+                   
+                   return cell
+           
             #if Client
         case 2:
             let cell = tableView.dequeueReusableCell(withIdentifier: subscriptionsCellIdentifier, for: indexPath) as! SubscriptionTableViewCell
@@ -261,32 +280,21 @@ final class SettingsTableViewController: UITableViewController {
     
     // MARK: - Private methods
     
-    private func sendEmailToDeveloper() {
-        // Implement email functionality here
-    }
-    
-    private func rateApp() {
-        // Implement rating functionality here
-        if let appURL = URL(string: "itms-apps://itunes.apple.com/app/id1234567890?action=write-review") {
-            UIApplication.shared.open(appURL, options: [:], completionHandler: nil)
-        } else {
-            // Unable to open app rating page - handle error
-        }
-    }
-    
     private func updateSubscriptionStatus() {
        
         var updatedMessages = [String]()
         var updatedColors = [UIColor]()
+        var isSubscribed = [Bool]()
         
         let dispatchGroup = DispatchGroup() // create a dispatch group
         
         for program in self.programsArray {
             dispatchGroup.enter() // notify the group that a task has started
             
-            IAPManager.shared.getSubscriptionStatus(program: program) { color, message in
+            IAPManager.shared.getSubscriptionStatus(program: program) {isActive, color, message in
                 updatedMessages.append(message)
                 updatedColors.append(color)
+                isSubscribed.append(isActive)
                 dispatchGroup.leave() // notify the group that a task has finished
             }
         }
@@ -295,9 +303,37 @@ final class SettingsTableViewController: UITableViewController {
             guard let self = self else { return }// wait for all tasks to finish
             self.messages = updatedMessages
             self.messageColors = updatedColors
+            self.subscriptionStatus = isSubscribed
             self.tableView.reloadData()
         }
     }
+    
+    @objc private func notificationSwitchChanged(_ sender: UISwitch) {
+        print("executing func \(#function)")
+        guard let program = sender.programName else {
+              print("No program name found")
+              return
+          }
+        
+        if sender.isOn {
+            NotificationsManager.shared.subscribe(to: program)
+            print ("switch on, should subscribe")
+        } else {
+            NotificationsManager.shared.unsubscribe(from: program)
+            print ("switch off, should unsubscribe")
+        }
+        
+    }
+    
+//    @objc private func notificationSwitchChanged(_ sender: UISwitch) {
+//        if sender.isOn {
+//            sender.setOn(false, animated: true)
+//
+//        } else {
+//            sender.setOn(true,animated: true)
+//        }
+//
+//       }
 }
 
 extension SettingsTableViewController: LanguageSwitchDelegate {

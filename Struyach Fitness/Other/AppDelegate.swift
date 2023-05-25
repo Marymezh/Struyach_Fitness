@@ -10,29 +10,32 @@ import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
 import RevenueCat
+//import FirebaseAppCheck
 
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         //setting up Firebase and Messaging
+//        let providerFactory = AppCheckDebugProviderFactory()
+//        AppCheck.setAppCheckProviderFactory(providerFactory)
+//
+//
         FirebaseApp.configure()
         
-        Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
 
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { success, error in
             if let error = error {
                 print ("Unable to register in APNS \(error.localizedDescription)")
-
             } else {
                 print ("success in APNS registry")
             }
         }
-
         application.registerForRemoteNotifications()
+        Messaging.messaging().delegate = self
         
  //       setting up Revenue Cat "Purchases"
         
@@ -48,6 +51,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
             return value
           }
         }
+        
         #if Client
         Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey)
             .with(usesStoreKit2IfAvailable: false)
@@ -58,28 +62,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
         // setting up application language
         let currentLanguage = LanguageManager.shared.currentLanguage
         LanguageManager.shared.setCurrentLanguage(currentLanguage)
-        print("print language on app launch \(currentLanguage)")
+        
+        
+        //delete badge from app icon
+        UIApplication.shared.applicationIconBadgeNumber = 0
         
         return true
     }
-
-    // MARK: UISceneSession Lifecycle
     
-    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        messaging.token { token, error in
-            if let  error = error {
-                print ("Error fetching FCM token \(error.localizedDescription)")
-            } else if let token = token {
-                print ("FCM registration token is received: \(token)")
-                
-                let dataDict: [String: String] = ["token": token]
-                 NotificationCenter.default.post(
-                   name: Notification.Name("FCMToken"),
-                   object: nil,
-                   userInfo: dataDict)
-            }
-        }
-    }
+    // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
 
@@ -93,6 +84,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
 
 extension AppDelegate: PurchasesDelegate {
     func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
-        print("modified")
+        print("received updated customerInfo")
+    }
+}
+    
+    extension AppDelegate: UNUserNotificationCenterDelegate {
+        func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+               Messaging.messaging().apnsToken = deviceToken
+           }
+
+}
+
+// MARK: Messaging Delegate methods
+extension AppDelegate: MessagingDelegate {
+
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        messaging.token { token, error in
+            if let  error = error {
+                print ("Error fetching FCM token \(error.localizedDescription)")
+            } else if let token = token {
+                print ("FCM registration token is received: \(token)")
+            //    NotificationsManager.shared.subscribe(to: "Bodyweight")
+                
+                let dataDict: [String: String] = ["FCMtoken": token]
+                 NotificationCenter.default.post(
+                   name: Notification.Name("FCMToken"),
+                   object: token,
+                   userInfo: dataDict)
+                UserDefaults.standard.set(fcmToken, forKey: "fcmToken")
+            }
+        }
     }
 }

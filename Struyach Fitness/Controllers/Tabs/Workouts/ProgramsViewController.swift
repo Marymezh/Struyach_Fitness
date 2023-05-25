@@ -14,7 +14,7 @@ final class ProgramsViewController: UITableViewController {
     //MARK: - Properties
     
     private let programsArray = ProgramDescriptionStorage.programArray
-    private let programsDescriptionArray = K.shortPlanDescriptions
+ //   private let programsDescriptionArray = K.shortPlanDescriptions
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
 
     //MARK: - Lifecycle
@@ -79,7 +79,7 @@ final class ProgramsViewController: UITableViewController {
         let cell: ProgramTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProgramTableViewCell.self), for: indexPath) as! ProgramTableViewCell
 
         cell.program = programsArray[indexPath.section]
-        cell.program?.programDetail = programsDescriptionArray[indexPath.section]
+  //      cell.program?.programDetail = programsDescriptionArray[indexPath.section]
 
         cell.backgroundView?.alpha = 0.5
         #if Admin

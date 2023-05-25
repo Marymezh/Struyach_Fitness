@@ -19,6 +19,7 @@ class PlusButtonView: UIView {
         button.layer.shadowRadius = 30
         button.layer.shadowOffset = CGSize(width: 5, height: 5)
         button.layer.shadowOpacity = 0.6
+        button.clipsToBounds = false
         button.toAutoLayout()
         return button
     }()

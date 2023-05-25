@@ -338,7 +338,7 @@ final class BlogViewController: UIViewController {
                 self.loadBlogPostsWithPagination(pageSize: pageSize)
             } else {
                 shouldLoadMorePosts = false
-                self.showAlert(title: "Done".localized(), message: "All posts have been loaded".localized())
+//                self.showAlert(title: "Done".localized(), message: "All posts have been loaded".localized())
                 self.tableView.tableFooterView = nil
                 self.tableView.reloadData()
                 scrollView.delegate = nil

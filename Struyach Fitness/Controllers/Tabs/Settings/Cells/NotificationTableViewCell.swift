@@ -11,6 +11,8 @@ final class NotificationTableViewCell: UITableViewCell {
     
     // MARK: - Properties
     
+    var programName: String?
+    
     var notificationLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 17, weight: .regular)
@@ -51,8 +53,15 @@ final class NotificationTableViewCell: UITableViewCell {
         ])
     }
     
-    func configure(with title: String) {
-        notificationLabel.text = title
-//            notificationSwitch.isOn = isNotificationOn
+//    func configure(with title: String, isNotificationOn: Bool, isSubscribed: Bool) {
+//        notificationLabel.text = title
+//        notificationSwitch.isOn = isNotificationOn
+//        notificationSwitch.isEnabled = isSubscribed
+//    }
+        func configure(with title: String, isSubscribed: Bool) {
+            notificationLabel.text = title
+            programName = title
+            notificationSwitch.isEnabled = isSubscribed
         }
+    
 }
