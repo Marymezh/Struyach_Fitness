@@ -82,6 +82,7 @@ final class ProgramsViewController: UITableViewController {
   //      cell.program?.programDetail = programsDescriptionArray[indexPath.section]
 
         cell.backgroundView?.alpha = 0.5
+        
         #if Admin
         cell.backgroundColor = .customDarkGray
         #else

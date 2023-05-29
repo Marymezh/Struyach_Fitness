@@ -243,7 +243,7 @@ final class SettingsTableViewController: UITableViewController {
             switch indexPath.row {
             case 0:
                 let aboutThisAppVC = AboutViewController()
-                aboutThisAppVC.title = "About this App".localized()
+                aboutThisAppVC.title = "About this app".localized()
                 navigationController?.pushViewController(aboutThisAppVC, animated: true)
             case 1:
                 //    sendEmailToDeveloper()
@@ -310,7 +310,7 @@ final class SettingsTableViewController: UITableViewController {
     
     @objc private func notificationSwitchChanged(_ sender: UISwitch) {
         print("executing func \(#function)")
-        guard let program = sender.programName else {
+        guard let program = sender.programName?.replacingOccurrences(of: " ", with: "_") else {
               print("No program name found")
               return
           }
@@ -324,16 +324,6 @@ final class SettingsTableViewController: UITableViewController {
         }
         
     }
-    
-//    @objc private func notificationSwitchChanged(_ sender: UISwitch) {
-//        if sender.isOn {
-//            sender.setOn(false, animated: true)
-//
-//        } else {
-//            sender.setOn(true,animated: true)
-//        }
-//
-//       }
 }
 
 extension SettingsTableViewController: LanguageSwitchDelegate {

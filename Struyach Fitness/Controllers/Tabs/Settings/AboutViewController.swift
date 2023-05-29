@@ -31,7 +31,7 @@ final class AboutViewController: UIViewController {
         return textView
     }()
     
-    private let appDescription = K.appDescription
+    private let appDescription = K.appDescription.localized()
     
     // MARK: - Lifecycle
     

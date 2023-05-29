@@ -39,8 +39,19 @@ final class ProgramTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        contentView.addSubview(programNameLabel)
+        let disclosureIndicator = UIImageView(image: UIImage(systemName: "chevron.right", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)))
+        disclosureIndicator.contentMode = .scaleAspectFit
+        disclosureIndicator.tintColor = .white
+        disclosureIndicator.layer.masksToBounds = false
+        disclosureIndicator.layer.shadowColor = UIColor.black.cgColor
+        disclosureIndicator.layer.shadowOffset = CGSize(width: 1, height: 1)
+        disclosureIndicator.layer.shadowOpacity = 0.5
+        disclosureIndicator.layer.shadowRadius = 2.0
 
+        accessoryView = disclosureIndicator
+        
+        contentView.addSubview(programNameLabel)
+        
         let constraints = [
             
             programNameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset),

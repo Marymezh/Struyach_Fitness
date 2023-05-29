@@ -18,7 +18,7 @@ final class PaywallView: UIView {
     let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.systemGreen
-        label.font = UIFont.boldSystemFont(ofSize: 28)
+        label.font = UIFont.boldSystemFont(ofSize: 26)
         label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
         label.toAutoLayout()
@@ -28,7 +28,7 @@ final class PaywallView: UIView {
     let descriptionLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.white
-        label.font = UIFont.systemFont(ofSize: 16)
+        label.font = UIFont.systemFont(ofSize: 14)
         label.textAlignment = .justified
         label.numberOfLines = 0
         label.adjustsFontSizeToFitWidth = true
@@ -58,6 +58,36 @@ final class PaywallView: UIView {
         return label
     }()
     
+    let codeTextField: UITextField = {
+        let textField = UITextField()
+        textField.font = UIFont.systemFont(ofSize: 16)
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
+        textField.leftViewMode = .always
+        textField.tintColor = .systemGray
+        textField.autocapitalizationType = .none
+        textField.autocorrectionType = .no
+        textField.backgroundColor = .systemGray6
+        textField.clipsToBounds = true
+        textField.layer.cornerRadius = 5
+        textField.placeholder = "Enter promo code".localized()
+        textField.isHidden = true
+        textField.toAutoLayout()
+        return textField
+    }()
+    
+    let redeemCodeLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.white
+        label.font = UIFont.systemFont(ofSize: 16)
+        label.text = "Redeem promo code".localized()
+        label.textAlignment = .center
+        label.numberOfLines = 1
+        label.isUserInteractionEnabled = true
+        label.isHidden = true
+        label.toAutoLayout()
+        return label
+    }()
+    
     let cancellationLabel: UILabel = {
         let label = UILabel()
         label.toAutoLayout()
@@ -82,10 +112,7 @@ final class PaywallView: UIView {
         label.isUserInteractionEnabled = true
         return label
     }()
-    
-    private lazy var tapGesture = UITapGestureRecognizer(target: self, action: #selector(openTermsOfUse))
-           
-    
+
     let restorePurchasesButton: UIButton = {
         let button = UIButton()
         button.setTitle("Restore purchases".localized(), for: .normal)
@@ -110,6 +137,7 @@ final class PaywallView: UIView {
     init() {
         super.init(frame: .zero)
         setupSubviews()
+        setupGestureRecognizer()
     }
     
     required init?(coder: NSCoder) {
@@ -122,10 +150,11 @@ final class PaywallView: UIView {
         backgroundColor = UIColor.black.withAlphaComponent(0.8)
         let underlineAttribute = [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue]
         let underlineAttributedString = NSAttributedString(string: "Terms of use".localized(), attributes: underlineAttribute)
+        let codeAttributedString = NSAttributedString(string: "Redeem promo code".localized(), attributes: underlineAttribute)
         termsLabel.attributedText = underlineAttributedString
-        termsLabel.addGestureRecognizer(tapGesture)
+        redeemCodeLabel.attributedText = codeAttributedString
         
-        addSubviews(titleLabel, descriptionLabel, payButton, priceLabel, cancellationLabel, stackView)
+        addSubviews(titleLabel, descriptionLabel, payButton, priceLabel, codeTextField,  redeemCodeLabel, cancellationLabel, stackView)
   
         stackView.addArrangedSubview(termsLabel)
         stackView.addArrangedSubview(restorePurchasesButton)
@@ -151,7 +180,17 @@ final class PaywallView: UIView {
             cancellationLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             cancellationLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             
-            stackView.topAnchor.constraint(equalTo: cancellationLabel.bottomAnchor, constant: smallInset),
+            codeTextField.topAnchor.constraint(equalTo: cancellationLabel.bottomAnchor, constant: bigInset),
+            codeTextField.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            codeTextField.widthAnchor.constraint(equalToConstant: 220),
+            codeTextField.heightAnchor.constraint(lessThanOrEqualToConstant: 35),
+            
+            redeemCodeLabel.topAnchor.constraint(equalTo: codeTextField.bottomAnchor, constant: smallInset),
+            redeemCodeLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
+            redeemCodeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
+            redeemCodeLabel.heightAnchor.constraint(lessThanOrEqualToConstant: 30),
+            
+            stackView.topAnchor.constraint(equalTo: redeemCodeLabel.bottomAnchor, constant: smallInset),
             stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -bigInset),
@@ -164,6 +203,33 @@ final class PaywallView: UIView {
         
         NSLayoutConstraint.activate(constraints)
     }
+    
+    private func setupGestureRecognizer() {
+        let redeemGesture = UITapGestureRecognizer(target: self, action: #selector(openAppStore))
+        redeemCodeLabel.addGestureRecognizer(redeemGesture)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openTermsOfUse))
+        termsLabel.addGestureRecognizer(tapGesture)
+        
+    }
+    
+    @objc private func openAppStore() {
+        print("open app store to redeem code")
+        if let code = codeTextField.text, code != "" {
+            print (code)
+            if let url = URL(string: "https://apps.apple.com/redeem?ctx=offercodes&id=6448619309&code=\(code)") {
+                UIApplication.shared.open(url, options: [:]) { success in
+                    if !success {
+                        // Handle error opening URL
+                        print("Failed to open URL")
+                    }
+                }
+            } else {
+                print("Invalid URL")
+            }
+        }
+    }
+    
     
     @objc private func openTermsOfUse() {
         if let url = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") {

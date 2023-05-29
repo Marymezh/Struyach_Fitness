@@ -61,7 +61,18 @@
 
           ],
           "codeOffers" : [
-
+            {
+              "eligibility" : [
+                "existing",
+                "expired",
+                "new"
+              ],
+              "internalID" : "DF582D25",
+              "isStackable" : true,
+              "paymentMode" : "free",
+              "referenceName" : "Coach Access",
+              "subscriptionPeriod" : "P3D"
+            }
           ],
           "displayPrice" : "0.99",
           "familyShareable" : false,

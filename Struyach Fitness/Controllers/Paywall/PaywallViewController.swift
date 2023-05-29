@@ -76,25 +76,37 @@ final class PaywallViewController: UIViewController {
         switch programName {
         case K.ecd:
             paywallView.titleLabel.text = "Subscribe to ECD Plan".localized()
-            paywallView.descriptionLabel.text = K.ecdDescription
+            paywallView.descriptionLabel.text = K.ecdDescription.localized()
+            paywallView.codeTextField.isHidden = false
+            paywallView.redeemCodeLabel.isHidden = false
             IAPManager.shared.getOfferingDetails(identifier: packageId) {[weak self] (priceText, termsText) in
                 guard let self = self else {return}
-                self.paywallView.priceLabel.text = priceText
-                self.paywallView.payButton.setTitle(termsText, for: .normal)
+                if termsText != "" {
+                    self.paywallView.priceLabel.text = priceText
+                    self.paywallView.payButton.setTitle(termsText, for: .normal)
+                } else {
+                    self.paywallView.payButton.setTitle(priceText, for: .normal)
+                    self.paywallView.priceLabel.isHidden = true
+                }
             }
  
         case K.struyach:
             paywallView.titleLabel.text = "Subscribe to STRUYACH Plan".localized()
-            paywallView.descriptionLabel.text = K.struyachDescription
+            paywallView.descriptionLabel.text = K.struyachDescription.localized()
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
                 guard let self = self else {return}
-                self.paywallView.priceLabel.text = priceText
-                self.paywallView.payButton.setTitle(termsText, for: .normal)
+                if termsText != "" {
+                    self.paywallView.priceLabel.text = priceText
+                    self.paywallView.payButton.setTitle(termsText, for: .normal)
+                } else {
+                    self.paywallView.payButton.setTitle(priceText, for: .normal)
+                    self.paywallView.priceLabel.isHidden = true
+                }
             }
       
         case K.pelvicPower:
             paywallView.titleLabel.text = "Pelvic Power Plan".localized()
-            paywallView.descriptionLabel.text = K.pelvicDescription
+            paywallView.descriptionLabel.text = K.pelvicDescription.localized()
             paywallView.cancellationLabel.isHidden = true
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
                 guard let self = self else {return}
@@ -104,7 +116,7 @@ final class PaywallViewController: UIViewController {
            
         case K.bellyBurner:
             paywallView.titleLabel.text = "Belly Burner Plan".localized()
-            paywallView.descriptionLabel.text = K.bellyDescription
+            paywallView.descriptionLabel.text = K.bellyDescription.localized()
             paywallView.cancellationLabel.isHidden = true
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
                 guard let self = self else {return}

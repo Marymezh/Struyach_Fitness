@@ -46,22 +46,31 @@ final class IAPManager {
         Purchases.shared.getOfferings { offerings, error in
             if let error = error {
                 print (error.localizedDescription)
+            } else if identifier == "belly" || identifier == "pelvic"{
+                let currentOffering = offerings?.offering(identifier: identifier)
+                if let package = currentOffering?.availablePackages[0] {
+                    let productPriceString = package.storeProduct.localizedPriceString
+                    let termsText = "Pay once and get life-time access".localized()
+                    let priceText = String(format: "Buy now for %@".localized(), locale: Locale(identifier: self.localeId), productPriceString)
+                    completion(priceText, termsText)
+                }
             } else {
                 let currentOffering = offerings?.offering(identifier: identifier)
                 if let package = currentOffering?.availablePackages[0] {
                     let productPriceString = package.storeProduct.localizedPriceString
                     if let intro = package.storeProduct.introductoryDiscount {
+                        print ("there is an into discount")
                         let introValue = intro.subscriptionPeriod.value
                         let introTitle = intro.subscriptionPeriod.durationTitle
                         let termsText = String(format: "Start your %d - %@ FREE trial".localized(), introValue, introTitle)
                         let priceText =  String(format: "%@/month after trial".localized(), locale: Locale(identifier: self.localeId), productPriceString)
                         completion(priceText, termsText)
                     } else {
-                        let termsText = "Pay once and get life-time access".localized()
-                        let priceText = String(format: "Buy now for %@".localized(), locale: Locale(identifier: self.localeId), productPriceString)
+                        print ("intro period is over")
+                        let termsText = ""
+                        let priceText = String(format: "Subscribe now for %@/month".localized(), locale: Locale(identifier: self.localeId), productPriceString)
                         completion(priceText, termsText)
                     }
-                    
                 }
             }
         }
