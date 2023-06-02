@@ -15,6 +15,25 @@ final class PaywallView: UIView {
     private var smallInset: CGFloat { return 16 }
     private var bigInset: CGFloat { return 32 }
     
+    private let backgroundView: UIImageView = {
+        let view = UIImageView()
+        view.contentMode = .top
+        view.clipsToBounds = true
+        view.alpha = 0.8
+        view.toAutoLayout()
+        return view
+    }()
+    
+    let closeButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.layer.cornerRadius = 20
+        button.clipsToBounds = true
+        button.tintColor = .white
+        button.setImage(UIImage(systemName: "xmark.circle"), for: .normal)
+        return button
+    }()
+    
     let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.systemGreen
@@ -28,7 +47,7 @@ final class PaywallView: UIView {
     let descriptionLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.white
-        label.font = UIFont.systemFont(ofSize: 14)
+        label.font = UIFont.systemFont(ofSize: 16)
         label.textAlignment = .justified
         label.numberOfLines = 0
         label.adjustsFontSizeToFitWidth = true
@@ -41,6 +60,12 @@ final class PaywallView: UIView {
         button.toAutoLayout()
         button.backgroundColor = UIColor.systemGreen
         button.layer.cornerRadius = 8
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowRadius = 8
+        button.layer.shadowOffset = CGSize(width: 1, height: 1)
+        button.clipsToBounds = false
+        button.layer.shadowOpacity = 0.5
+        button.setTitle("Loading price and terms...".localized(), for: .normal)
         button.setTitleColor(UIColor.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         button.titleLabel?.adjustsFontSizeToFitWidth = true
@@ -53,7 +78,7 @@ final class PaywallView: UIView {
         label.textColor = UIColor.white
         label.font = UIFont.systemFont(ofSize: 18)
         label.textAlignment = .center
-        label.numberOfLines = 1
+        label.numberOfLines = 0
         label.toAutoLayout()
         return label
     }()
@@ -88,46 +113,47 @@ final class PaywallView: UIView {
         return label
     }()
     
-    let cancellationLabel: UILabel = {
-        let label = UILabel()
-        label.toAutoLayout()
-        label.text = "This is an auto-renewable subscription. It will be charged to your iTunes Account after trial and before each pay period. You can cancel your subscription without cost during 1-week trial period. You can cancel your paid subscription or turn off auto-renewal at anytime by going into your Settings -> Apple ID -> Subscriptions. Restore purchases if previously subscribed.".localized()
-        label.adjustsFontSizeToFitWidth = true
-        label.textColor = .white
-        label.textAlignment = .justified
-        label.font = UIFont.systemFont(ofSize: 12)
-        label.isUserInteractionEnabled = false
-        label.numberOfLines = 0
-        return label
-    }()
-    
-    private let termsLabel: UILabel = {
-        let label = UILabel()
-        label.toAutoLayout()
-        label.text = "Terms of use".localized()
-        label.adjustsFontSizeToFitWidth = true
-        label.textColor = .white
-        label.textAlignment = .center
-        label.font = UIFont.systemFont(ofSize: 16)
-        label.isUserInteractionEnabled = true
-        return label
-    }()
+    let termsButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .customDarkComments
+        button.layer.cornerRadius = 8
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowRadius = 8
+        button.clipsToBounds = false
+        button.layer.shadowOffset = CGSize(width: 1, height: 1)
+        button.layer.shadowOpacity = 0.5
+        button.setTitle("Terms of Use".localized(), for: .normal)
+        button.setTitleColor(UIColor.white, for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        button.titleLabel?.numberOfLines = 1
+        button.titleLabel?.textAlignment = .center
+        button.toAutoLayout()
+        return button
+        }()
 
     let restorePurchasesButton: UIButton = {
         let button = UIButton()
+        button.backgroundColor = .customDarkComments
+        button.layer.cornerRadius = 8
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowRadius = 8
+        button.layer.shadowOffset = CGSize(width: 1, height: 1)
+        button.clipsToBounds = false
+        button.layer.shadowOpacity = 0.5
         button.setTitle("Restore purchases".localized(), for: .normal)
         button.setTitleColor(UIColor.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.titleLabel?.numberOfLines = 1
+        button.titleLabel?.textAlignment = .center
         button.toAutoLayout()
         return button
     }()
     
     private let stackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.distribution = .fillEqually
-        stackView.alignment = .bottom
+        stackView.axis = .vertical
+        stackView.spacing = 12
+        stackView.alignment = .fill
         stackView.toAutoLayout()
         return stackView
     }()
@@ -138,6 +164,7 @@ final class PaywallView: UIView {
         super.init(frame: .zero)
         setupSubviews()
         setupGestureRecognizer()
+        randomizeBackgroungImages()
     }
     
     required init?(coder: NSCoder) {
@@ -147,20 +174,32 @@ final class PaywallView: UIView {
     //MARK: setup
     
     private func setupSubviews() {
-        backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        backgroundColor = .black
         let underlineAttribute = [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue]
-        let underlineAttributedString = NSAttributedString(string: "Terms of use".localized(), attributes: underlineAttribute)
         let codeAttributedString = NSAttributedString(string: "Redeem promo code".localized(), attributes: underlineAttribute)
-        termsLabel.attributedText = underlineAttributedString
-        redeemCodeLabel.attributedText = codeAttributedString
         
-        addSubviews(titleLabel, descriptionLabel, payButton, priceLabel, codeTextField,  redeemCodeLabel, cancellationLabel, stackView)
+        redeemCodeLabel.attributedText = codeAttributedString
+        codeTextField.delegate = self
+        
+        termsButton.addTarget(self, action: #selector
+                              (openTermsOfUse), for: .touchUpInside)
+        addSubviews(backgroundView, closeButton, titleLabel, descriptionLabel, payButton, priceLabel, codeTextField,  redeemCodeLabel, stackView)
   
-        stackView.addArrangedSubview(termsLabel)
+        stackView.addArrangedSubview(termsButton)
         stackView.addArrangedSubview(restorePurchasesButton)
         
         let constraints = [
-            titleLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: bigInset),
+            backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
+            backgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            
+            closeButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 15),
+            closeButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
+            closeButton.heightAnchor.constraint(equalToConstant: 40),
+            closeButton.widthAnchor.constraint(equalTo: closeButton.heightAnchor),
+            
+            titleLabel.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: smallInset),
             titleLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             
@@ -176,65 +215,106 @@ final class PaywallView: UIView {
             priceLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             priceLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             
-            cancellationLabel.topAnchor.constraint(equalTo: priceLabel.bottomAnchor, constant: bigInset),
-            cancellationLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
-            cancellationLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
-            
-            codeTextField.topAnchor.constraint(equalTo: cancellationLabel.bottomAnchor, constant: bigInset),
+            codeTextField.topAnchor.constraint(equalTo: priceLabel.bottomAnchor, constant: bigInset),
             codeTextField.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             codeTextField.widthAnchor.constraint(equalToConstant: 220),
-            codeTextField.heightAnchor.constraint(lessThanOrEqualToConstant: 35),
+            codeTextField.heightAnchor.constraint(equalToConstant: 40),
             
             redeemCodeLabel.topAnchor.constraint(equalTo: codeTextField.bottomAnchor, constant: smallInset),
             redeemCodeLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             redeemCodeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             redeemCodeLabel.heightAnchor.constraint(lessThanOrEqualToConstant: 30),
             
-            stackView.topAnchor.constraint(equalTo: redeemCodeLabel.bottomAnchor, constant: smallInset),
-            stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
-            stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
+//            stackView.topAnchor.constraint(equalTo: redeemCodeLabel.bottomAnchor, constant: smallInset),
+            stackView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            stackView.widthAnchor.constraint(equalToConstant: 220),
             stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -bigInset),
 
             payButton.heightAnchor.constraint(equalToConstant: 60),
-            
             restorePurchasesButton.heightAnchor.constraint(equalToConstant: 40),
-            termsLabel.heightAnchor.constraint(equalToConstant: 40)
+            termsButton.heightAnchor.constraint(equalToConstant: 40)
         ]
         
         NSLayoutConstraint.activate(constraints)
     }
     
+    private func randomizeBackgroungImages () {
+        let backgroundImages = ImageStorage.imageArray
+        let randomIndex = Int.random(in: 0..<backgroundImages.count)
+        if let backgroundImage = backgroundImages[randomIndex]
+        {
+            backgroundView.image = backgroundImage
+            backgroundView.alpha = 0.3
+        }
+    }
+    
     private func setupGestureRecognizer() {
         let redeemGesture = UITapGestureRecognizer(target: self, action: #selector(openAppStore))
         redeemCodeLabel.addGestureRecognizer(redeemGesture)
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(openTermsOfUse))
-        termsLabel.addGestureRecognizer(tapGesture)
-        
     }
     
     @objc private func openAppStore() {
-        print("open app store to redeem code")
-        if let code = codeTextField.text, code != "" {
-            print (code)
+        // Add an observer to track when the app becomes inactive
+        NotificationCenter.default.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        
+        print("Open App Store to redeem code")
+        
+        if let code = codeTextField.text, !code.isEmpty {
             if let url = URL(string: "https://apps.apple.com/redeem?ctx=offercodes&id=6448619309&code=\(code)") {
-                UIApplication.shared.open(url, options: [:]) { success in
+                UIApplication.shared.open(url, options: [:]) {[weak self] success in
+                    guard let self = self else {return}
                     if !success {
-                        // Handle error opening URL
-                        print("Failed to open URL")
+                        self.codeTextField.text = "Failed to open URL".localized()
                     }
                 }
             } else {
-                print("Invalid URL")
+                self.codeTextField.text = "Invalid URL".localized()
+            }
+        } else {
+            codeTextField.text = "This field can not be empty!".localized()
+        }
+    }
+
+    @objc private func appWillResignActive() {
+        // Remove the observer when the app becomes inactive
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willResignActiveNotification, object: nil)
+        print("app active again")
+        // Call syncPurchases when the user returns to the app
+        IAPManager.shared.syncPurchases { result in
+            switch result {
+            case .success:
+                print ("Purchases synchronized")
+                break
+            case .failure(let error):
+                // Handle error synchronizing purchases
+                print("Failed to sync purchases: \(error)")
             }
         }
     }
     
     
     @objc private func openTermsOfUse() {
-        if let url = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") {
-            UIApplication.shared.open(url)
-        }
+        let termsText = "This is an auto-renewable subscription. It will be charged to your iTunes Account after the trial and before each pay period. \n\nYou can cancel your subscription or turn off auto-renewal at any time by going into your \n\nSettings -> Apple ID -> Subscriptions. \n\nRestore purchases if previously subscribed."
+        
+        let termsPopupView = TermsPopupView(termsText: termsText.localized())
+        
+        addSubview(termsPopupView)
+        termsPopupView.toAutoLayout()
+        
+        NSLayoutConstraint.activate([
+            termsPopupView.topAnchor.constraint(equalTo: topAnchor),
+            termsPopupView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            termsPopupView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            termsPopupView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+        
     }
     
+}
+
+extension PaywallView: UITextFieldDelegate {
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+            textField.text = ""
+        }
 }

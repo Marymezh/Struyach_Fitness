@@ -34,7 +34,7 @@ final class PhotoPresenterViewController: UIViewController {
     private lazy var closeButton: UIButton = {
         let button = UIButton()
         button.toAutoLayout()
-        button.layer.cornerRadius = 15
+        button.layer.cornerRadius = 20
         button.clipsToBounds = true
         button.tintColor = .white
         button.setImage(UIImage(systemName: "xmark.circle"), for: .normal)
@@ -83,7 +83,7 @@ final class PhotoPresenterViewController: UIViewController {
             
             closeButton.topAnchor.constraint(equalTo: backgroundView.topAnchor, constant: 15),
             closeButton.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor, constant: -15),
-            closeButton.heightAnchor.constraint(equalToConstant: 30),
+            closeButton.heightAnchor.constraint(equalToConstant: 40),
             closeButton.widthAnchor.constraint(equalTo: closeButton.heightAnchor)
         ]
         

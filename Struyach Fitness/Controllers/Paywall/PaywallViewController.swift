@@ -11,13 +11,14 @@ final class PaywallViewController: UIViewController {
     
     //MARK: - Properties
     
-    let paywallView = PaywallView()
+    private let paywallView = PaywallView()
     private let programName: String
     var onPaywallClose: (()->())?
     
+    private let activityView = ActivityView()
     private var packageId: String {
         switch programName {
-        case K.ecd: return "default"
+        case K.ecd: return "ecd"
         case K.struyach: return "struyach"
         case K.bellyBurner: return "belly"
         case K.pelvicPower: return "pelvic"
@@ -59,14 +60,23 @@ final class PaywallViewController: UIViewController {
     
     private func setupSubviews() {
         paywallView.toAutoLayout()
+        activityView.toAutoLayout()
         paywallView.payButton.addTarget(self, action: #selector(payButtonPressed), for: .touchUpInside)
         paywallView.restorePurchasesButton.addTarget(self, action: #selector(restoreButtonPressed), for: .touchUpInside)
+        paywallView.closeButton.addTarget(self, action: #selector(closeScreen), for: .touchUpInside)
+        
         view.addSubview(paywallView)
+        view.addSubview(activityView)
         let constraints = [
             paywallView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             paywallView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             paywallView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            paywallView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10)
+            paywallView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            activityView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            activityView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            activityView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            activityView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ]
         NSLayoutConstraint.activate(constraints)
     }
@@ -81,12 +91,9 @@ final class PaywallViewController: UIViewController {
             paywallView.redeemCodeLabel.isHidden = false
             IAPManager.shared.getOfferingDetails(identifier: packageId) {[weak self] (priceText, termsText) in
                 guard let self = self else {return}
-                if termsText != "" {
-                    self.paywallView.priceLabel.text = priceText
-                    self.paywallView.payButton.setTitle(termsText, for: .normal)
-                } else {
-                    self.paywallView.payButton.setTitle(priceText, for: .normal)
-                    self.paywallView.priceLabel.isHidden = true
+                DispatchQueue.main.async {
+                        self.paywallView.priceLabel.text = priceText
+                        self.paywallView.payButton.setTitle(termsText, for: .normal)
                 }
             }
  
@@ -95,33 +102,34 @@ final class PaywallViewController: UIViewController {
             paywallView.descriptionLabel.text = K.struyachDescription.localized()
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
                 guard let self = self else {return}
-                if termsText != "" {
-                    self.paywallView.priceLabel.text = priceText
-                    self.paywallView.payButton.setTitle(termsText, for: .normal)
-                } else {
-                    self.paywallView.payButton.setTitle(priceText, for: .normal)
-                    self.paywallView.priceLabel.isHidden = true
+                DispatchQueue.main.async {
+                        self.paywallView.priceLabel.text = priceText
+                        self.paywallView.payButton.setTitle(termsText, for: .normal)
                 }
             }
       
         case K.pelvicPower:
             paywallView.titleLabel.text = "Pelvic Power Plan".localized()
             paywallView.descriptionLabel.text = K.pelvicDescription.localized()
-            paywallView.cancellationLabel.isHidden = true
+            paywallView.termsButton.isHidden = true
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
                 guard let self = self else {return}
-                self.paywallView.payButton.setTitle(priceText, for: .normal)
-                self.paywallView.priceLabel.text = termsText
+                DispatchQueue.main.async {
+                    self.paywallView.payButton.setTitle(priceText, for: .normal)
+                    self.paywallView.priceLabel.text = termsText
+                }
             }
            
         case K.bellyBurner:
             paywallView.titleLabel.text = "Belly Burner Plan".localized()
             paywallView.descriptionLabel.text = K.bellyDescription.localized()
-            paywallView.cancellationLabel.isHidden = true
+            paywallView.termsButton.isHidden = true 
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
-                guard let self = self else {return}
-                self.paywallView.payButton.setTitle(priceText, for: .normal)
-                self.paywallView.priceLabel.text = termsText
+                guard let self = self else {return}                
+                DispatchQueue.main.async {
+                    self.paywallView.payButton.setTitle(priceText, for: .normal)
+                    self.paywallView.priceLabel.text = termsText
+                }
             }
 
             
@@ -130,6 +138,7 @@ final class PaywallViewController: UIViewController {
     }
 
     @objc private func payButtonPressed() {
+        activityView.showActivityIndicator()
         print ("pay button is pressed")
         IAPManager.shared.fetchPackages(identifier: packageId) { [weak self] result in
             guard let self = self else {return}
@@ -141,13 +150,17 @@ final class PaywallViewController: UIViewController {
                     switch result {
                     case .success(_):
                         self.onPaywallClose?()
+                        self.activityView.hide()
                         self.dismiss(animated: true)
+                        
                     case .failure(let error):
+                        self.activityView.hide()
                         let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
                         self.showAlert(title: "Failed".localized(), message: message, completion: nil)
                     }
                 }
             case .failure(let error):
+                self.activityView.hide()
                 let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
                 self.showAlert(title: "Failed".localized(), message: message, completion: nil)
             }
@@ -155,13 +168,16 @@ final class PaywallViewController: UIViewController {
     }
     
     @objc private func restoreButtonPressed() {
+        activityView.showActivityIndicator()
         IAPManager.shared.restorePurchases { [weak self] result in
             guard let self = self else {return}
             switch result {
             case .failure(let error):
+                self.activityView.hide()
                 let message = String(format: "Unable to restore purchases: %@".localized(), error.localizedDescription)
                 self.showAlert(title: "Failed".localized(), message: message, completion: nil)
             case .success(_):
+                self.activityView.hide()
                 self.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized()){_ in
                     self.onPaywallClose?()
                     self.dismiss(animated: true)
@@ -170,6 +186,10 @@ final class PaywallViewController: UIViewController {
                 
             }
         }
+    }
+    
+    @objc private func closeScreen() {
+        self.dismiss(animated: true)
     }
     
     private func showAlert(title: String, message: String, completion: ((UIAlertAction) -> Void)?

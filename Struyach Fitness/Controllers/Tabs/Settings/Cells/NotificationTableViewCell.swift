@@ -41,6 +41,7 @@ final class NotificationTableViewCell: UITableViewCell {
     // MARK: - UI Configuration
     
     private func configureUI() {
+        selectionStyle = .none
         self.backgroundColor = .customDarkGray
         addSubview(notificationLabel)
         addSubview(notificationSwitch)
@@ -52,16 +53,10 @@ final class NotificationTableViewCell: UITableViewCell {
             notificationSwitch.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
-    
-//    func configure(with title: String, isNotificationOn: Bool, isSubscribed: Bool) {
-//        notificationLabel.text = title
-//        notificationSwitch.isOn = isNotificationOn
-//        notificationSwitch.isEnabled = isSubscribed
-//    }
+
         func configure(with title: String, isSubscribed: Bool) {
             notificationLabel.text = title
             programName = title
             notificationSwitch.isEnabled = isSubscribed
         }
-    
 }

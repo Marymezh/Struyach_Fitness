@@ -16,10 +16,14 @@ struct K {
     static let pelvicPower = "Pelvic Power Plan"
     static let bellyBurner = "Belly Burner Plan"
     
-    static var ecdDescription = "ECD Plan, the main training program followed by our ECD Fitness Club, is suitable for both beginners and intermediate-level athletes. \n\nWith this well-balanced program of full range movements using common gym equipment, you'll never get bored.  \n\nJoin today and start your fitness journey with us!"
-    static var struyachDescription = "Struyach Plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. \n\nBy subscribing to this plan, you'll get a premium account with full access to all plans! \n\nJoin now!"
-    static var pelvicDescription = "Pelvic Power Plan offers 10 high-intensity workouts with detailed movement descriptions and video presentations to help you tone and strengthen your pelvic muscles.  \n\nJoin today for a one-time payment and get lifetime access to a stronger, healthier you!"
-    static var bellyDescription = "Our high-intensity Belly Burner Plan offers 10 workouts with detailed descriptions and video presentations. \n\nGet rid of stubborn belly fat and achieve a leaner, fitter body with the help of a personal coach who will answer any questions you have."
+//    static var ecdDescription = "Transform your body with our ECD Plan - designed for gym or CrossFit box training. \n\nJoin today and start your fitness journey with us!"
+//    static var struyachDescription = "Struyach Plan is designed for advanced athletes who are serious about pushing their limits and achieving visible progress. \n\nBy subscribing to this plan, you'll get a premium account with full access to all plans! \n\nJoin now!"
+//    static var pelvicDescription = "Pelvic Power Plan - 10 high-intensity workouts with detailed movement descriptions and video presentations to help you tone and strengthen your pelvic muscles.  \n\nJoin today for a one-time payment and get lifetime access to a stronger, healthier you!"
+//    static var bellyDescription = "Our high-intensity Belly Burner Plan - 10 workouts with detailed descriptions and video presentations. \n\nGet rid of stubborn belly fat and achieve a leaner, fitter body with the help of a personal coach who will answer any questions you have."
+    static var ecdDescription = "Transform your body with our ECD Plan - designed for gym or CrossFit box training. \n\nJoin today and start your fitness journey with us!"
+    static var struyachDescription = "Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes \n\nGet a premium account with full access to all plans. Join now!"
+    static var pelvicDescription = "Tone and strengthen your pelvic muscles with our 10 high-intensity workouts. \n\nJoin today for a stronger, healthier you!"
+    static var bellyDescription = "Get rid of stubborn belly fat and achieve a leaner, fitter body with our 10 high-intensity workouts. \n\nJoin today!"
     
     static let shortPlanDescriptions = [
         "Get fit and toned with our Bodyweight Training Plan - no equipment needed, perfect for on-the-go workouts!".localized(),

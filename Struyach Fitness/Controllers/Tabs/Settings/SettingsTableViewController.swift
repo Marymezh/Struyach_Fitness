@@ -191,7 +191,6 @@ final class SettingsTableViewController: UITableViewController {
                    
                  //  let isNotificationOn = NotificationsManager.shared.checkNotificationPermissions() && isSubscribed
                    cell.configure(with: programName, isSubscribed: isSubscribed)
-            print (cell.programName ?? "no program")
             cell.notificationSwitch.programName = cell.programName
                    cell.notificationSwitch.addTarget(self, action: #selector(notificationSwitchChanged(_:)), for: .valueChanged)
                    

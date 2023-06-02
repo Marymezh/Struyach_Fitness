@@ -54,6 +54,7 @@ class SubscriptionTableViewCell: UITableViewCell {
     
     private func setupSubviews() {
         self.backgroundColor = .customDarkGray
+        selectionStyle = .none
         addSubview(stackView)
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(colorLabel)

@@ -51,7 +51,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../Struyach Fitness/Other/Configuration.storekit">
+         identifier = "../../../../Library/Developer/Xcode/DerivedData/Struyach_Fitness-ghshepdyipczpidhhdaowcdwpjsk/SourcePackages/checkouts/purchases-ios/Tests/TestingApps/PurchaseTester/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
