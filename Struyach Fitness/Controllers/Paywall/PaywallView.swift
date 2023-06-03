@@ -17,9 +17,9 @@ final class PaywallView: UIView {
     
     private let backgroundView: UIImageView = {
         let view = UIImageView()
-        view.contentMode = .top
+        view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
-        view.alpha = 0.8
+        view.alpha = 0.3
         view.toAutoLayout()
         return view
     }()
@@ -244,7 +244,6 @@ final class PaywallView: UIView {
         if let backgroundImage = backgroundImages[randomIndex]
         {
             backgroundView.image = backgroundImage
-            backgroundView.alpha = 0.3
         }
     }
     
