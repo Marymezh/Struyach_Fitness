@@ -63,9 +63,9 @@
           "codeOffers" : [
             {
               "eligibility" : [
-                "existing",
                 "expired",
-                "new"
+                "new",
+                "existing"
               ],
               "internalID" : "DF582D25",
               "isStackable" : true,
@@ -129,7 +129,7 @@
               "locale" : "ru"
             }
           ],
-          "productID" : "marymezh.StruyachFitnessClient.struyach",
+          "productID" : "marymezh.StruyachFitnessClient.struyach1",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Struyach Plan 799 rub, 1-week-free",
           "subscriptionGroupID" : "232E838F",

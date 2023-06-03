@@ -58,92 +58,98 @@ final class IAPManager {
     
     // method fetching details about offering: price, terms
 
+//    public func getOfferingDetails(identifier: String, completion: @escaping  (String, String)->()) {
+//        Purchases.shared.getOfferings { offerings, error in
+//            if let error = error {
+//                print (error.localizedDescription)
+//                // showing offering details for inapp purchases
+//            } else if identifier == "belly" || identifier == "pelvic"{
+//                let currentOffering = offerings?.offering(identifier: identifier)
+//                if let package = currentOffering?.availablePackages[0] {
+//                    let productPriceString = package.storeProduct.localizedPriceString
+//                    let termsText = "Pay once and get life-time access".localized()
+//                    let priceText = String(format: "Buy now for %@".localized(), productPriceString)
+//                    completion(priceText, termsText)
+//                }
+//            } else {
+//                // showing offering details for subscriptions
+//                let currentOffering = offerings?.offering(identifier: identifier)
+//                if let package = currentOffering?.availablePackages[0] {
+//                    let product = package.storeProduct
+//                    let productPriceString = product.localizedPriceString
+// //                   Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product) { result in
+////                        if result == .eligible {
+//                            // if eligible - show promo offer
+////                            print ("user eligible for promo offer")
+////                            if let intro = product.discounts.first {
+//                                if let intro = product.introductoryDiscount {
+//                                Purchases.shared.getPromotionalOffer(forProductDiscount: intro, product: product) { (promoOffer, error) in
+//                                    if let error = error {
+//                                        print (error.localizedDescription)
+//                                    } else {
+//                                        let introValue = intro.subscriptionPeriod.value
+//                                        let introTitle = intro.subscriptionPeriod.durationTitle
+//                                        let termsText = String(format: "Start your %d - %@ FREE trial".localized(), introValue, introTitle)
+//                                        let priceText =  String(format: "%@/month after trial".localized(), productPriceString)
+//
+//                                        completion(priceText, termsText)
+//                                    }
+//                                }
+////                            }
+//                        } else {
+//                            // user not eligible for promo offer
+// //                           print ("user is not eligible for promo offer")
+//                            let priceText = ""
+//                            let termsText = String(format: "Subscribe now for %@/month".localized(), locale: Locale(identifier: self.localeId), productPriceString)
+//                            completion(priceText, termsText)
+//
+//                        }
+//                 //   }
+//                }
+//            }
+//        }
+//    }
+    // method to fetch offerings details - - only for simulator testing
+    
     public func getOfferingDetails(identifier: String, completion: @escaping  (String, String)->()) {
         Purchases.shared.getOfferings { offerings, error in
             if let error = error {
                 print (error.localizedDescription)
-                // showing offering details for inapp purchases
             } else if identifier == "belly" || identifier == "pelvic"{
                 let currentOffering = offerings?.offering(identifier: identifier)
                 if let package = currentOffering?.availablePackages[0] {
                     let productPriceString = package.storeProduct.localizedPriceString
                     let termsText = "Pay once and get life-time access".localized()
-                    let priceText = String(format: "Buy now for %@".localized(), productPriceString)
+                    let priceText = String(format: "Buy now for %@".localized(), locale: Locale(identifier: self.localeId), productPriceString)
                     completion(priceText, termsText)
                 }
             } else {
-                // showing offering details for subscriptions
                 let currentOffering = offerings?.offering(identifier: identifier)
                 if let package = currentOffering?.availablePackages[0] {
+                    let productPriceString = package.storeProduct.localizedPriceString
                     let product = package.storeProduct
-                    let productPriceString = product.localizedPriceString
                     Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product) { result in
                         if result == .eligible {
-                            // if eligible - show promo offer
-                            print ("user eligible for promo offer")
-                            if let intro = product.discounts.first {
-                                
-                                Purchases.shared.getPromotionalOffer(forProductDiscount: intro, product: product) { (promoOffer, error) in
-                                    if let error = error {
-                                        print (error.localizedDescription)
-                                    } else {
-                                        let introValue = intro.subscriptionPeriod.value
-                                        let introTitle = intro.subscriptionPeriod.durationTitle
-                                        let termsText = String(format: "Start your %d - %@ FREE trial".localized(), introValue, introTitle)
-                                        let priceText =  String(format: "%@/month after trial".localized(), productPriceString)
-                                        
-                                        completion(priceText, termsText)
-                                    }
-                                }
+                            if let intro = package.storeProduct.introductoryDiscount {
+                                print ("there is an into discount")
+                                let introValue = intro.subscriptionPeriod.value
+                                let introTitle = intro.subscriptionPeriod.durationTitle
+                                let termsText = String(format: "Start your %d - %@ FREE trial".localized(), introValue, introTitle)
+                                let priceText =  String(format: "%@/month after trial".localized(), locale: Locale(identifier: self.localeId), productPriceString)
+                                completion(priceText, termsText)
                             }
+                            
                         } else {
-                            // user not eligible for promo offer
-                            print ("user is not eligible for promo offer")
+                            print ("intro period is over")
                             let priceText = ""
                             let termsText = String(format: "Subscribe now for %@/month".localized(), locale: Locale(identifier: self.localeId), productPriceString)
                             completion(priceText, termsText)
-                            
                         }
                     }
                 }
             }
         }
     }
-    // method to fetch offerings details - - only for simulator testing
-    
-//    public func getOfferingDetails(identifier: String, completion: @escaping  (String, String)->()) {
-//        Purchases.shared.getOfferings { offerings, error in
-//            if let error = error {
-//                print (error.localizedDescription)
-//            } else if identifier == "belly" || identifier == "pelvic"{
-//                let currentOffering = offerings?.offering(identifier: identifier)
-//                if let package = currentOffering?.availablePackages[0] {
-//                    let productPriceString = package.storeProduct.localizedPriceString
-//                    let termsText = "Pay once and get life-time access".localized()
-//                    let priceText = String(format: "Buy now for %@".localized(), locale: Locale(identifier: self.localeId), productPriceString)
-//                    completion(priceText, termsText)
-//                }
-//            } else {
-//                let currentOffering = offerings?.offering(identifier: identifier)
-//                if let package = currentOffering?.availablePackages[0] {
-//                    let productPriceString = package.storeProduct.localizedPriceString
-//                    if let intro = package.storeProduct.introductoryDiscount {
-//                        print ("there is an into discount")
-//                        let introValue = intro.subscriptionPeriod.value
-//                        let introTitle = intro.subscriptionPeriod.durationTitle
-//                        let termsText = String(format: "Start your %d - %@ FREE trial".localized(), introValue, introTitle)
-//                        let priceText =  String(format: "%@/month after trial".localized(), locale: Locale(identifier: self.localeId), productPriceString)
-//                        completion(priceText, termsText)
-//                    } else {
-//                        print ("intro period is over")
-//                        let termsText = ""
-//                        let priceText = String(format: "Subscribe now for %@/month".localized(), locale: Locale(identifier: self.localeId), productPriceString)
-//                        completion(priceText, termsText)
-//                    }
-//                }
-//            }
-//        }
-//    }
    
     // method fetching subscription status for each plan to show it in Settings VC
     public func getSubscriptionStatus(program: String, completion: @escaping (Bool, UIColor, String) -> ()) {
@@ -196,62 +202,69 @@ final class IAPManager {
     //method to purchase a package from offering
     
     
-    public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Result<Bool, Error>) -> ()) {
-        let product = package.storeProduct
-        if let discount = product.discounts.first {
-            print ("there is a discount: period - \(discount.subscriptionPeriod), price - \(discount.localizedPriceString)")
-            Purchases.shared.getPromotionalOffer(forProductDiscount: discount, product: product) { (promoOffer, error) in
-                if let promoOffer = promoOffer {
-                    Purchases.shared.purchase(package: package, promotionalOffer: promoOffer) { (transaction, customerInfo, error, userCancelled) in
-                        if let error = error {
-                            completion(.failure(error))
-                        } else {
-                            if customerInfo?.entitlements[program]?.isActive == true {
-                                print("purchase with promo offer is successful")
-                                completion(.success(true))
-                            } else {
-                                let error = NSError(domain: "com.example.purchase", code: 0, userInfo: [NSLocalizedDescriptionKey: "Purchase succeeded but program is not active"])
-                                completion(.failure(error))
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            // Promotional Offer was not validated, default to normal package terms
-            print ("there is no discount")
-            Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
-                if let error = error {
-                    completion(.failure(error))
-                } else {
-                    if customerInfo?.entitlements[program]?.isActive == true {
-                        print("purchase without promo offer is successful")
-                        completion(.success(true))
-                    } else {
-                        let error = NSError(domain: "com.example.purchase", code: 0, userInfo: [NSLocalizedDescriptionKey: "Purchase succeeded but program is not active"])
-                        completion(.failure(error))
-                    }
-                }
-            }
-        }
-    }
-    
 //    public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Result<Bool, Error>) -> ()) {
-//
-//        Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
-//            if let error = error {
-//                completion(.failure(error))
+//        let product = package.storeProduct
+//        //checking if user is eligible for promo offer
+//        Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product) { result in
+//            if result == .eligible {
+//                print ("user is eligible to a trial")
+//             //   if let discount = product.discounts.first {
+//                if let discount = package.storeProduct.introductoryDiscount {
+//                    print ("there is a discount: period - \(discount.subscriptionPeriod), price - \(discount.localizedPriceString)")
+//                    Purchases.shared.getPromotionalOffer(forProductDiscount: discount, product: product) { (promoOffer, error) in
+//                        if let promoOffer = promoOffer {
+//                            Purchases.shared.purchase(package: package, promotionalOffer: promoOffer) { (transaction, customerInfo, error, userCancelled) in
+//                                if let error = error {
+//                                    completion(.failure(error))
+//                                } else {
+//                                    if customerInfo?.entitlements[program]?.isActive == true {
+//                                        print("purchase with promo offer is successful")
+//                                        completion(.success(true))
+//                                    } else {
+//                                        let error = NSError(domain: "com.example.purchase", code: 0, userInfo: [NSLocalizedDescriptionKey: "Purchase succeeded but program is not active. Restore purchase to update your purchase status."])
+//                                        completion(.failure(error))
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
 //            } else {
-//                if customerInfo?.entitlements[program]?.isActive == true {
-//                    completion(.success(true))
-//                } else {
-//                    let error = NSError(domain: "com.example.purchase", code: 0, userInfo: [NSLocalizedDescriptionKey: "Purchase succeeded but program is not active"])
-//                    completion(.failure(error))
+//                // Promotional Offer was not validated, default to normal package terms
+//                print ("there is no discount")
+//                Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
+//                    if let error = error {
+//                        completion(.failure(error))
+//                    } else {
+//                        if customerInfo?.entitlements[program]?.isActive == true {
+//                            print("purchase without promo offer is successful")
+//                            completion(.success(true))
+//                        } else {
+//                            let error = NSError(domain: "com.example.purchase", code: 0, userInfo: [NSLocalizedDescriptionKey: "Purchase succeeded but program is not active. Restore purchase to update your purchase status."])
+//                            completion(.failure(error))
+//                        }
+//                    }
 //                }
 //            }
 //        }
 //    }
-//
+    
+    public func purchase(program: String, package: RevenueCat.Package, completion: @escaping (Result<Bool, Error>) -> ()) {
+
+        Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                if customerInfo?.entitlements[program]?.isActive == true {
+                    completion(.success(true))
+                } else {
+                    let error = NSError(domain: "com.example.purchase", code: 0, userInfo: [NSLocalizedDescriptionKey: "Purchase succeeded but program is not active"])
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+
   //method logs in a user on app launch (connected with Firebase Authentication)
     public func logInRevenueCat(userId: String, completion: @escaping (Error) -> ())  {
         Purchases.shared.logIn(userId) { (customerInfo, created, error) in

@@ -12,13 +12,6 @@ final class SettingsTableViewController: UITableViewController {
     
     // MARK: - Properties
     
-    private let aboutCellIdentifier = "AboutCell"
-    private let emailCellIdentifier = "EmailCell"
-    private let rateCellIdentifier = "RateCell"
-    private let languageSwitchCellIdentifier = "LanguageSwitchCell"
-    private let signOutCellIdentifier = "SignOutCell"
-    private let notificationCellIdentifier = "NotificationCell"
-    private let subscriptionsCellIdentifier = "SubscriptionsCell"
     private var messages = [String]()
     private var messageColors = [UIColor]()
     private var subscriptionStatus = [false, false, false, false]
@@ -43,13 +36,13 @@ final class SettingsTableViewController: UITableViewController {
         super.viewDidLoad()
         
         // Register custom cells
-        tableView.register(AboutTableViewCell.self, forCellReuseIdentifier: aboutCellIdentifier)
-        tableView.register(EmailTableViewCell.self, forCellReuseIdentifier: emailCellIdentifier)
-        tableView.register(RateTableViewCell.self, forCellReuseIdentifier: rateCellIdentifier)
-        tableView.register(LanguageSwitchTableViewCell.self, forCellReuseIdentifier: languageSwitchCellIdentifier)
-        tableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: notificationCellIdentifier)
-        tableView.register(SignOutTableViewCell.self, forCellReuseIdentifier: signOutCellIdentifier)
-        tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: subscriptionsCellIdentifier)
+        tableView.register(AboutTableViewCell.self, forCellReuseIdentifier: AboutTableViewCell.reuseIdentifier)
+        tableView.register(EmailTableViewCell.self, forCellReuseIdentifier: EmailTableViewCell.reuseIdentifier)
+        tableView.register(RateTableViewCell.self, forCellReuseIdentifier: RateTableViewCell.reuseIdentifier)
+        tableView.register(LanguageSwitchTableViewCell.self, forCellReuseIdentifier: LanguageSwitchTableViewCell.reuseIdentifier)
+        tableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: NotificationTableViewCell.reuseIdentifier)
+        tableView.register(SignOutTableViewCell.self, forCellReuseIdentifier: SignOutTableViewCell.reuseIdentifier)
+        tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: SubscriptionTableViewCell.reuseIdentifier)
         
         // Set table view properties
         tableView.backgroundColor = .customDarkGray
@@ -62,6 +55,11 @@ final class SettingsTableViewController: UITableViewController {
         #if Client
         updateSubscriptionStatus()
         #endif
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        UserDefaults.standard.synchronize()
     }
     
     deinit {
@@ -80,7 +78,7 @@ final class SettingsTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: 30))
+        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: 45))
         headerView.backgroundColor = .customDarkGray
         
         let titleLabel = UILabel(frame: CGRect(x: 15, y: 0, width: headerView.frame.width - 15, height: headerView.frame.height))
@@ -89,6 +87,10 @@ final class SettingsTableViewController: UITableViewController {
         headerView.addSubview(titleLabel)
         
         return headerView
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 45
     }
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -122,7 +124,7 @@ final class SettingsTableViewController: UITableViewController {
        }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 44
+        return 45
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -159,25 +161,43 @@ final class SettingsTableViewController: UITableViewController {
         switch indexPath.section {
         case 0:
             if indexPath.row == 0 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: aboutCellIdentifier, for: indexPath) as! AboutTableViewCell
+                let cell = tableView.dequeueReusableCell(withIdentifier: AboutTableViewCell.reuseIdentifier, for: indexPath) as! AboutTableViewCell
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
                 return cell
             } else if indexPath.row == 1 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: emailCellIdentifier, for: indexPath) as! EmailTableViewCell
+                let cell = tableView.dequeueReusableCell(withIdentifier: EmailTableViewCell.reuseIdentifier, for: indexPath) as! EmailTableViewCell
+                cell.containerView.layer.cornerRadius = 0
                 return cell
             } else if indexPath.row == 2 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: rateCellIdentifier, for: indexPath) as! RateTableViewCell
+                let cell = tableView.dequeueReusableCell(withIdentifier: RateTableViewCell.reuseIdentifier, for: indexPath) as! RateTableViewCell
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 return cell
             }
         case 1:
-            let cell = tableView.dequeueReusableCell(withIdentifier: notificationCellIdentifier, for: indexPath) as! NotificationTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: NotificationTableViewCell.reuseIdentifier, for: indexPath) as! NotificationTableViewCell
+            
+            if indexPath.row == 0 {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            } else if indexPath.row == tableView.numberOfRows(inSection: indexPath.section)-1 {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            } else {
+                cell.containerView.layer.cornerRadius = 0
+            }
+               
             let programName: String
             let isSubscribed: Bool
-                   
                    switch indexPath.row {
                    case 0:
                        programName = K.bodyweight
                        isSubscribed = true // Assume all users are subscribed to Bodyweight plan
-                       
                    case 1:
                        programName = K.ecd
                        isSubscribed = subscriptionStatus[0]
@@ -189,47 +209,58 @@ final class SettingsTableViewController: UITableViewController {
                        isSubscribed = false
                    }
                    
-                 //  let isNotificationOn = NotificationsManager.shared.checkNotificationPermissions() && isSubscribed
-                   cell.configure(with: programName, isSubscribed: isSubscribed)
+            cell.configure(with: programName, isSubscribed: isSubscribed)
             cell.notificationSwitch.programName = cell.programName
-                   cell.notificationSwitch.addTarget(self, action: #selector(notificationSwitchChanged(_:)), for: .valueChanged)
-                   
-                   return cell
+            cell.notificationSwitch.addTarget(self, action: #selector(notificationSwitchChanged(_:)), for: .valueChanged)
+            
+            return cell
            
             #if Client
         case 2:
-            let cell = tableView.dequeueReusableCell(withIdentifier: subscriptionsCellIdentifier, for: indexPath) as! SubscriptionTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: SubscriptionTableViewCell.reuseIdentifier, for: indexPath) as! SubscriptionTableViewCell
+            
+            if indexPath.row == 0 {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            } else if indexPath.row == tableView.numberOfRows(inSection: indexPath.section)-1 {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            } else {
+                cell.containerView.layer.cornerRadius = 0
+            }
             
             if messages.isEmpty {
-                   cell.titleLabel.text = "Fetching subscription status..."
+                cell.titleLabel.text = "Fetching subscription status..."
                 cell.colorLabel.backgroundColor = .yellow
                 cell.termsLabel.text = ""
-               } else {
-                   cell.titleLabel.text = programsArray[indexPath.row]
-                   cell.colorLabel.backgroundColor = messageColors[indexPath.row]
-                   cell.termsLabel.text = messages[indexPath.row]
-               }
-           
+            } else {
+                cell.titleLabel.text = programsArray[indexPath.row]
+                cell.colorLabel.backgroundColor = messageColors[indexPath.row]
+                cell.termsLabel.text = messages[indexPath.row]
+            }
+            
             return cell
         case 3:
-            let cell = tableView.dequeueReusableCell(withIdentifier: languageSwitchCellIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: LanguageSwitchTableViewCell.reuseIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
             cell.delegate = self
             cell.configure(language: LanguageManager.shared.currentLanguage)
             return cell
         default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: signOutCellIdentifier, for: indexPath) as! SignOutTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: SignOutTableViewCell.reuseIdentifier, for: indexPath) as! SignOutTableViewCell
             return cell
             
-            #else
+#else
         case 2:
-            let cell = tableView.dequeueReusableCell(withIdentifier: languageSwitchCellIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: LanguageSwitchTableViewCell.reuseIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
             cell.delegate = self
             cell.configure(language: LanguageManager.shared.currentLanguage)
             return cell
         default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: signOutCellIdentifier, for: indexPath) as! SignOutTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: SignOutTableViewCell.reuseIdentifier, for: indexPath) as! SignOutTableViewCell
             return cell
-            #endif
+#endif
         }
         return UITableViewCell()
     }
@@ -310,9 +341,11 @@ final class SettingsTableViewController: UITableViewController {
     @objc private func notificationSwitchChanged(_ sender: UISwitch) {
         print("executing func \(#function)")
         guard let program = sender.programName?.replacingOccurrences(of: " ", with: "_") else {
-              print("No program name found")
-              return
-          }
+            print("No program name found")
+            return
+        }
+        
+        UserDefaults.standard.set(sender.isOn, forKey: program)
         
         if sender.isOn {
             NotificationsManager.shared.subscribe(to: program)

@@ -228,7 +228,7 @@ final class PaywallView: UIView {
 //            stackView.topAnchor.constraint(equalTo: redeemCodeLabel.bottomAnchor, constant: smallInset),
             stackView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             stackView.widthAnchor.constraint(equalToConstant: 220),
-            stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -bigInset),
+            stackView.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -bigInset),
 
             payButton.heightAnchor.constraint(equalToConstant: 60),
             restorePurchasesButton.heightAnchor.constraint(equalToConstant: 40),

@@ -21,12 +21,7 @@ class SignOutTableViewCell: UITableViewCell {
         textLabel?.text = "Sign Out".localized()
         textLabel?.textColor = .red
     }
-//        let disclosureIndicator = UIImageView(image: UIImage(systemName: "chevron.right"))
-//        disclosureIndicator.contentMode = .scaleAspectFit
-//        disclosureIndicator.tintColor = .white
-//        accessoryView = disclosureIndicator
-//    }
-//
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

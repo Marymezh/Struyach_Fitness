@@ -18,10 +18,13 @@ protocol LanguageSwitchDelegate: AnyObject {
 
 final class LanguageSwitchTableViewCell: UITableViewCell {
     
-    weak var delegate: LanguageSwitchDelegate?
+    static let reuseIdentifier = "LanguageSwitchCell"
     
+    weak var delegate: LanguageSwitchDelegate?
+
     private lazy var engButton: UIButton = {
         let button = UIButton()
+        button.toAutoLayout()
         button.setTitle(Language.english.rawValue, for: .normal)
         button.addTarget(self, action: #selector(switchLanguage(_:)), for: .touchUpInside)
         button.tag = Language.english.rawValue.hashValue // assign a tag based on the rawValue hash to distinguish from Russian button
@@ -30,6 +33,7 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
     
     private lazy var rusButton: UIButton = {
         let button = UIButton()
+        button.toAutoLayout()
         button.setTitle(Language.russian.rawValue, for: .normal)
         button.addTarget(self, action: #selector(switchLanguage(_:)), for: .touchUpInside)
         button.tag = Language.russian.rawValue.hashValue // assign a tag based on the rawValue hash to distinguish from English button
@@ -41,6 +45,7 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
         label.font = UIFont.systemFont(ofSize: 16)
         label.text = "App language / Язык приложения"
         label.textColor = .white
+        label.toAutoLayout()
         return label
     }()
     
@@ -53,23 +58,18 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
         contentView.addSubview(engButton)
         contentView.addSubview(rusButton)
         
-        languageLabel.toAutoLayout()
-        NSLayoutConstraint.activate([
-            languageLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            languageLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
-        
-        engButton.toAutoLayout()
-        NSLayoutConstraint.activate([
-            engButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            engButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
-        
-        rusButton.toAutoLayout()
-        NSLayoutConstraint.activate([
-            rusButton.trailingAnchor.constraint(equalTo: engButton.leadingAnchor, constant: -8),
+        let constraints = [
+            languageLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 25),
+            languageLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            
+            engButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -25),
+            engButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            
+            rusButton.trailingAnchor.constraint(equalTo: engButton.leadingAnchor, constant: -5),
             rusButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
+        ]
+        
+        NSLayoutConstraint.activate(constraints)
     }
     
     required init?(coder: NSCoder) {

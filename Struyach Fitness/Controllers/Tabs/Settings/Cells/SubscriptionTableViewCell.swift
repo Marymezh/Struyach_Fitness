@@ -9,6 +9,15 @@ import UIKit
 
 class SubscriptionTableViewCell: UITableViewCell {
     
+    static let reuseIdentifier = "SubscriptionsCell"
+    
+    let containerView: UIView = {
+        let containerView = UIView()
+        containerView.toAutoLayout()
+        containerView.backgroundColor = .customTabBar
+        return containerView
+    }()
+    
     let titleLabel: UILabel  = {
         let label = UILabel()
         label.toAutoLayout()
@@ -55,20 +64,26 @@ class SubscriptionTableViewCell: UITableViewCell {
     private func setupSubviews() {
         self.backgroundColor = .customDarkGray
         selectionStyle = .none
+        addSubview(containerView)
         addSubview(stackView)
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(colorLabel)
         stackView.addArrangedSubview(termsLabel)
  
         let constraints = [
-            titleLabel.widthAnchor.constraint(equalToConstant: 180),
+            containerView.topAnchor.constraint(equalTo: self.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 15),
+            containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
+            containerView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            
+            titleLabel.widthAnchor.constraint(equalToConstant: 160),
             termsLabel.widthAnchor.constraint(equalToConstant: 120),
             colorLabel.heightAnchor.constraint(equalToConstant: 20),
             colorLabel.widthAnchor.constraint(equalTo: colorLabel.heightAnchor),
             stackView.topAnchor.constraint(equalTo: self.topAnchor),
             stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 15),
-            stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -10)
+            stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
+            stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10)
         ]
         
         NSLayoutConstraint.activate(constraints)
