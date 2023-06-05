@@ -7,11 +7,11 @@
 
 import UIKit
 
-class SignOutTableViewCell: UITableViewCell {
+class ManagementTableViewCell: UITableViewCell {
     
     // MARK: - Properties
     
-    static let reuseIdentifier = "SignOutCell"
+    static let reuseIdentifier = "ManagementCell"
     
     let containerView: UIView = {
         let containerView = UIView()

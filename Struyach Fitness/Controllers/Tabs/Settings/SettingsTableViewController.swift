@@ -38,7 +38,7 @@ final class SettingsTableViewController: UITableViewController {
         tableView.register(RateTableViewCell.self, forCellReuseIdentifier: RateTableViewCell.reuseIdentifier)
         tableView.register(LanguageSwitchTableViewCell.self, forCellReuseIdentifier: LanguageSwitchTableViewCell.reuseIdentifier)
         tableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: NotificationTableViewCell.reuseIdentifier)
-        tableView.register(SignOutTableViewCell.self, forCellReuseIdentifier: SignOutTableViewCell.reuseIdentifier)
+        tableView.register(ManagementTableViewCell.self, forCellReuseIdentifier: ManagementTableViewCell.reuseIdentifier)
         tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: SubscriptionTableViewCell.reuseIdentifier)
         
         tableView.backgroundColor = .customDarkGray
@@ -67,7 +67,7 @@ final class SettingsTableViewController: UITableViewController {
         #if Admin
         return 4
         #else
-        return 5
+        return 6
         #endif
     }
     
@@ -97,8 +97,10 @@ final class SettingsTableViewController: UITableViewController {
            case 2:
                return "Subscription status".localized()
            case 3:
-               return "Language settings".localized()
+               return "Manage subscriptions".localized()
            case 4:
+               return "Language settings".localized()
+           case 5:
                return "Log out or delete account".localized()
            default:
                return nil
@@ -131,8 +133,10 @@ final class SettingsTableViewController: UITableViewController {
         case 2:
             return programsArray.count
         case 3:
-            return 1
+            return 2
         case 4:
+            return 1
+        case 5:
             return 2
         default:
             return 0
@@ -236,13 +240,32 @@ final class SettingsTableViewController: UITableViewController {
             }
             
             return cell
-        case 3:
+        case 3: let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
+            if indexPath.row == 0 {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+                cell.titleLabel.text = "Restore purchases".localized()
+                cell.titleLabel.textColor = .white
+                cell.imgView.image = UIImage(systemName: "arrow.clockwise")
+                cell.imgView.tintColor = .systemGreen
+            } else {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                cell.titleLabel.text = "Request a refund".localized()
+                cell.titleLabel.textColor = .white
+                cell.imgView.image = UIImage(systemName: "dollarsign.circle")
+                cell.imgView.tintColor = .systemGreen
+            }
+            return cell
+        case 4:
             let cell = tableView.dequeueReusableCell(withIdentifier: LanguageSwitchTableViewCell.reuseIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
             cell.delegate = self
             cell.configure(language: LanguageManager.shared.currentLanguage)
             return cell
         default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: SignOutTableViewCell.reuseIdentifier, for: indexPath) as! SignOutTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
             if indexPath.row == 0 {
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
@@ -266,12 +289,19 @@ final class SettingsTableViewController: UITableViewController {
             cell.configure(language: LanguageManager.shared.currentLanguage)
             return cell
         default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: SignOutTableViewCell.reuseIdentifier, for: indexPath) as! SignOutTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
             if indexPath.row == 0 {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
                 cell.titleLabel.text = "Sign out".localized()
-                
+                cell.imgView.image = UIImage(systemName: "trash")
             } else {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 cell.titleLabel.text = "Delete account and all data".localized()
+                cell.imgView.image = UIImage(systemName: "xmark.square")
             }
             return cell
 #endif
@@ -294,7 +324,7 @@ final class SettingsTableViewController: UITableViewController {
                 if let cell = tableView.cellForRow(at: indexPath) as? EmailTableViewCell {
                     cell.sendEmail { error in
                         if let error = error {
-                            self.showErrorAlert(text: error.localizedDescription)
+                            self.showAlert(title: "Error".localized(), message: error.localizedDescription, completion: nil)
                         }
                     }
                 }
@@ -303,7 +333,7 @@ final class SettingsTableViewController: UITableViewController {
                 if let cell = tableView.cellForRow(at: indexPath) as? RateTableViewCell {
                     cell.openAppRatingPage { success in
                         if !success {
-                            self.showErrorAlert(text: "Unable to open app rating page".localized())
+                            self.showAlert(title: "Error".localized(), message: "Unable to open app rating page".localized(), completion: nil)
                         }
                     }
                 }
@@ -322,6 +352,11 @@ final class SettingsTableViewController: UITableViewController {
 
         case 4:
             switch indexPath.row {
+            case 0: restorePurchases()
+            default: requestRefund()
+            }
+        case 5:
+            switch indexPath.row {
             case 0: signOut()
             default:  print("delete account")
                 //delete account
@@ -335,6 +370,23 @@ final class SettingsTableViewController: UITableViewController {
     }
     
     // MARK: - Private methods
+    
+    private func restorePurchases() {
+        IAPManager.shared.restorePurchases { [weak self] result in
+            guard let self = self else {return}
+            switch result {
+            case .failure(let error):
+                let message = String(format: "Unable to restore purchases: %@".localized(), error.localizedDescription)
+                self.showAlert(title: "Failed".localized(), message: message, completion: nil)
+            case .success(_):
+                self.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), completion: nil)
+            }
+        }
+    }
+    
+    private func requestRefund() {
+        
+    }
     
     private func signOut() {
             let alert = UIAlertController(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), preferredStyle: .actionSheet)
@@ -362,14 +414,14 @@ final class SettingsTableViewController: UITableViewController {
             present(alert, animated: true)
     }
     
-    private func showErrorAlert(text: String) {
-        let alert = UIAlertController(title: "Error".localized(), message: text, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
-        alert.view.tintColor = .red
+    private func showAlert(title: String, message: String, completion: ((UIAlertAction) -> Void)?) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Ok", style: .cancel, handler: completion)
         alert.addAction(cancelAction)
-        present(alert, animated: true)
+        alert.view.tintColor = .systemGreen
+        self.present(alert, animated: true, completion: nil)
     }
-    
+
     private func updateSubscriptionStatus() {
         var updatedMessages = [String]()
         var updatedColors = [UIColor]()

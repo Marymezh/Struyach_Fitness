@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import StoreKit
 
 final class PaywallViewController: UIViewController {
     
@@ -136,34 +137,39 @@ final class PaywallViewController: UIViewController {
         default: break
         }
     }
-
+    
     @objc private func payButtonPressed() {
-        activityView.showActivityIndicator()
-        print ("pay button is pressed")
-        IAPManager.shared.fetchPackages(identifier: packageId) { [weak self] result in
-            guard let self = self else {return}
-            switch result {
-            case .success(let package):
-                guard let package = package else {return}
-                IAPManager.shared.purchase(program: self.programName, package: package){[weak self] result in
-                    guard let self = self else {return}
-                    switch result {
-                    case .success(_):
-                        self.onPaywallClose?()
-                        self.activityView.hide()
-                        self.dismiss(animated: true)
-                        
-                    case .failure(let error):
-                        self.activityView.hide()
-                        let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
-                        self.showAlert(title: "Failed".localized(), message: message, completion: nil)
+        if SKPaymentQueue.canMakePayments() {
+            activityView.showActivityIndicator()
+            print ("pay button is pressed")
+            IAPManager.shared.fetchPackages(identifier: packageId) { [weak self] result in
+                guard let self = self else {return}
+                switch result {
+                case .success(let package):
+                    guard let package = package else {return}
+                    IAPManager.shared.purchase(program: self.programName, package: package){[weak self] result in
+                        guard let self = self else {return}
+                        switch result {
+                        case .success(_):
+                            self.onPaywallClose?()
+                            self.activityView.hide()
+                            self.dismiss(animated: true)
+                            
+                        case .failure(let error):
+                            self.activityView.hide()
+                            let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
+                            self.showAlert(title: "Failed".localized(), message: message, completion: nil)
+                        }
                     }
+                case .failure(let error):
+                    self.activityView.hide()
+                    let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
+                    self.showAlert(title: "Failed".localized(), message: message, completion: nil)
                 }
-            case .failure(let error):
-                self.activityView.hide()
-                let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
-                self.showAlert(title: "Failed".localized(), message: message, completion: nil)
             }
+        }  else {
+            self.showAlert(title: "Warning".localized(), message: "You are not allowed to make purchases".localized(), completion: nil)
+            self.activityView.hide()
         }
     }
     
@@ -182,8 +188,6 @@ final class PaywallViewController: UIViewController {
                     self.onPaywallClose?()
                     self.dismiss(animated: true)
                 }
-                
-                
             }
         }
     }

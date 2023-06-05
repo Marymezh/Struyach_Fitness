@@ -125,7 +125,7 @@
 "You are not authorized to sign in as an admin!" = "У вас нет прав доступа к этому приложению!";
 
 "Unable to open app rating page" = "Не удалось открыть страницу приложения";
-
+"You are not allowed to make purchases" = "ВЫ не можете совершать покупки";
 
 
 //MARK: - PROFILE
@@ -148,12 +148,15 @@
 "Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]" = "Добрый день, \n\nХочу поделиться своим мнением о приложении... \n\nС уважением, \n[Ваше имя]";
 "Rate this app" = "Оценить приложение";
 "Subscription status" = "Статус подписок";
+"Manage subscriptions" = "Управление подписками";
 "%@ - is active until %@" = "%@ - активна до %@";
 "%@ - is purchased" = "%@ - куплена";
 "%@ - is not active" = "%@ - не активна";
 "purchased" = "куплена";
 "not active" = "не активна";
 "until %@" = "до %@";
+
+"Request a refund" = "Запросить возврат";
 
 "Sign out" = "Выйти из аккаунта";
 "Delete account and all data" = "Удалить аккаунт и все данные";
