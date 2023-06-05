@@ -125,8 +125,8 @@ final class LoginViewController: UIViewController {
                 }
             case .failure(let error):
                 self.activityView.hide()
-                self.showAlert(title: "Error".localized(), message:  "No such user! Check your e-mail".localized())
-                print (error.localizedDescription)
+                let message = String(format: "Unable to log in: %@".localized(), error.localizedDescription)
+                self.showAlert(title: "Warning".localized(), message: message)
             }
         }
     }

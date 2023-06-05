@@ -64,24 +64,24 @@ class SubscriptionTableViewCell: UITableViewCell {
     private func setupSubviews() {
         self.backgroundColor = .customDarkGray
         selectionStyle = .none
-        addSubview(containerView)
-        addSubview(stackView)
+        contentView.addSubview(containerView)
+        containerView.addSubview(stackView)
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(colorLabel)
         stackView.addArrangedSubview(termsLabel)
  
         let constraints = [
-            containerView.topAnchor.constraint(equalTo: self.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 15),
-            containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
-            containerView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
             titleLabel.widthAnchor.constraint(equalToConstant: 160),
             termsLabel.widthAnchor.constraint(equalToConstant: 120),
             colorLabel.heightAnchor.constraint(equalToConstant: 20),
             colorLabel.widthAnchor.constraint(equalTo: colorLabel.heightAnchor),
-            stackView.topAnchor.constraint(equalTo: self.topAnchor),
-            stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            stackView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
             stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10)
         ]

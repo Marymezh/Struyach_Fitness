@@ -244,9 +244,18 @@ final class SettingsTableViewController: UITableViewController {
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: SignOutTableViewCell.reuseIdentifier, for: indexPath) as! SignOutTableViewCell
             if indexPath.row == 0 {
-                cell.textLabel?.text = "Sign out".localized()
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+                cell.titleLabel.text = "Sign out".localized()
+                cell.imgView.image = UIImage(systemName: "trash")
+                
             } else {
-                cell.textLabel?.text = "Delete account and all data".localized()
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                cell.titleLabel.text = "Delete account and all data".localized()
+                cell.imgView.image = UIImage(systemName: "xmark.square")
             }
             return cell
             
@@ -259,9 +268,10 @@ final class SettingsTableViewController: UITableViewController {
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: SignOutTableViewCell.reuseIdentifier, for: indexPath) as! SignOutTableViewCell
             if indexPath.row == 0 {
-                cell.textLabel?.text = "Sign out".localized()
+                cell.titleLabel.text = "Sign out".localized()
+                
             } else {
-                cell.textLabel?.text = "Delete account and all data".localized()
+                cell.titleLabel.text = "Delete account and all data".localized()
             }
             return cell
 #endif

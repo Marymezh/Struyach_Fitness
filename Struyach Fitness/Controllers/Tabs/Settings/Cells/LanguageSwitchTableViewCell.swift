@@ -21,6 +21,14 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
     static let reuseIdentifier = "LanguageSwitchCell"
     
     weak var delegate: LanguageSwitchDelegate?
+    
+    private let containerView: UIView = {
+        let containerView = UIView()
+        containerView.toAutoLayout()
+        containerView.layer.cornerRadius = 15
+        containerView.backgroundColor = .customTabBar
+        return containerView
+    }()
 
     private lazy var engButton: UIButton = {
         let button = UIButton()
@@ -54,19 +62,24 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
         
         self.backgroundColor = .customDarkGray
         selectionStyle = .none
-        contentView.addSubview(languageLabel)
-        contentView.addSubview(engButton)
-        contentView.addSubview(rusButton)
+        contentView.addSubview(containerView)
+        containerView.addSubviews(languageLabel, engButton, rusButton)
+   
         
         let constraints = [
-            languageLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 25),
-            languageLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
-            engButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -25),
-            engButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            languageLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
+            languageLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            
+            engButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
+            engButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             
             rusButton.trailingAnchor.constraint(equalTo: engButton.leadingAnchor, constant: -5),
-            rusButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            rusButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)

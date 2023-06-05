@@ -46,7 +46,6 @@ final class ProgramTableViewCell: UITableViewCell {
         disclosureIndicator.layer.masksToBounds = false
         disclosureIndicator.layer.shadowColor = UIColor.black.cgColor
         disclosureIndicator.layer.shadowOffset = CGSize(width: 1, height: 1)
-        disclosureIndicator.layer.shadowOpacity = 0.5
         disclosureIndicator.layer.shadowRadius = 2.0
 
         accessoryView = disclosureIndicator

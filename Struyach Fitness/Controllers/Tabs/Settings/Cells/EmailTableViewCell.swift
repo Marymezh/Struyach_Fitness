@@ -71,10 +71,11 @@ final class EmailTableViewCell: UITableViewCell {
             containerView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
             imgView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            imgView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
+            imgView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 11),
             
             titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 45)
+        
         ]
         
         NSLayoutConstraint.activate(constraints)

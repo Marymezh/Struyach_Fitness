@@ -52,20 +52,20 @@ final class NotificationTableViewCell: UITableViewCell {
     private func configureUI() {
         selectionStyle = .none
         self.backgroundColor = .customDarkGray
-        addSubview(containerView)
+        contentView.addSubview(containerView)
         containerView.addSubview(notificationLabel)
         containerView.addSubview(notificationSwitch)
         
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: self.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 15),
-            containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
-            containerView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
             notificationLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
-            notificationLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+            notificationLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             notificationSwitch.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
-            notificationSwitch.centerYAnchor.constraint(equalTo: centerYAnchor)
+            notificationSwitch.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
         ])
     }
 
