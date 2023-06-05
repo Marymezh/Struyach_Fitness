@@ -24,6 +24,7 @@ final class ProgramTableViewCell: UITableViewCell {
         label.textColor = .white
         label.shadowColor = .black
         label.shadowOffset = CGSize(width: 1, height: 1)
+        label.layer.shadowOpacity = 0.5
         label.numberOfLines = 1
         label.adjustsFontSizeToFitWidth = true
         label.toAutoLayout()
@@ -54,7 +55,7 @@ final class ProgramTableViewCell: UITableViewCell {
         
         let constraints = [
             
-            programNameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset),
+            programNameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             programNameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset)
         ]
         

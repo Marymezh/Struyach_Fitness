@@ -51,7 +51,7 @@ final class RateTableViewCell: UITableViewCell {
     
     private func setupSubviews() {
         self.backgroundColor = .customDarkGray
-        
+        selectionStyle = .none
         let disclosureIndicator = UIImageView(image: UIImage(systemName: "chevron.right"))
         disclosureIndicator.contentMode = .scaleAspectFit
         disclosureIndicator.tintColor = .white
@@ -80,12 +80,18 @@ final class RateTableViewCell: UITableViewCell {
     
     // MARK: - Helper Functions
     
-    func openAppRatingPage() {
-        if let url = URL(string: "itms-apps://itunes.apple.com/app/id389801252") {
+    func openAppRatingPage(completion: (Bool)->()) {
+        #if Admin
+        let urlString = "itms-apps://itunes.apple.com/app/id6448619309"
+        #else
+        let urlString = "itms-apps://itunes.apple.com/app/id6449380820"
+        #endif
+        
+        if let url = URL(string: urlString ) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            completion(true)
         } else {
-            print ("unable to open app raiting page")
+            completion(false)
         }
     }
-    
 }

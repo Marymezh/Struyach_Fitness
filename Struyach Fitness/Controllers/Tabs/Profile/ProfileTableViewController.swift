@@ -6,7 +6,6 @@
 //
 
 import UIKit
-//import IQKeyboardManagerSwift
 
 final class ProfileTableViewController: UITableViewController {
     
@@ -34,7 +33,7 @@ final class ProfileTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavigationBar()
+   //     setupNavigationBar()
         setupTableView()
         setupHeaderView()
     }
@@ -55,18 +54,16 @@ final class ProfileTableViewController: UITableViewController {
         tableView.backgroundColor = .customDarkGray
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: ProfileTableViewCell.self))
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
-//        tableView.estimatedSectionHeaderHeight = 165
-//        tableView.sectionHeaderHeight = UITableView.automaticDimension
     }
     
-    private func setupNavigationBar () {
-        navigationController?.navigationBar.tintColor = .systemRed
-         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Sign Out".localized(),
-             style: .done,
-             target: self,
-             action: #selector(didTapSignOut))
-     }
+//    private func setupNavigationBar () {
+//        navigationController?.navigationBar.tintColor = .systemRed
+//         navigationItem.rightBarButtonItem = UIBarButtonItem(
+//            title: "Sign Out".localized(),
+//             style: .done,
+//             target: self,
+//             action: #selector(didTapSignOut))
+//     }
     
     private func setupHeaderView() {
         headerView.isUserInteractionEnabled = true
@@ -118,35 +115,31 @@ final class ProfileTableViewController: UITableViewController {
         present(alertController, animated: true)
     }
     
-    @objc private func didTapSignOut() {
-        let alert = UIAlertController(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
-        alert.addAction(UIAlertAction(title: "Sign Out".localized(), style: .destructive, handler: { action in
-//            IAPManager.shared.logOutRevenueCat { [weak self] error in
-//                guard let self = self else {return}
-//                self.showErrorAlert(text: "Unable to log out".localized())
+//    @objc private func didTapSignOut() {
+//        let alert = UIAlertController(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), preferredStyle: .actionSheet)
+//        alert.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
+//        alert.addAction(UIAlertAction(title: "Sign Out".localized(), style: .destructive, handler: { action in
+//            AuthManager.shared.signOut { success in
+//                if success {
+//                    DispatchQueue.main.async {
+//                        UserDefaults.standard.set(nil, forKey: "userName")
+//                        UserDefaults.standard.set(nil, forKey: "email")
+//                        UserDefaults.standard.set(nil, forKey: "userImage")
+//
+//                //update root vc
+//                        let signInVC = LoginViewController()
+//                        let navVC = UINavigationController(rootViewController: signInVC)
+//                        navVC.navigationBar.prefersLargeTitles = false
+//                        let window = UIApplication.shared.windows.first
+//                        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+//                            window?.rootViewController = navVC
+//                        }, completion: nil)
+//                    }
+//                }
 //            }
-            AuthManager.shared.signOut { success in
-                if success {
-                    DispatchQueue.main.async {
-                        UserDefaults.standard.set(nil, forKey: "userName")
-                        UserDefaults.standard.set(nil, forKey: "email")
-                        UserDefaults.standard.set(nil, forKey: "userImage")
-                        
-                //update root vc
-                        let signInVC = LoginViewController()
-                        let navVC = UINavigationController(rootViewController: signInVC)
-                        navVC.navigationBar.prefersLargeTitles = false
-                        let window = UIApplication.shared.windows.first
-                        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-                            window?.rootViewController = navVC
-                        }, completion: nil)
-                    }
-                }
-            }
-        }))
-        present(alert, animated: true)
-    }
+//        }))
+//        present(alert, animated: true)
+//    }
     
     //MARK: - Fetch and update data methods
     

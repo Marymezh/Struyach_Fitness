@@ -7,7 +7,6 @@
 
 import UIKit
 
-
 final class SettingsTableViewController: UITableViewController {
     
     // MARK: - Properties
@@ -31,11 +30,9 @@ final class SettingsTableViewController: UITableViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Register custom cells
+
         tableView.register(AboutTableViewCell.self, forCellReuseIdentifier: AboutTableViewCell.reuseIdentifier)
         tableView.register(EmailTableViewCell.self, forCellReuseIdentifier: EmailTableViewCell.reuseIdentifier)
         tableView.register(RateTableViewCell.self, forCellReuseIdentifier: RateTableViewCell.reuseIdentifier)
@@ -44,10 +41,8 @@ final class SettingsTableViewController: UITableViewController {
         tableView.register(SignOutTableViewCell.self, forCellReuseIdentifier: SignOutTableViewCell.reuseIdentifier)
         tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: SubscriptionTableViewCell.reuseIdentifier)
         
-        // Set table view properties
         tableView.backgroundColor = .customDarkGray
         tableView.separatorStyle = .singleLine
-
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -65,7 +60,6 @@ final class SettingsTableViewController: UITableViewController {
     deinit {
            print ("settings vc is deallocated")
        }
-    
     
     // MARK: - UITableViewDataSource and Delegate
     
@@ -139,7 +133,7 @@ final class SettingsTableViewController: UITableViewController {
         case 3:
             return 1
         case 4:
-            return 1
+            return 2
         default:
             return 0
             #else
@@ -150,7 +144,7 @@ final class SettingsTableViewController: UITableViewController {
         case 2:
             return 1
         case 3:
-            return 1
+            return 2
         default:
             return 0
             #endif
@@ -249,6 +243,11 @@ final class SettingsTableViewController: UITableViewController {
             return cell
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: SignOutTableViewCell.reuseIdentifier, for: indexPath) as! SignOutTableViewCell
+            if indexPath.row == 0 {
+                cell.textLabel?.text = "Sign out".localized()
+            } else {
+                cell.textLabel?.text = "Delete account and all data".localized()
+            }
             return cell
             
 #else
@@ -259,6 +258,11 @@ final class SettingsTableViewController: UITableViewController {
             return cell
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: SignOutTableViewCell.reuseIdentifier, for: indexPath) as! SignOutTableViewCell
+            if indexPath.row == 0 {
+                cell.textLabel?.text = "Sign out".localized()
+            } else {
+                cell.textLabel?.text = "Delete account and all data".localized()
+            }
             return cell
 #endif
         }
@@ -276,33 +280,45 @@ final class SettingsTableViewController: UITableViewController {
                 aboutThisAppVC.title = "About this app".localized()
                 navigationController?.pushViewController(aboutThisAppVC, animated: true)
             case 1:
-                //    sendEmailToDeveloper()
+                //    sendEmailToDeveloper
                 if let cell = tableView.cellForRow(at: indexPath) as? EmailTableViewCell {
-                    cell.sendEmail()
+                    cell.sendEmail { error in
+                        if let error = error {
+                            self.showErrorAlert(text: error.localizedDescription)
+                        }
+                    }
                 }
             case 2:
                 // go to app rating page
-                //           rateApp()
                 if let cell = tableView.cellForRow(at: indexPath) as? RateTableViewCell {
-                    cell.openAppRatingPage()
+                    cell.openAppRatingPage { success in
+                        if !success {
+                            self.showErrorAlert(text: "Unable to open app rating page".localized())
+                        }
+                    }
                 }
             default:
                 break
             }
-        case 1:
+            #if Admin
+        case 3:
             switch indexPath.row {
-            case 0:
-                // handle notification cell
-                break
-            case 1:
-                // handle language cell
-                break
-            default:
-                break
+            case 0: signOut()
+            default:  print("delete account")
+                //delete account
             }
-        case 2:
-            // handle purchase cell
-            break
+
+            #else
+
+        case 4:
+            switch indexPath.row {
+            case 0: signOut()
+            default:  print("delete account")
+                //delete account
+            }
+
+            #endif
+       
         default:
             break
         }
@@ -310,25 +326,56 @@ final class SettingsTableViewController: UITableViewController {
     
     // MARK: - Private methods
     
+    private func signOut() {
+            let alert = UIAlertController(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
+            alert.addAction(UIAlertAction(title: "Sign Out".localized(), style: .destructive, handler: { action in
+                AuthManager.shared.signOut { success in
+                    if success {
+                        DispatchQueue.main.async {
+                            UserDefaults.standard.set(nil, forKey: "userName")
+                            UserDefaults.standard.set(nil, forKey: "email")
+                            UserDefaults.standard.set(nil, forKey: "userImage")
+                            
+                    //update root vc
+                            let signInVC = LoginViewController()
+                            let navVC = UINavigationController(rootViewController: signInVC)
+                            navVC.navigationBar.prefersLargeTitles = false
+                            let window = UIApplication.shared.windows.first
+                            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+                                window?.rootViewController = navVC
+                            }, completion: nil)
+                        }
+                    }
+                }
+            }))
+            present(alert, animated: true)
+    }
+    
+    private func showErrorAlert(text: String) {
+        let alert = UIAlertController(title: "Error".localized(), message: text, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
+        alert.view.tintColor = .red
+        alert.addAction(cancelAction)
+        present(alert, animated: true)
+    }
+    
     private func updateSubscriptionStatus() {
-       
         var updatedMessages = [String]()
         var updatedColors = [UIColor]()
         var isSubscribed = [Bool]()
-        
-        let dispatchGroup = DispatchGroup() // create a dispatch group
+        let dispatchGroup = DispatchGroup()
         
         for program in self.programsArray {
-            dispatchGroup.enter() // notify the group that a task has started
+            dispatchGroup.enter()
             
             IAPManager.shared.getSubscriptionStatus(program: program) {isActive, color, message in
                 updatedMessages.append(message)
                 updatedColors.append(color)
                 isSubscribed.append(isActive)
-                dispatchGroup.leave() // notify the group that a task has finished
+                dispatchGroup.leave()
             }
         }
-        
         dispatchGroup.notify(queue: DispatchQueue.main) { [weak self] in
             guard let self = self else { return }// wait for all tasks to finish
             self.messages = updatedMessages
@@ -340,21 +387,14 @@ final class SettingsTableViewController: UITableViewController {
     
     @objc private func notificationSwitchChanged(_ sender: UISwitch) {
         print("executing func \(#function)")
-        guard let program = sender.programName?.replacingOccurrences(of: " ", with: "_") else {
-            print("No program name found")
-            return
-        }
-        
+        guard let program = sender.programName?.replacingOccurrences(of: " ", with: "_") else { return }
         UserDefaults.standard.set(sender.isOn, forKey: program)
         
         if sender.isOn {
             NotificationsManager.shared.subscribe(to: program)
-            print ("switch on, should subscribe")
         } else {
             NotificationsManager.shared.unsubscribe(from: program)
-            print ("switch off, should unsubscribe")
         }
-        
     }
 }
 

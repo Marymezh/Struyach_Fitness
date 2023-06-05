@@ -56,7 +56,6 @@ final class AuthManager {
          }
     
     public func signIn(email: String, password: String, completion: @escaping (Result<Void, Error>) -> ()) {
-            
             guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
                   !password.trimmingCharacters(in: .whitespaces).isEmpty,
                   password.count >= 6 else {return}

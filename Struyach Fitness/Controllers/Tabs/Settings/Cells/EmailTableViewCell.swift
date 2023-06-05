@@ -55,7 +55,7 @@ final class EmailTableViewCell: UITableViewCell {
     
     private func setupSubviews() {
         self.backgroundColor = .customDarkGray
-        
+        selectionStyle = .none
         let disclosureIndicator = UIImageView(image: UIImage(systemName: "chevron.right"))
         disclosureIndicator.contentMode = .scaleAspectFit
         disclosureIndicator.tintColor = .white
@@ -75,20 +75,16 @@ final class EmailTableViewCell: UITableViewCell {
             
             titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 45)
-        
         ]
         
         NSLayoutConstraint.activate(constraints)
-        
     }
     
-    func sendEmail() {
+    func sendEmail(completion: ((Error?)->())?) {
         if MFMailComposeViewController.canSendMail() {
             mailComposer.setToRecipients(["maria.mezhova@yahoo.com"])
             mailComposer.setSubject("App Feedback".localized())
             mailComposer.setMessageBody("Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]".localized(), isHTML: false)
-
-            // Set appearance of the mail composer
             mailComposer.navigationBar.setAppearanceForMailComposer()
             mailComposer.view.backgroundColor = .customDarkGray
 
@@ -96,7 +92,8 @@ final class EmailTableViewCell: UITableViewCell {
                 viewController.present(mailComposer, animated: true, completion: nil)
             }
         } else {
-            // Unable to send mail - handle error
+            let error = NSError(domain: "Can't send email", code: 0, userInfo: nil)
+                completion?(error)
         }
     }
 }
@@ -120,6 +117,5 @@ extension UINavigationBar {
         appearance.shadowColor = nil
         self.tintColor = .systemGreen
         self.standardAppearance = appearance
-//        self.scrollEdgeAppearance = appearance
     }
 }

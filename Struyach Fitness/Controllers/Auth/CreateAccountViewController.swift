@@ -50,14 +50,14 @@ final class CreateAccountViewController: UIViewController {
         view.addSubviews(signUpView, activityView)
         let constraints = [
             signUpView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            signUpView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-            signUpView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-            signUpView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            signUpView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            signUpView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            signUpView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            activityView.topAnchor.constraint(equalTo: self.view.topAnchor),
-            activityView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-            activityView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-            activityView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
+            activityView.topAnchor.constraint(equalTo: view.topAnchor),
+            activityView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            activityView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            activityView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ]
         NSLayoutConstraint.activate(constraints)
     }
@@ -163,6 +163,7 @@ final class CreateAccountViewController: UIViewController {
                     errorMessage = "\(error.localizedDescription)"
                 }
                 self.showErrorAlert(text: errorMessage)
+                self.activityView.hide()
             }
         }
     }

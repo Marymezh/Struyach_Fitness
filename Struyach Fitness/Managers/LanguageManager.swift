@@ -15,7 +15,6 @@ class LanguageManager {
             // Save the new language preference to UserDefaults
             UserDefaults.standard.setValue(currentLanguage.rawValue, forKey: "language")
             UserDefaults.standard.synchronize()
-            print("saved language in User defaults is \(currentLanguage)")
         }
     }
     
@@ -32,9 +31,7 @@ class LanguageManager {
         let savedLanguage = UserDefaults.standard.string(forKey: "language")
         if let language = Language(rawValue: savedLanguage ?? "") {
             currentLanguage = language
-            print ("setting selected language")
         } else {
-            // Use the system language if no language preference is set
             let systemLanguageCode = Locale.current.languageCode ?? Language.english.rawValue
             currentLanguage = Language(rawValue: systemLanguageCode)!
             print("setting default language")
@@ -47,6 +44,5 @@ class LanguageManager {
     
     func setCurrentLanguage(_ language: Language) {
         currentLanguage = language
-        print ("language is set to \(currentLanguage)")
     }
 }

@@ -49,7 +49,7 @@ final class AboutTableViewCell: UITableViewCell {
     
     private func setupSubviews() {
         self.backgroundColor = .customDarkGray
-        
+        selectionStyle = .none
         let disclosureIndicator = UIImageView(image: UIImage(systemName: "chevron.right"))
             disclosureIndicator.contentMode = .scaleAspectFit
             disclosureIndicator.tintColor = .white

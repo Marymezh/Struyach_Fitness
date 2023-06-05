@@ -21,6 +21,8 @@
 "Create" = "Создать";
 "Enter secret code to create admin account" = "Введите секретный код администратора";
 
+"Enter your email" = "Введите e-mail";
+"No such user! Check your e-mail" = "Пользователь с таким адресом не найден, проверьте свой e-mail";
 
 //MARK: - TAB BAR
 "Training Plans" = "Планы тренировок";
@@ -95,7 +97,7 @@
 
 "Check your email" = "Нет пользователя с указанным адресом электронной почты";
 "Check your password" = "Неправильный пароль";
-"Unable to log in" = "Невозможно выполнить вход";
+"Unable to log in: %@" = "Невозможно выполнить вход: %@";
 "Retry" = "Пробовать снова";
 "Unable to create new user" = "Не удалось добавить нового пользователя";
 "A user with this email already exists" = "Пользователь с этим адресом уже существует";
@@ -124,6 +126,8 @@
 
 "Unable to open app rating page" = "Не удалось открыть страницу приложения";
 
+
+
 //MARK: - PROFILE
 "Unknown user" = "Неизвестный пользователь";
 "Rename user" = "Изменить имя";
@@ -150,6 +154,9 @@
 "purchased" = "куплена";
 "not active" = "не активна";
 "until %@" = "до %@";
+
+"Sign out" = "Выйти из аккаунта";
+"Delete account and all data" = "Удалить аккаунт и все данные";
 
 //MARK: - APP DESCRIPTION TEXTS
 

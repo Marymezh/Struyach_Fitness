@@ -11,6 +11,7 @@ import Contacts
 final class LoginViewController: UIViewController {
 
     private let loginView = LoginView()
+    private let activityView = ActivityView()
     
     //MARK: - Lifecycle
 
@@ -32,15 +33,22 @@ final class LoginViewController: UIViewController {
     private func setupSubviews() {
         view.backgroundColor = .black
         loginView.toAutoLayout()
-        view.addSubview(loginView)
         loginView.logInButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
         loginView.createAccountButton.addTarget(self, action: #selector(createAccountTapped), for: .touchUpInside)
+        
+        activityView.toAutoLayout()
+        view.addSubviews(loginView, activityView)
         
         let constraints = [
             loginView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             loginView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             loginView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            loginView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            loginView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            activityView.topAnchor.constraint(equalTo: view.topAnchor),
+            activityView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            activityView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            activityView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -50,11 +58,15 @@ final class LoginViewController: UIViewController {
     //MARK: - Buttons handling methods
     
     @objc private func loginTapped() {
+        print ("login pressed")
+        self.activityView.showActivityIndicator()
         guard let email = loginView.emailTextField.text, !email.isEmpty else {
-            self.showAlert(title: "Warning".localized(), message: "Check your email".localized())
+            self.showAlert(title: "Warning".localized(), message: "Enter your email".localized())
+            self.activityView.hide()
             return}
         guard let password = loginView.passwordTextField.text, !password.isEmpty, password.count > 6 else {
             self.showAlert(title: "Warning".localized(), message: "Check your password".localized())
+            self.activityView.hide()
             return}
         #if Admin
         checkIfAdmin(email: email, password: password)
@@ -79,12 +91,17 @@ final class LoginViewController: UIViewController {
                     self.logIn(email: email, password: password)
                 } else {
                     self.showAlert(title: "Warning".localized(), message: "You are not authorized to sign in as an admin!".localized())
+                    self.activityView.hide()
                 }
+            } else {
+                self.showAlert(title: "Error".localized(), message: "No such user! Check your e-mail".localized())
+                self.activityView.hide()
             }
         }
     }
     
     private func logIn(email: String, password: String) {
+        
         AuthManager.shared.signIn(email: email, password: password) { [weak self] result in
             guard let self = self else {return}
             switch result {
@@ -100,14 +117,16 @@ final class LoginViewController: UIViewController {
                 }
                 #endif
                 DispatchQueue.main.async {
+                    self.activityView.hide()
                     UserDefaults.standard.set(email, forKey: "email")
                     let vc = TabBarController()
                     vc.modalPresentationStyle = .fullScreen
                     self.present(vc, animated: true)
                 }
             case .failure(let error):
-                let message = String(format: "Unable to log in: %@".localized(), error.localizedDescription)
-                self.showAlert(title: "Warning", message: message)
+                self.activityView.hide()
+                self.showAlert(title: "Error".localized(), message:  "No such user! Check your e-mail".localized())
+                print (error.localizedDescription)
             }
         }
     }
