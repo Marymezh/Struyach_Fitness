@@ -159,7 +159,6 @@ final class IAPManager {
    //method logs out a user on sign out
     public func logOutRevenueCat(completion: @escaping (Error) -> ()) {
         Purchases.shared.logOut { customerInfo, error in
-            
             if let error = error {
                 completion(error)
             } else {

@@ -97,7 +97,7 @@
 
 "Check your email" = "Нет пользователя с указанным адресом электронной почты";
 "Check your password" = "Неправильный пароль";
-"Unable to log in: %@" = "Невозможно выполнить вход: %@";
+"Unable to log in: There is no user record corresponding to this email. Check your email" = "Невозможно выполнить вход: нет зарегистрированных пользователей с таким адресом. Проверьте написание адреса";
 "Retry" = "Пробовать снова";
 "Unable to create new user" = "Не удалось добавить нового пользователя";
 "A user with this email already exists" = "Пользователь с этим адресом уже существует";

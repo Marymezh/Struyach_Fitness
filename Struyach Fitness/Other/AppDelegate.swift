@@ -80,6 +80,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
 
     }
+    
+    func applicationWillTerminate(_ application: UIApplication) {
+        IAPManager.shared.logOutRevenueCat { error in
+            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases", cancelAction: "Cancel".localized(), style: .cancel)
+            print (error.localizedDescription)
+        }
+    }
 }
 
 extension AppDelegate: PurchasesDelegate {

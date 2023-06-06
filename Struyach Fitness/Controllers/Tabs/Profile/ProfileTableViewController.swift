@@ -56,15 +56,6 @@ final class ProfileTableViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
     }
     
-//    private func setupNavigationBar () {
-//        navigationController?.navigationBar.tintColor = .systemRed
-//         navigationItem.rightBarButtonItem = UIBarButtonItem(
-//            title: "Sign Out".localized(),
-//             style: .done,
-//             target: self,
-//             action: #selector(didTapSignOut))
-//     }
-    
     private func setupHeaderView() {
         headerView.isUserInteractionEnabled = true
         headerView.userPhotoImage.isUserInteractionEnabled = true

@@ -396,6 +396,10 @@ final class SettingsTableViewController: UITableViewController {
             alert.addAction(UIAlertAction(title: "Sign Out".localized(), style: .destructive, handler: { action in
                 AuthManager.shared.signOut { success in
                     if success {
+                        IAPManager.shared.logOutRevenueCat { error in
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases", cancelAction: "Cancel".localized(), style: .cancel)
+                            print (error.localizedDescription)
+                        }
                         DispatchQueue.main.async {
                             UserDefaults.standard.set(nil, forKey: "userName")
                             UserDefaults.standard.set(nil, forKey: "email")
