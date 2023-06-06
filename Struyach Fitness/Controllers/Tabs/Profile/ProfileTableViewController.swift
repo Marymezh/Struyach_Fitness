@@ -95,7 +95,7 @@ final class ProfileTableViewController: UITableViewController {
                     }
                 }
             } else {
-                self.showErrorAlert(text: "User name can not be blank!".localized())
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "User name can not be blank!".localized(), cancelAction: "Cancel".localized(), style: .cancel)
             }
         }
         
@@ -105,32 +105,6 @@ final class ProfileTableViewController: UITableViewController {
         alertController.view.tintColor = .darkGray
         present(alertController, animated: true)
     }
-    
-//    @objc private func didTapSignOut() {
-//        let alert = UIAlertController(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), preferredStyle: .actionSheet)
-//        alert.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
-//        alert.addAction(UIAlertAction(title: "Sign Out".localized(), style: .destructive, handler: { action in
-//            AuthManager.shared.signOut { success in
-//                if success {
-//                    DispatchQueue.main.async {
-//                        UserDefaults.standard.set(nil, forKey: "userName")
-//                        UserDefaults.standard.set(nil, forKey: "email")
-//                        UserDefaults.standard.set(nil, forKey: "userImage")
-//
-//                //update root vc
-//                        let signInVC = LoginViewController()
-//                        let navVC = UINavigationController(rootViewController: signInVC)
-//                        navVC.navigationBar.prefersLargeTitles = false
-//                        let window = UIApplication.shared.windows.first
-//                        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-//                            window?.rootViewController = navVC
-//                        }, completion: nil)
-//                    }
-//                }
-//            }
-//        }))
-//        present(alert, animated: true)
-//    }
     
     //MARK: - Fetch and update data methods
     
@@ -226,14 +200,6 @@ final class ProfileTableViewController: UITableViewController {
             }
         }
     }
-    
-    private func showErrorAlert(text: String) {
-        let alert = UIAlertController(title: "Error".localized(), message: text, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
-        alert.view.tintColor = .red
-        alert.addAction(cancelAction)
-        present(alert, animated: true)
-    }
 
     // MARK: - Table view data source
 
@@ -282,12 +248,8 @@ final class ProfileTableViewController: UITableViewController {
 
         return headerView
     }
-    
-//    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-//        
-//        return 150
-//    }
 }
+
 //MARK: - UIImagePickerControllerDelegate methods
 extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     private func showImagePickerController() {

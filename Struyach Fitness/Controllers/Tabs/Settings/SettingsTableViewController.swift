@@ -324,7 +324,7 @@ final class SettingsTableViewController: UITableViewController {
                 if let cell = tableView.cellForRow(at: indexPath) as? EmailTableViewCell {
                     cell.sendEmail { error in
                         if let error = error {
-                            self.showAlert(title: "Error".localized(), message: error.localizedDescription, completion: nil)
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: error.localizedDescription, cancelAction: "Ok", style: .cancel)
                         }
                     }
                 }
@@ -333,7 +333,7 @@ final class SettingsTableViewController: UITableViewController {
                 if let cell = tableView.cellForRow(at: indexPath) as? RateTableViewCell {
                     cell.openAppRatingPage { success in
                         if !success {
-                            self.showAlert(title: "Error".localized(), message: "Unable to open app rating page".localized(), completion: nil)
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to open app rating page".localized(), cancelAction: "Ok", style: .cancel)
                         }
                     }
                 }
@@ -372,14 +372,13 @@ final class SettingsTableViewController: UITableViewController {
     // MARK: - Private methods
     
     private func restorePurchases() {
-        IAPManager.shared.restorePurchases { [weak self] result in
-            guard let self = self else {return}
+        IAPManager.shared.restorePurchases { result in
             switch result {
             case .failure(let error):
                 let message = String(format: "Unable to restore purchases: %@".localized(), error.localizedDescription)
-                self.showAlert(title: "Failed".localized(), message: message, completion: nil)
+                AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok", style: .cancel)
             case .success(_):
-                self.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), completion: nil)
+                AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok", style: .cancel)
             }
         }
     }
@@ -418,14 +417,6 @@ final class SettingsTableViewController: UITableViewController {
                 }
             }))
             present(alert, animated: true)
-    }
-    
-    private func showAlert(title: String, message: String, completion: ((UIAlertAction) -> Void)?) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Ok", style: .cancel, handler: completion)
-        alert.addAction(cancelAction)
-        alert.view.tintColor = .systemGreen
-        self.present(alert, animated: true, completion: nil)
     }
 
     private func updateSubscriptionStatus() {

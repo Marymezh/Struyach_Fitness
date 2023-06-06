@@ -88,19 +88,11 @@ final class TextViewController: UIViewController, UITextViewDelegate {
             self.onWorkoutSave?(text)
             self.navigationController?.popViewController(animated: true)
         } else {
-            self.showAlert(title: "Warning".localized(), message: "This textfield can not be blank!".localized())
+            AlertManager.shared.showAlert(title: "Warning".localized(), message: "This textfield can not be blank!".localized(), cancelAction: "Cancel".localized(), style: .cancel)
         }
     }
     
     @objc private func cancel() {
         navigationController?.popViewController(animated: true)
-    }
-    
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
-        alert.addAction(cancelAction)
-        alert.view.tintColor = .systemGreen
-        self.present(alert, animated: true, completion: nil)
     }
 }

@@ -132,7 +132,7 @@ final class BlogViewController: UIViewController {
                         self.scrollToTheTop()
                     }
                 } else {
-                    self.showAlert(title: "Warning".localized(), message: "Unable to add new post".localized())
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to add new post".localized(), cancelAction: "Ok", style: .cancel)
                 }
             }
         }
@@ -170,11 +170,13 @@ final class BlogViewController: UIViewController {
                     if success {
                         print ("number of posts left - \(self.blogPosts.count)")
                         switch self.blogPosts.isEmpty {
-                        case true: self.showAlert(title: "Success".localized(), message: "Post is successfully deleted! No more posts left in the Blog".localized())
-                        case false: self.showAlert(title: "Success".localized(), message: "Post is successfully deleted!".localized())
+                        case true:
+                            AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully deleted! No more posts left in the Blog".localized(), cancelAction: "Ok", style: .cancel)
+                        case false:
+                            AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully deleted!".localized(), cancelAction: "Ok", style: .cancel)
                         }
                     } else {
-                        self.showAlert(title: "Warning".localized(), message: "Unable to delete selected post".localized())
+                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete selected post".localized(), cancelAction: "Ok", style: .cancel)
                     }
                 }
             }
@@ -187,9 +189,8 @@ final class BlogViewController: UIViewController {
                 self.navigationController?.pushViewController(workoutVC, animated: true)
                 workoutVC.onWorkoutSave = {[weak self] text in
                     guard let self = self else {return}
-                    DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { [weak self] post in
-                        guard let self = self else {return}
-                        self.showAlert(title: "Success".localized(), message: "Post is successfully updated!".localized())
+                    DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { post in
+                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully updated!".localized(), cancelAction: "Ok", style: .cancel)
                     }
                 }
             }
@@ -200,14 +201,6 @@ final class BlogViewController: UIViewController {
             alertController.view.tintColor = .darkGray
             present(alertController, animated: true)
         }
-    }
-
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Ok", style: .cancel)
-        alert.addAction(cancelAction)
-        alert.view.tintColor = .systemGreen
-        self.present(alert, animated: true, completion: nil)
     }
 }
 
@@ -338,7 +331,6 @@ final class BlogViewController: UIViewController {
                 self.loadBlogPostsWithPagination(pageSize: pageSize)
             } else {
                 shouldLoadMorePosts = false
-//                self.showAlert(title: "Done".localized(), message: "All posts have been loaded".localized())
                 self.tableView.tableFooterView = nil
                 self.tableView.reloadData()
                 scrollView.delegate = nil

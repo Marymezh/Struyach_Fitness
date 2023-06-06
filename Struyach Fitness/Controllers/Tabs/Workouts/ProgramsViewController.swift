@@ -57,21 +57,13 @@ final class ProgramsViewController: UITableViewController {
             switch result {
             case .failure(let error):
                 let message = String(format: "Unable to syncronize purchases: %@".localized(), error.localizedDescription)
-                self.showAlert(title: "Error", message:  message)
+                AlertManager.shared.showAlert(title: "Error".localized(), message:  message, cancelAction: "Ok", style: .cancel)
             case .success(_):
                 self.tableView.reloadData()
             }
         }
     }
-    
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Ok", style: .cancel)
-        alert.addAction(cancelAction)
-        alert.view.tintColor = .systemGreen
-        self.present(alert, animated: true, completion: nil)
-    }
-    
+
    
     //MARK: - Table View datasource and delegate methods
     
@@ -79,8 +71,6 @@ final class ProgramsViewController: UITableViewController {
         let cell: ProgramTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProgramTableViewCell.self), for: indexPath) as! ProgramTableViewCell
 
         cell.program = programsArray[indexPath.section]
-  //      cell.program?.programDetail = programsDescriptionArray[indexPath.section]
-
         cell.backgroundView?.alpha = 0.5
         
         #if Admin

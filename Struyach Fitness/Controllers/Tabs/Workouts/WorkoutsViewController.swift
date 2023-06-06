@@ -202,7 +202,7 @@ final class WorkoutsViewController: UIViewController {
                     self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
                     print ("success! should reload collection view and select first item")
                 } else {
-                    self.showAlert(title: "Warning".localized(), message: "Unable to post new workout".localized())
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post new workout".localized(), cancelAction: "Ok", style: .cancel)
                 }
             }
         }
@@ -270,7 +270,7 @@ final class WorkoutsViewController: UIViewController {
                             self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout successfully deleted".localized()
                         }
                     } else {
-                        self.showAlert(title: "Warning".localized(), message: "Unable to delete this workout".localized())
+                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete this workout".localized(), cancelAction: "Ok", style: .cancel)
                     }
                 }
             }
@@ -286,8 +286,7 @@ final class WorkoutsViewController: UIViewController {
                     guard let self = self else {return}
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { [weak self] workout in
                         guard let self = self else {return}
-//                        let workoutDate = workout.date.replacingOccurrences(of: "\n", with: "")
-                        self.showAlert(title: "Success".localized(), message: "Workout is successfully updated!".localized())
+                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Workout is successfully updated!".localized(), cancelAction: "Ok", style: .cancel)
                     }
                 }
             }
@@ -375,15 +374,8 @@ final class WorkoutsViewController: UIViewController {
             searchBarConstraint?.constant = 0
         }
     }
-
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Ok", style: .cancel)
-        alert.addAction(cancelAction)
-        alert.view.tintColor = .systemGreen
-        self.present(alert, animated: true, completion: nil)
-    }
 }
+
 // MARK: - Collection view data source and delegate methods
 extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -450,7 +442,6 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
                  self.loadWorkoutsWithPagination(program: title!, pageSize: pageSize)
              } else {
                  shouldLoadMorePosts = false
-//                 self.showAlert(title: "Done".localized(), message: "All workouts have been loaded".localized())
                  self.workoutsCollection.reloadData()
              }
          }

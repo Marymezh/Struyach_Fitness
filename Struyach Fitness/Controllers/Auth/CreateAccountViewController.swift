@@ -92,7 +92,7 @@ final class CreateAccountViewController: UIViewController {
             if success {
                 self.createNewUser(name: name, email: email, password: password, imageData: imageData, isAdmin: true)
             } else {
-                self.showErrorAlert(text: "The secret code is wrong, you can not be registered as an admin!".localized())
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "The secret code is wrong, you can not be registered as an admin!".localized(), cancelAction: "Retry".localized(), style: .cancel)
             }
         }
         #else
@@ -138,7 +138,7 @@ final class CreateAccountViewController: UIViewController {
                                 do {
                                     try data.write(to: fileURL)
                                 } catch {
-                                    self.showErrorAlert(text: error.localizedDescription)
+                                    AlertManager.shared.showAlert(title: "Error".localized(), message: error.localizedDescription, cancelAction: "Cancel".localized(), style: .cancel)
                                 }
                             }
                             task.resume()
@@ -162,27 +162,20 @@ final class CreateAccountViewController: UIViewController {
                 case .unknownError:
                     errorMessage = "\(error.localizedDescription)"
                 }
-                self.showErrorAlert(text: errorMessage)
+                AlertManager.shared.showAlert(title: "Error".localized(), message: errorMessage, cancelAction: "Cancel".localized(), style: .cancel)
                 self.activityView.hide()
             }
         }
     }
-    
-    private func showErrorAlert(text: String) {
-        let alert = UIAlertController(title: "Error".localized(), message: text, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
-        alert.view.tintColor = .red
-        alert.addAction(cancelAction)
-        navigationController?.present(alert, animated: true)
-    }
 }
+
 //MARK: - UITextField Delegate
 
 extension CreateAccountViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == signUpView.confirmPasswordTextField {
             if textField.text != signUpView.passwordTextField.text {
-                showErrorAlert(text: "Passwords don't match!".localized())
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "Passwords don't match!".localized(), cancelAction: "Retry".localized(), style: .cancel)
                 textField.text = ""
             }
         }

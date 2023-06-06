@@ -130,13 +130,4 @@ final class LoginViewController: UIViewController {
             }
         }
     }
-    
-//    private func showAlert(title: String, message: String, cancelActionTitle: String, style: UIAlertAction) {
-//        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//
-//        let cancelAction = UIAlertAction(title: "Retry".localized(), style: .cancel)
-//        alert.addAction(cancelAction)
-//        alert.view.tintColor = .systemGreen
-//        self.present(alert, animated: true, completion: nil)
-//    }
 }

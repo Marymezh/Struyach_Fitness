@@ -193,13 +193,4 @@ final class PaywallViewController: UIViewController {
     @objc private func closeScreen() {
         self.dismiss(animated: true)
     }
-    
-//    private func showAlert(title: String, message: String, completion: ((UIAlertAction) -> Void)?
-//) {
-//        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-//        let cancelAction = UIAlertAction(title: "Ok", style: .cancel, handler: completion)
-//        alert.addAction(cancelAction)
-//        alert.view.tintColor = .systemGreen
-//        self.present(alert, animated: true, completion: nil)
-//    }
 }
