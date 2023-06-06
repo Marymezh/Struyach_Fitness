@@ -132,8 +132,6 @@ final class PaywallViewController: UIViewController {
                     self.paywallView.priceLabel.text = termsText
                 }
             }
-
-            
         default: break
         }
     }

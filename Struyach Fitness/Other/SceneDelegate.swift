@@ -12,22 +12,37 @@ import IQKeyboardManagerSwift
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
-     
-        let vc: UIViewController
-        if AuthManager.shared.isSignedIn {
-            vc = TabBarController()
-        } else {
-            let signInVC = LoginViewController()
-            signInVC.navigationItem.largeTitleDisplayMode = .never
-            let navVC = UINavigationController(rootViewController: signInVC)
-            navVC.navigationBar.prefersLargeTitles = false
-            vc = navVC
-        }
 
+        var vc: UIViewController?
+        
+        if shouldSignOutUser() {
+            AuthManager.shared.signOut { success in
+                if success {
+                    DispatchQueue.main.async {
+                        vc = LoginViewController()
+                        window.rootViewController = vc
+                        window.makeKeyAndVisible()
+                    }
+                } else {
+                    print ("Error logging out user")
+                }
+            }
+        } else {
+            if AuthManager.shared.isSignedIn {
+                vc = TabBarController()
+            } else {
+                let signInVC = LoginViewController()
+                signInVC.navigationItem.largeTitleDisplayMode = .never
+                let navVC = UINavigationController(rootViewController: signInVC)
+                navVC.navigationBar.prefersLargeTitles = false
+                vc = navVC
+            }
+        }
+        
         window.rootViewController = vc
         window.makeKeyAndVisible()
         self.window = window
@@ -36,8 +51,49 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.disabledToolbarClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.toolbarTintColor = .darkGray
-        
     }
+
+    private func shouldSignOutUser() -> Bool {
+        
+        guard let lastSignInDate = AuthManager.shared.lastSignInDate else {
+            print ("last sign in date is not set")
+            return false
+        }
+        print("lastSignInDate: \(lastSignInDate)")
+        
+        let currentDate = Date()
+        let calendar = Calendar.current
+        
+        let components = calendar.dateComponents([.day], from: lastSignInDate, to: currentDate)
+        print ("should sign out user completion: \(components.day ?? 0 >= 1)")
+        return components.day ?? 0 >= 1
+    }
+
+//    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+//        guard let windowScene = (scene as? UIWindowScene) else { return }
+//        let window = UIWindow(windowScene: windowScene)
+//
+//        let vc: UIViewController
+//        if AuthManager.shared.isSignedIn {
+//            vc = TabBarController()
+//        } else {
+//            let signInVC = LoginViewController()
+//            signInVC.navigationItem.largeTitleDisplayMode = .never
+//            let navVC = UINavigationController(rootViewController: signInVC)
+//            navVC.navigationBar.prefersLargeTitles = false
+//            vc = navVC
+//        }
+//
+//        window.rootViewController = vc
+//        window.makeKeyAndVisible()
+//        self.window = window
+//
+//        IQKeyboardManager.shared.enable = true
+//        IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(CommentsViewController.self)
+//        IQKeyboardManager.shared.disabledToolbarClasses.append(CommentsViewController.self)
+//        IQKeyboardManager.shared.toolbarTintColor = .darkGray
+//
+//    }
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
         // This occurs shortly after the scene enters the background, or when its session is discarded.

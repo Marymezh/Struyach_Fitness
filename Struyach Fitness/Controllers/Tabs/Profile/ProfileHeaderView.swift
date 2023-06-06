@@ -28,7 +28,7 @@ final class ProfileHeaderView: UIView {
     
     let userNameLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
         label.text = "Unknown user".localized()
         label.textColor = .white
         label.textAlignment = .center
@@ -41,10 +41,11 @@ final class ProfileHeaderView: UIView {
     
     let userEmailLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.textColor = .white
         label.numberOfLines = 0
+        label.adjustsFontSizeToFitWidth = true
         label.sizeToFit()
         label.toAutoLayout()
         return label

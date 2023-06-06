@@ -350,7 +350,7 @@ final class SettingsTableViewController: UITableViewController {
 
             #else
 
-        case 4:
+        case 3:
             switch indexPath.row {
             case 0: restorePurchases()
             default: requestRefund()
@@ -385,7 +385,9 @@ final class SettingsTableViewController: UITableViewController {
     }
     
     private func requestRefund() {
-        
+        if let refundURL = URL(string: "https://support.apple.com/en-us/HT204084") {
+            UIApplication.shared.open(refundURL, options: [:], completionHandler: nil)
+        }
     }
     
     private func signOut() {

@@ -305,9 +305,7 @@ final class PaywallView: UIView {
             termsPopupView.trailingAnchor.constraint(equalTo: trailingAnchor),
             termsPopupView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
-        
     }
-    
 }
 
 extension PaywallView: UITextFieldDelegate {
