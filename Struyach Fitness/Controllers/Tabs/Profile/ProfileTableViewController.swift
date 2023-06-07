@@ -33,9 +33,15 @@ final class ProfileTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-   //     setupNavigationBar()
         setupTableView()
         setupHeaderView()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        fetchProfileData()
+        fetchUserRecords()
+        hideEmail()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -65,9 +71,10 @@ final class ProfileTableViewController: UITableViewController {
     private func setupGuestureRecognizer() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(userPhotoImageTapped))
         headerView.userPhotoImage.addGestureRecognizer(tap)
-        
-        let buttonTap = UITapGestureRecognizer(target: self, action: #selector(changeUserNameTapped))
-        headerView.changeUserNameButton.addGestureRecognizer(buttonTap)
+    }
+    
+    private func hideEmail() {        
+        headerView.userEmailLabel.isHidden = UserDefaults.standard.bool(forKey: "hideEmail") ? true : false
     }
     
     //MARK: - Buttons methods
@@ -126,7 +133,7 @@ final class ProfileTableViewController: UITableViewController {
                             self.headerView.userPhotoImage.image = image
                             self.headerView.userNameLabel.text = user.name
                             self.headerView.userEmailLabel.text = user.email
-                            self.headerView.changeUserNameButton.isHidden = true
+                            self.headerView.userEmailLabel.isHidden = user.emailIsHidden ? true : false
                             completion(true)
                         }
                     } else {

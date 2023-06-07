@@ -56,7 +56,7 @@ final class NotificationTableViewCell: UITableViewCell {
         containerView.addSubview(notificationLabel)
         containerView.addSubview(notificationSwitch)
         
-        NSLayoutConstraint.activate([
+        let constraints = [
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
@@ -66,7 +66,8 @@ final class NotificationTableViewCell: UITableViewCell {
             notificationLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             notificationSwitch.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
             notificationSwitch.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
-        ])
+        ]
+        NSLayoutConstraint.activate(constraints)
     }
 
     func configure(with title: String, isSubscribed: Bool) {

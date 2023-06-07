@@ -111,8 +111,6 @@ extension AppDelegate: MessagingDelegate {
                 print ("Error fetching FCM token \(error.localizedDescription)")
             } else if let token = token {
                 print ("FCM registration token is received: \(token)")
-            //    NotificationsManager.shared.subscribe(to: "Bodyweight")
-                
                 let dataDict: [String: String] = ["FCMtoken": token]
                  NotificationCenter.default.post(
                    name: Notification.Name("FCMToken"),

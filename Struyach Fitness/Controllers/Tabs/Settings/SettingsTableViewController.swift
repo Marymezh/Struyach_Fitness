@@ -40,6 +40,7 @@ final class SettingsTableViewController: UITableViewController {
         tableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: NotificationTableViewCell.reuseIdentifier)
         tableView.register(ManagementTableViewCell.self, forCellReuseIdentifier: ManagementTableViewCell.reuseIdentifier)
         tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: SubscriptionTableViewCell.reuseIdentifier)
+        tableView.register(HideEmailTableViewCell.self, forCellReuseIdentifier: HideEmailTableViewCell.reuseIdentifier)
         
         tableView.backgroundColor = .customDarkGray
         tableView.separatorStyle = .singleLine
@@ -65,9 +66,9 @@ final class SettingsTableViewController: UITableViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         #if Admin
-        return 4
+        return 5
         #else
-        return 6
+        return 7
         #endif
     }
     
@@ -93,14 +94,16 @@ final class SettingsTableViewController: UITableViewController {
            case 0:
                return "App information".localized()
            case 1:
-               return "Notifications settings".localized()
+               return "User profile settings".localized()
            case 2:
-               return "Subscription status".localized()
+               return "Notifications settings".localized()
            case 3:
-               return "Manage subscriptions".localized()
+               return "Subscription status".localized()
            case 4:
-               return "Language settings".localized()
+               return "Manage subscriptions".localized()
            case 5:
+               return "Language settings".localized()
+           case 6:
                return "Log out or delete account".localized()
            default:
                return nil
@@ -108,10 +111,12 @@ final class SettingsTableViewController: UITableViewController {
            case 0:
                return "App information".localized()
            case 1:
-               return "Notifications settings".localized()
+               return "User profile settings".localized()
            case 2:
-               return "Language settings".localized()
+               return "Notifications settings".localized()
            case 3:
+               return "Language settings".localized()
+           case 4:
                return "Log out or delete account".localized()
            default:
                return nil
@@ -129,14 +134,16 @@ final class SettingsTableViewController: UITableViewController {
         case 0:
             return 3
         case 1:
-            return 3
-        case 2:
-            return programsArray.count
-        case 3:
             return 2
+        case 2:
+            return 3
+        case 3:
+            return programsArray.count
         case 4:
-            return 1
+            return 2
         case 5:
+            return 1
+        case 6:
             return 2
         default:
             return 0
@@ -144,10 +151,12 @@ final class SettingsTableViewController: UITableViewController {
         case 0:
             return 3
         case 1:
-            return 3
+            return 2
         case 2:
-            return 1
+            return 3
         case 3:
+            return 1
+        case 4:
             return 2
         default:
             return 0
@@ -158,6 +167,7 @@ final class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0:
+            // App info section
             if indexPath.row == 0 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: AboutTableViewCell.reuseIdentifier, for: indexPath) as! AboutTableViewCell
                 cell.containerView.layer.cornerRadius = 15
@@ -176,6 +186,27 @@ final class SettingsTableViewController: UITableViewController {
                 return cell
             }
         case 1:
+            // user profile settings
+            switch indexPath.row {
+            case 0: let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
+                cell.titleLabel.text = "Change user name".localized()
+                cell.titleLabel.textColor = .white
+                cell.imgView.image = UIImage(systemName: "person")
+                cell.imgView.tintColor = .systemGreen
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+                return cell
+            default: let cell = tableView.dequeueReusableCell(withIdentifier: HideEmailTableViewCell.reuseIdentifier, for: indexPath) as! HideEmailTableViewCell
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                cell.hideEmailSwitch.addTarget(self, action: #selector(hideEmailSwitchChanged(_:)), for: .valueChanged)
+                return cell
+            }
+            
+        case 2:
+            // Notification settings
             let cell = tableView.dequeueReusableCell(withIdentifier: NotificationTableViewCell.reuseIdentifier, for: indexPath) as! NotificationTableViewCell
             
             if indexPath.row == 0 {
@@ -210,11 +241,11 @@ final class SettingsTableViewController: UITableViewController {
             cell.configure(with: programName, isSubscribed: isSubscribed)
             cell.notificationSwitch.programName = cell.programName
             cell.notificationSwitch.addTarget(self, action: #selector(notificationSwitchChanged(_:)), for: .valueChanged)
-            
             return cell
            
             #if Client
-        case 2:
+        case 3:
+            // subscription status
             let cell = tableView.dequeueReusableCell(withIdentifier: SubscriptionTableViewCell.reuseIdentifier, for: indexPath) as! SubscriptionTableViewCell
             
             if indexPath.row == 0 {
@@ -240,7 +271,9 @@ final class SettingsTableViewController: UITableViewController {
             }
             
             return cell
-        case 3: let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
+        case 4: let cell =
+            // manage subscriptions
+            tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
             if indexPath.row == 0 {
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
@@ -259,7 +292,8 @@ final class SettingsTableViewController: UITableViewController {
                 cell.imgView.tintColor = .systemGreen
             }
             return cell
-        case 4:
+        case 5:
+            //language settings
             let cell = tableView.dequeueReusableCell(withIdentifier: LanguageSwitchTableViewCell.reuseIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
             cell.delegate = self
             cell.configure(language: LanguageManager.shared.currentLanguage)
@@ -283,7 +317,7 @@ final class SettingsTableViewController: UITableViewController {
             return cell
             
 #else
-        case 2:
+        case 3:
             let cell = tableView.dequeueReusableCell(withIdentifier: LanguageSwitchTableViewCell.reuseIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
             cell.delegate = self
             cell.configure(language: LanguageManager.shared.currentLanguage)
@@ -339,6 +373,11 @@ final class SettingsTableViewController: UITableViewController {
                 }
             default:
                 break
+            }
+        case 1:
+            switch indexPath.row {
+            case 0: changeUserName()
+            default: break
             }
             #if Admin
         case 3:
@@ -417,6 +456,38 @@ final class SettingsTableViewController: UITableViewController {
                 }
             }))
             present(alert, animated: true)
+    }
+    
+    private func changeUserName() {
+        let alertController = UIAlertController(title: "Change user name".localized(), message: nil, preferredStyle: .alert)
+        alertController.addTextField { textfield in
+            textfield.placeholder = "Enter new name here".localized()
+        }
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .default)
+        let changeAction = UIAlertAction(title: "Save".localized(), style: .default) { action in
+            if let text = alertController.textFields?[0].text,
+               text != "" {
+                DatabaseManager.shared.updateUserName(email: self.email, newUserName: text) { success in
+                    if success {
+                        UserDefaults.standard.set(text, forKey: "userName")
+                    }
+                }
+            } else {
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "User name can not be blank!".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+            }
+        }
+        
+        alertController.addAction(changeAction)
+        alertController.addAction(cancelAction)
+
+        alertController.view.tintColor = .darkGray
+        present(alertController, animated: true)
+    }
+    
+    @objc private func hideEmailSwitchChanged(_ sender: UISwitch) {
+        DatabaseManager.shared.hideOrShowEmail(email: self.email, isHidden: sender.isOn) { success in
+            UserDefaults.standard.set(sender.isOn, forKey: "hideEmail")
+        }
     }
 
     private func updateSubscriptionStatus() {

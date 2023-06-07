@@ -13,4 +13,6 @@ struct User: Codable {
     let profilePictureRef: String
     let personalRecords: String?
     let isAdmin: Bool
+    let fcmToken: String?
+    let emailIsHidden: Bool
 }

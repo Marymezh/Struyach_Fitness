@@ -904,11 +904,15 @@ final class DatabaseManager {
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
         
+        
+        
         let data: [String : Any] = [
             "email": user.email,
             "name": user.name,
             "profile_photo": user.profilePictureRef,
-            "isAdmin": user.isAdmin
+            "isAdmin": user.isAdmin,
+            "fcmToken": user.fcmToken ?? "",
+            "hideEmail": user.emailIsHidden
         ]
         
         database
@@ -931,16 +935,18 @@ final class DatabaseManager {
             .document(documentID)
             .getDocument { snapshot, error in
                 guard let data = snapshot?.data(),
-                    let name = data["name"] as? String,
-                    let imageRef = data["profile_photo"] as? String,
-                    let isAdmin = data["isAdmin"] as? Bool,
-                              error == nil else {
-                            completion(nil)
-                            return
-                        }
+                      let name = data["name"] as? String,
+                      let imageRef = data["profile_photo"] as? String,
+                      let token = data["fcmToken"] as? String,
+                      let hideEmail = data["hideEmail"] as? Bool,
+                      let isAdmin = data["isAdmin"] as? Bool,
+                      error == nil else {
+                    completion(nil)
+                    return
+                }
                 let personalRecords = data["personal_records"] as? String
                         
-                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin)
+                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail)
                         completion(user)
                     }
                 }
@@ -1008,4 +1014,27 @@ final class DatabaseManager {
             }
         }
     }
+    
+    public func hideOrShowEmail(email: String, isHidden: Bool,
+                               completion: @escaping(Bool)->()
+    ){
+        let documentID = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let dbRef = database
+            .collection("users")
+            .document(documentID)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            data["hideEmail"] = isHidden
+            dbRef.setData(data) { error in
+                if error == nil {
+                    completion(true)
+                }
+            }
+        }
+    }
+    
 }

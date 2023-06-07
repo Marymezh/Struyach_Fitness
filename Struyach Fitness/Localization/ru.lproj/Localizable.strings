@@ -148,12 +148,16 @@
 "App information" = "Информация о приложении";
 "Notifications settings" = "Настройка уведомлений";
 "Log out or delete account" = "Выход и удаление аккаунта";
+"User profile settings" = "Настойки профиля пользователя";
 "Language settings" = "Выбор языка";
 "About this app" = "О приложении";
 "Send email to developer" = "Написать разработчику";
 "App Feedback" = "Отзыв о приложении";
 "Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]" = "Добрый день, \n\nХочу поделиться своим мнением о приложении... \n\nС уважением, \n[Ваше имя]";
 "Rate this app" = "Оценить приложение";
+"Change user name" = "Изменить имя пользователя";
+"Hide email" = "Скрыть email";
+"Profile email is hidden" = "Скрыть email в профиле";
 "Subscription status" = "Статус подписок";
 "Manage subscriptions" = "Управление подписками";
 "%@ - is active until %@" = "%@ - активна до %@";
