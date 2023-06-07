@@ -20,7 +20,7 @@ final class ProfileHeaderView: UIView {
         image.image = UIImage(systemName: "person.circle")
         image.tintColor = .white
         image.clipsToBounds = true
-        image.layer.cornerRadius = 60
+        image.layer.cornerRadius = 50
         image.contentMode = .scaleAspectFill
         image.toAutoLayout()
         return image
@@ -57,6 +57,7 @@ final class ProfileHeaderView: UIView {
         stackView.axis = .vertical
         stackView.distribution = .equalCentering
         stackView.alignment = .center
+        stackView.spacing = 15
         stackView.toAutoLayout()
         return stackView
     }()
@@ -81,11 +82,11 @@ final class ProfileHeaderView: UIView {
         self.stackView.addArrangedSubview(userEmailLabel)
 
         let constraints = [
-            userPhotoImage.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: baseInset),
+            userPhotoImage.topAnchor.constraint(equalTo: self.topAnchor, constant: 5),
             userPhotoImage.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
-            userPhotoImage.heightAnchor.constraint(equalToConstant: 120),
+            userPhotoImage.heightAnchor.constraint(equalToConstant: 100),
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),
-            userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2),
+            userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset),
 
             stackView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             stackView.leadingAnchor.constraint(equalTo: userPhotoImage.trailingAnchor, constant: baseInset),

@@ -23,14 +23,12 @@ class ManagementTableViewCell: UITableViewCell {
     let titleLabel: UILabel = {
         let label = UILabel()
         label.toAutoLayout()
-        label.textColor = .red
         return label
     }()
     
     let imgView: UIImageView = {
         let imageView = UIImageView()
         imageView.toAutoLayout()
-        imageView.tintColor = .red
         return imageView
     }()
     

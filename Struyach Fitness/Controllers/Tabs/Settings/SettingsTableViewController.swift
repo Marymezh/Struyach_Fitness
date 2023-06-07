@@ -21,9 +21,9 @@ final class SettingsTableViewController: UITableViewController {
 
     // MARK: - Lifecycle
     
-    init(email: String) {
+    init(email: String, style: UITableView.Style) {
         self.email = email
-        super.init(nibName: nil, bundle: nil)
+        super.init(style: style)
     }
     
     required init?(coder: NSCoder) {
@@ -202,6 +202,11 @@ final class SettingsTableViewController: UITableViewController {
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 cell.hideEmailSwitch.addTarget(self, action: #selector(hideEmailSwitchChanged(_:)), for: .valueChanged)
+                let hideEmail = UserDefaults.standard.bool(forKey: "hideEmail")
+                cell.hideEmailSwitch.isOn = hideEmail
+                print ("hide email switch is on = \(hideEmail)")
+
+                
                 return cell
             }
             
@@ -305,14 +310,18 @@ final class SettingsTableViewController: UITableViewController {
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
                 cell.titleLabel.text = "Sign out".localized()
-                cell.imgView.image = UIImage(systemName: "trash")
+                cell.titleLabel.textColor = .systemRed
+                cell.imgView.image = UIImage(systemName: "xmark.square")
+                cell.imgView.tintColor = .systemRed
                 
             } else {
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 cell.titleLabel.text = "Delete account and all data".localized()
-                cell.imgView.image = UIImage(systemName: "xmark.square")
+                cell.titleLabel.textColor = .systemRed
+                cell.imgView.image = UIImage(systemName: "trash")
+                cell.imgView.tintColor = .systemRed
             }
             return cell
             
@@ -487,6 +496,7 @@ final class SettingsTableViewController: UITableViewController {
     @objc private func hideEmailSwitchChanged(_ sender: UISwitch) {
         DatabaseManager.shared.hideOrShowEmail(email: self.email, isHidden: sender.isOn) { success in
             UserDefaults.standard.set(sender.isOn, forKey: "hideEmail")
+            
         }
     }
 

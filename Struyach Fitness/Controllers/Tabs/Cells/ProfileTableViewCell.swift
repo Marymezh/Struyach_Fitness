@@ -9,14 +9,23 @@ import UIKit
 
 final class ProfileTableViewCell: UITableViewCell {
     
-    private var baseInset: CGFloat { return 16 }
+    static let reuseIdentifier = "ProfileTableViewCell"
+    
+    private var baseInset: CGFloat { return 10 }
     
     var weightIsSet: ((String) -> Void)?
     
+    let containerView: UIView = {
+        let containerView = UIView()
+        containerView.toAutoLayout()
+        containerView.backgroundColor = .customTabBar
+        return containerView
+    }()
+    
     let movementLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
-        label.textColor = .customDarkGray
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .white
         label.numberOfLines = 0
         label.toAutoLayout()
         return label
@@ -25,7 +34,7 @@ final class ProfileTableViewCell: UITableViewCell {
     let weightLabel: UILabel = {
         let label = UILabel()
         label.toAutoLayout()
-        label.textColor = .customDarkGray
+        label.textColor = .white
         label.textAlignment = .right
         return label
     }()
@@ -86,13 +95,21 @@ final class ProfileTableViewCell: UITableViewCell {
     }
     
     private func setupSubviews() {
-        contentView.addSubview(stackView)
+        self.selectionStyle = .none
+        self.backgroundColor = .customDarkGray
+        contentView.addSubviews(containerView, stackView)
+        
         stackView.addArrangedSubview(movementLabel)
         stackView.addArrangedSubview(weightLabel)
         stackView.addArrangedSubview(weightTextField)
         stackView.addArrangedSubview(saveButton)
         
         let constraints = [
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            
             movementLabel.widthAnchor.constraint(equalToConstant: 130),
             weightLabel.widthAnchor.constraint(equalToConstant: 70),
             weightTextField.widthAnchor.constraint(equalTo: weightLabel.widthAnchor),
@@ -100,8 +117,8 @@ final class ProfileTableViewCell: UITableViewCell {
             saveButton.heightAnchor.constraint(equalTo: saveButton.widthAnchor),
             
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseInset),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 25),
+            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -25),
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -baseInset)
         ]
         

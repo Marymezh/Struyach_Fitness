@@ -56,8 +56,10 @@ final class ProfileTableViewController: UITableViewController {
     
     //MARK: - Setup methods
     private func setupTableView() {
+//        tableView.isScrollEnabled = false
+//        tableView.isUserInteractionEnabled = true
         tableView.backgroundColor = .customDarkGray
-        tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: String(describing: ProfileTableViewCell.self))
+        tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: ProfileTableViewCell.reuseIdentifier)
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
     }
     
@@ -145,8 +147,9 @@ final class ProfileTableViewController: UITableViewController {
     func fetchUserRecords() {
         print ("fetching user recods func is running")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
-            guard let user = user, let self = self else {return}
-            guard let ref = user.personalRecords else {return}
+            guard let user = user,
+                  let self = self,
+                  let ref = user.personalRecords else {return}
             StorageManager.shared.downloadUrl(path: ref) { url in
                 guard let url = url else {return}
                 
@@ -163,7 +166,7 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     private func uploadUserRecords() {
-        // upload saved weights array to Firebase
+        // upload saved weights array to Firebase Storage
         StorageManager.shared.uploadUserPersonalRecords(email: self.email, weights: self.weights) { [weak self] success in
             guard let self = self else {return}
             if success {
@@ -176,6 +179,7 @@ final class ProfileTableViewController: UITableViewController {
     }
 
     // MARK: - Table view data source
+    
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return movements.count
@@ -185,15 +189,28 @@ final class ProfileTableViewController: UITableViewController {
         switch indexPath.row {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
-            cell.backgroundColor = .customLightGray
-            cell.textLabel?.text = "PERSONAL RECORDS".localized()
-            cell.textLabel?.textColor = .customDarkGray
+            cell.backgroundColor = .customDarkGray
+            cell.selectionStyle = .none
+            cell.textLabel?.text = "Personal Records".localized()
+            cell.textLabel?.textColor = .white
             cell.textLabel?.textAlignment = .center
-            cell.textLabel?.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+            cell.textLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
             return cell
         default:
-            let cell: ProfileTableViewCell = tableView.dequeueReusableCell(withIdentifier: String(describing: ProfileTableViewCell.self), for: indexPath) as! ProfileTableViewCell
-            cell.backgroundColor = .customLightGray
+            let cell: ProfileTableViewCell = tableView.dequeueReusableCell(withIdentifier: ProfileTableViewCell.reuseIdentifier, for: indexPath) as! ProfileTableViewCell
+            
+            if indexPath.row == 1 {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            } else if indexPath.row == tableView.numberOfRows(inSection: indexPath.section)-1 {
+                cell.containerView.layer.cornerRadius = 15
+                cell.containerView.layer.masksToBounds = true
+                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            } else {
+                cell.containerView.layer.cornerRadius = 0
+            }
+            
             if email == currentUserEmail {
                 cell.movementLabel.text = movements[indexPath.row]
                 cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
@@ -219,7 +236,6 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-
         return headerView
     }
 }
