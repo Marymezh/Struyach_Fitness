@@ -35,6 +35,7 @@ final class LoginViewController: UIViewController {
         loginView.toAutoLayout()
         loginView.logInButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
         loginView.createAccountButton.addTarget(self, action: #selector(createAccountTapped), for: .touchUpInside)
+        loginView.restorePasswordButton.addTarget(self, action: #selector(restorePasswordTapped), for: .touchUpInside)
         
         activityView.toAutoLayout()
         view.addSubviews(loginView, activityView)
@@ -58,7 +59,6 @@ final class LoginViewController: UIViewController {
     //MARK: - Buttons handling methods
     
     @objc private func loginTapped() {
-        print ("login pressed")
         self.activityView.showActivityIndicator()
         guard let email = loginView.emailTextField.text, !email.isEmpty else {
             AlertManager.shared.showAlert(title: "Warning".localized(), message: "Enter your email".localized(), cancelAction: "Retry".localized(), style: .cancel)
@@ -83,6 +83,17 @@ final class LoginViewController: UIViewController {
         navigationController?.pushViewController(createAccountVC, animated: true)
     }
     
+    @objc private func restorePasswordTapped() {
+        let restorePasswordVC: UIViewController
+        if let email = loginView.emailTextField.text, !email.isEmpty {
+        restorePasswordVC = RestorePasswordViewController(email: email)
+        } else {
+            restorePasswordVC = RestorePasswordViewController(email: nil)
+        }
+        restorePasswordVC.title = "Restore Password".localized()
+        navigationController?.present(restorePasswordVC, animated: true, completion: nil)
+    }
+    
     private func checkIfAdmin(email: String, password: String) {
         DatabaseManager.shared.getUser(email: email) {[weak self] user in
             guard let self = self else {return}
@@ -101,7 +112,6 @@ final class LoginViewController: UIViewController {
     }
     
     private func logIn(email: String, password: String) {
-        
         AuthManager.shared.signIn(email: email, password: password) { [weak self] result in
             guard let self = self else {return}
             switch result {

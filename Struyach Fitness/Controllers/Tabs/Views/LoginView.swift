@@ -84,6 +84,17 @@ final class LoginView: UIView {
         return button
     }()
     
+    let restorePasswordButton: UIButton = {
+        let button = UIButton ()
+        button.toAutoLayout()
+        button.layer.cornerRadius = 10
+        button.clipsToBounds = true
+        button.backgroundColor = .systemGray2
+        button.setTitle("Forgot password".localized(), for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        return button
+    }()
+    
     init() {
         super.init(frame: .zero)
         setupSubviews()
@@ -95,7 +106,7 @@ final class LoginView: UIView {
     
     private func setupSubviews() {
         
-        self.addSubviews(logoImageView, autorizationView, logInButton, createAccountButton)
+        self.addSubviews(logoImageView, autorizationView, logInButton, createAccountButton, restorePasswordButton)
         autorizationView.addSubviews(emailTextField, passwordTextField)
         
         let constraints = [
@@ -128,6 +139,11 @@ final class LoginView: UIView {
             createAccountButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
             createAccountButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             createAccountButton.heightAnchor.constraint(equalTo: logInButton.heightAnchor),
+            
+            restorePasswordButton.topAnchor.constraint(equalTo: createAccountButton.bottomAnchor, constant: 10),
+            restorePasswordButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            restorePasswordButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            restorePasswordButton.heightAnchor.constraint(equalTo: logInButton.heightAnchor)
         ]
         NSLayoutConstraint.activate(constraints)
     }

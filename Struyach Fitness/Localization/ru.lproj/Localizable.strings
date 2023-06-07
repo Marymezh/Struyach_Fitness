@@ -14,8 +14,10 @@
 "Log In" = "Войти";
 "Create Account" = "Создать аккаунт";
 "Create new account" = "Создать новый аккаунт";
+"Restore Password" = "Восстанoвить пароль";
+"Forgot password" = "Восстановить пароль";
 "Password" = "Пароль";
-"Full name" = "Имя пользователя (как вас будут видеть другие)";
+"Full name (how other users will see you)" = "Имя (как вас будут видеть другие)";
 "Password (minimum 6 symbols)" = "Пароль (минимум 6 символов)";
 "Confirm password" = "Подтвердите пароль";
 "Create" = "Создать";
@@ -23,6 +25,11 @@
 
 "Enter your email" = "Введите e-mail";
 "No such user! Check your e-mail" = "Пользователь с таким адресом не найден, проверьте свой e-mail";
+"Send" = "Отправить";
+
+"To restore your forgotten password please enter the email address of the registered user. You will receive an email with further instructions." = "Чтобы восстановить пароль, пожалуйста, введите адрес электронной почты зарегистрированного пользователя. Дальнейшие инструкции вы получите по email.";
+"Email with instructions was successfully sent!" = "Письмо с инструкциями по восстановлению пароля успешно отправлено!";
+"Failed sending email: %@" = "Письмо не отправлено: %@";
 
 //MARK: - TAB BAR
 "Training Plans" = "Планы тренировок";

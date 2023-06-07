@@ -26,16 +26,13 @@ final class PaywallViewController: UIViewController {
         default: return "unknown"
         }
     }
-   
-    //private let user: User
+    
+    //MARK: - Lifecycle
     
     init(programName: String) {
         self.programName = programName
-   //     self.user = user
         super.init(nibName: nil, bundle: nil)
     }
-    
-    //MARK: - Lifecycle
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

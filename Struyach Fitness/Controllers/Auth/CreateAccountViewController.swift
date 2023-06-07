@@ -38,7 +38,6 @@ final class CreateAccountViewController: UIViewController {
     
     private func setupSubviews() {
         view.backgroundColor = .black
-        
         signUpView.toAutoLayout()
         signUpView.signUpButton.addTarget(self, action: #selector(signUpTapped), for: .touchUpInside)
         #if Admin
@@ -70,7 +69,6 @@ final class CreateAccountViewController: UIViewController {
     //MARK: - Buttons hangling methods
     
     @objc private func avatarImageViewTapped() {
-        
         activityView.showActivityIndicator()
         print ("avatar tapped")
         showImagePickerController()

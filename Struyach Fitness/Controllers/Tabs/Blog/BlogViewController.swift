@@ -187,8 +187,7 @@ final class BlogViewController: UIViewController {
                 let selectedPost = self.blogPosts[indexPath.item]
                 workoutVC.text = selectedPost.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
-                workoutVC.onWorkoutSave = {[weak self] text in
-                    guard let self = self else {return}
+                workoutVC.onWorkoutSave = {text in
                     DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { post in
                         AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully updated!".localized(), cancelAction: "Ok", style: .cancel)
                     }

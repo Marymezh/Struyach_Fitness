@@ -136,7 +136,6 @@ final class SignUpView: UIView {
     }
     
     private func setupSubviews() {
-
         self.addSubviews(avatarImageView,
                          autorizationView,
                          secretCodeTextField,
@@ -153,7 +152,7 @@ final class SignUpView: UIView {
         #endif
         
         let constraints = [
-            avatarImageView.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
+            avatarImageView.topAnchor.constraint(equalTo: self.topAnchor, constant: 15),
             avatarImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             avatarImageView.widthAnchor.constraint(equalToConstant: 160),
             avatarImageView.heightAnchor.constraint(equalToConstant: 160),

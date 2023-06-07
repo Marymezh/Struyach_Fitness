@@ -282,10 +282,8 @@ final class WorkoutsViewController: UIViewController {
                 let selectedWorkout = self.listOfWorkouts[indexPath.item]
                 workoutVC.text = selectedWorkout.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
-                workoutVC.onWorkoutSave = {[weak self] text in
-                    guard let self = self else {return}
-                    DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { [weak self] workout in
-                        guard let self = self else {return}
+                workoutVC.onWorkoutSave = {text in
+                    DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { workout in
                         AlertManager.shared.showAlert(title: "Success".localized(), message: "Workout is successfully updated!".localized(), cancelAction: "Ok", style: .cancel)
                     }
                 }
