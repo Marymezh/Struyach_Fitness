@@ -147,7 +147,6 @@ final class ProfileTableViewController: UITableViewController {
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user, let self = self else {return}
             guard let ref = user.personalRecords else {return}
-            print ("fetching user recods:ref \(ref)")
             StorageManager.shared.downloadUrl(path: ref) { url in
                 guard let url = url else {return}
                 

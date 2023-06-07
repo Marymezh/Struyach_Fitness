@@ -870,7 +870,6 @@ final class DatabaseManager {
             "name": user.name,
             "profile_photo": user.profilePictureRef,
             "isAdmin": user.isAdmin,
-            "fcmToken": user.fcmToken ?? "",
             "hideEmail": user.emailIsHidden
         ]
         
@@ -896,13 +895,13 @@ final class DatabaseManager {
                 guard let data = snapshot?.data(),
                       let name = data["name"] as? String,
                       let imageRef = data["profile_photo"] as? String,
-                      let token = data["fcmToken"] as? String,
                       let hideEmail = data["hideEmail"] as? Bool,
                       let isAdmin = data["isAdmin"] as? Bool,
                       error == nil else {
                     completion(nil)
                     return
                 }
+                let token = data["fcmToken"] as? String
                 let personalRecords = data["personal_records"] as? String
                 let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail)
                         completion(user)
@@ -923,6 +922,28 @@ final class DatabaseManager {
         dbRef.getDocument { snapshot, error in
             guard var data = snapshot?.data(), error == nil else {return}
             data["name"] = newUserName
+            dbRef.setData(data) { error in
+                if error == nil {
+                    completion(true)
+                }
+            }
+        }
+    }
+    
+    public func updateFCMToken(email: String, newToken: String,
+                               completion: @escaping(Bool)->()
+    ){
+        let documentID = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let dbRef = database
+            .collection("users")
+            .document(documentID)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            data["fcmToken"] = newToken
             dbRef.setData(data) { error in
                 if error == nil {
                     completion(true)

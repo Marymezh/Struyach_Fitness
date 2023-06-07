@@ -48,6 +48,8 @@ final class TabBarController: UITabBarController {
 
     private func setupControllers() {
         guard let currentUserEmail = UserDefaults.standard.string(forKey: "email") else {return}
+        
+        updateUserToken(email: currentUserEmail)
         let programsVC = ProgramsViewController()
         programsVC.title = "Training Plans".localized()
         
@@ -64,7 +66,6 @@ final class TabBarController: UITabBarController {
         blogVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.fetchUserRecords()
-//        profileVC.fetchProfileData()
         
         let nav1 = UINavigationController(rootViewController: programsVC)
         let nav2 = UINavigationController(rootViewController: blogVC)
@@ -82,5 +83,17 @@ final class TabBarController: UITabBarController {
         nav4.tabBarItem = UITabBarItem(title: "Settings".localized(), image: UIImage(named: "gearshape.fill"), tag: 3)
 
         setViewControllers([nav1, nav2, nav3, nav4], animated: true)
+    }
+    // method to update current users fcm tocken for FIrebase Cloud messaging. this token is fetched on the app launch and saved to UserDefaults
+    private func updateUserToken(email: String) {
+        guard let token = UserDefaults.standard.string(forKey: "fcmToken") else {
+            print ("token is not received")
+            return
+        }
+        DatabaseManager.shared.updateFCMToken(email: email, newToken: token) { success in
+            if success {
+                print ("FCM token is updated for current user")
+            }
+        }
     }
 }

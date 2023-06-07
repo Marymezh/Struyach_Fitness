@@ -119,10 +119,10 @@ final class CreateAccountViewController: UIViewController {
                 
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
-                    guard let token = UserDefaults.standard.string(forKey: "fcmToken") else {
-                        return
-                    }
-                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, isAdmin: isAdmin, fcmToken: token, emailIsHidden: false)
+//                    guard let token = UserDefaults.standard.string(forKey: "fcmToken") else {
+//                        return
+//                    }
+                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, isAdmin: isAdmin, fcmToken: nil, emailIsHidden: false)
                     DatabaseManager.shared.insertUser(user: newUser) { inserted in
                         guard inserted else {
                             print ("cant insert new user")
