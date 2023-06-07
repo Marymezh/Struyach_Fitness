@@ -63,7 +63,7 @@ final class TabBarController: UITabBarController {
         programsVC.navigationItem.largeTitleDisplayMode = .always
         blogVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always
-//        profileVC.fetchUserRecords()
+        profileVC.fetchUserRecords()
 //        profileVC.fetchProfileData()
         
         let nav1 = UINavigationController(rootViewController: programsVC)

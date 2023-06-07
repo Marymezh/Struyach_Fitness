@@ -745,7 +745,8 @@ extension CommentsViewController: MessageCellDelegate {
         let comment = commentsArray[indexPath.section]
         guard comment.sender.senderId != userEmail else {return}
         self.activityView.showActivityIndicator()
-        let profileVC = ProfileTableViewController(email: comment.sender.senderId)
+        let otherUserEmail = comment.sender.senderId
+        let profileVC = ProfileTableViewController(email: otherUserEmail)
         profileVC.fetchUserRecords()
         profileVC.fetchOtherUserData { [weak self] success in
             guard let self = self else {return}

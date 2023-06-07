@@ -380,7 +380,7 @@ final class SettingsTableViewController: UITableViewController {
             default: break
             }
             #if Admin
-        case 3:
+        case 4:
             switch indexPath.row {
             case 0: signOut()
             default:  print("delete account")
@@ -389,12 +389,12 @@ final class SettingsTableViewController: UITableViewController {
 
             #else
 
-        case 3:
+        case 4:
             switch indexPath.row {
             case 0: restorePurchases()
             default: requestRefund()
             }
-        case 5:
+        case 6:
             switch indexPath.row {
             case 0: signOut()
             default:  print("delete account")

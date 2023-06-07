@@ -40,8 +40,6 @@ final class DatabaseManager {
                     if let error = error {
                         print ("Error posting new workout \(error.localizedDescription)")
                     } else {
-                        // Send notification to users subscribed to the program
-                  //      self.sendNotificationOnNewWorkout(workout: workout)
                         print("workout posted")
                     }
                 }
@@ -51,46 +49,7 @@ final class DatabaseManager {
         }
     }
     
-//    func sendNotificationOnNewWorkout(workout: Workout) {
-//        let programId = workout.programID
-//            .replacingOccurrences(of: "/", with: "_")
-//            .replacingOccurrences(of: " ", with: "_")
-//
-//        let currentUserEmail = UserDefaults.standard.string(forKey: "email") ?? ""
-//
-//        database.collection("users")
-//            .whereField("email", isEqualTo: currentUserEmail)
-//            .getDocuments { (querySnapshot, error) in
-//                guard let documents = querySnapshot?.documents else {
-//                    print("Error fetching user: \(error!)")
-//                    return
-//                }
-//                for document in documents {
-//                    let user = try? document.data(as: User.self)
-//                    if let subscribedPrograms = user?.subscribedPrograms,
-//                       subscribedPrograms.contains(programId) {
-//                        let tokens = document.get("tokens") as? [String] ?? []
-//                        if tokens.isEmpty {
-//                            print("No tokens found for program subscriptions")
-//                            return
-//                        }
-//                        let message = Messaging.messaging()
-//                        let title = "New Workout Available"
-//                        let body = "A new workout has been added to the \(workout.programID)!"
-//                        let notification = ["title": title, "body": body]
-//                        let data: [String: Any] = ["workoutId": workout.id]
-//                        let messageDict: [String: Any] = ["notification": notification, "data": data]
-//                         message.send(messageDict, to: tokens, completion: { (error) in
-//                            if let error = error {
-//                                print("Error sending notification: \(error.localizedDescription)")
-//                            } else {
-//                                print("Notification sent successfully")
-//                            }
-//                        })
-//                    }
-//                }
-//            }
-//    }
+
     
     public func getWorkoutsWithPagination(program: String, pageSize: Int, startAfter: DocumentSnapshot? = nil, completion: @escaping ([Workout], DocumentSnapshot?) -> ()) {
         print("Executing function: \(#function)")
@@ -945,7 +904,6 @@ final class DatabaseManager {
                     return
                 }
                 let personalRecords = data["personal_records"] as? String
-                        
                 let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail)
                         completion(user)
                     }
@@ -1008,7 +966,7 @@ final class DatabaseManager {
         dbRef.getDocument { snapshot, error in
             guard var data = snapshot?.data(), error == nil else {return}
             
-            data["user_records"] = recordsReference
+            data["personal_records"] = recordsReference
             dbRef.setData(data) { error in
                 completion(error == nil)
             }

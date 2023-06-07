@@ -51,6 +51,7 @@ final class ProfileHeaderView: UIView {
         return label
     }()
     
+
     private let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -59,7 +60,7 @@ final class ProfileHeaderView: UIView {
         stackView.toAutoLayout()
         return stackView
     }()
-    
+
     //MARK: - Lifecycle
     
     required init?(coder: NSCoder) {
@@ -78,16 +79,19 @@ final class ProfileHeaderView: UIView {
         self.addSubviews(userPhotoImage, stackView)
         self.stackView.addArrangedSubview(userNameLabel)
         self.stackView.addArrangedSubview(userEmailLabel)
-        
-        
-        
+
         let constraints = [
             userPhotoImage.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: baseInset),
             userPhotoImage.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
             userPhotoImage.heightAnchor.constraint(equalToConstant: 120),
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),
-            userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2)
-        ]
+            userPhotoImage.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -baseInset*2),
+
+            stackView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            stackView.leadingAnchor.constraint(equalTo: userPhotoImage.trailingAnchor, constant: baseInset),
+            stackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -baseInset*2),
+   ]
+   
         NSLayoutConstraint.activate(constraints)
     }
 }

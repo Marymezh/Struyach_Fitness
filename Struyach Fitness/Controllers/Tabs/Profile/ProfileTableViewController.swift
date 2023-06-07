@@ -40,8 +40,7 @@ final class ProfileTableViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchProfileData()
-        fetchUserRecords()
-        hideEmail()
+
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -73,44 +72,11 @@ final class ProfileTableViewController: UITableViewController {
         headerView.userPhotoImage.addGestureRecognizer(tap)
     }
     
-    private func hideEmail() {        
-        headerView.userEmailLabel.isHidden = UserDefaults.standard.bool(forKey: "hideEmail") ? true : false
-    }
-    
     //MARK: - Buttons methods
     
     @objc private func userPhotoImageTapped() {
         guard currentUserEmail == email else {return}
         showImagePickerController()
-    }
-    
-    @objc private func changeUserNameTapped() {
-        let alertController = UIAlertController(title: "Change user name".localized(), message: nil, preferredStyle: .alert)
-        alertController.addTextField { textfield in
-            textfield.placeholder = "Enter new name here".localized()
-        }
-        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .default)
-        let changeAction = UIAlertAction(title: "Save".localized(), style: .default) { action in
-            if let text = alertController.textFields?[0].text,
-               text != "" {
-                DatabaseManager.shared.updateUserName(email: self.email, newUserName: text) { success in
-                    if success {
-                        UserDefaults.standard.set(text, forKey: "userName")
-                        DispatchQueue.main.async {
-                            self.headerView.userNameLabel.text = text
-                        }
-                    }
-                }
-            } else {
-                AlertManager.shared.showAlert(title: "Error".localized(), message: "User name can not be blank!".localized(), cancelAction: "Cancel".localized(), style: .cancel)
-            }
-        }
-        
-        alertController.addAction(changeAction)
-        alertController.addAction(cancelAction)
-
-        alertController.view.tintColor = .darkGray
-        present(alertController, animated: true)
     }
     
     //MARK: - Fetch and update data methods
@@ -171,14 +137,17 @@ final class ProfileTableViewController: UITableViewController {
                 self.headerView.userNameLabel.text = user.name
                 UserDefaults.standard.set(user.name, forKey: "userName")
                 self.headerView.userEmailLabel.text = user.email
+                self.headerView.userEmailLabel.isHidden = user.emailIsHidden ? true : false
             }
         }
     }
     
     func fetchUserRecords() {
+        print ("fetching user recods func is running")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user, let self = self else {return}
             guard let ref = user.personalRecords else {return}
+            print ("fetching user recods:ref \(ref)")
             StorageManager.shared.downloadUrl(path: ref) { url in
                 guard let url = url else {return}
                 
@@ -188,7 +157,6 @@ final class ProfileTableViewController: UITableViewController {
                     DispatchQueue.main.async {
                         self.tableView.reloadData()
                     }
-                    print(self.weights)
                 }
                 task.resume()
             }
