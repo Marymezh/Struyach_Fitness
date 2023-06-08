@@ -783,6 +783,33 @@ extension CommentsViewController: MessageCellDelegate {
             
         }
     }
+    
+    func replyTo(sender: String, message: String) {
+        let replyTo = "Reply to".localized()
+        let modifiedText = "\(replyTo) \(sender): \n \" \(message) \"\n"
+        self.messageInputBar.inputTextView.text = modifiedText
+        let attributedString = NSMutableAttributedString(string: modifiedText)
+        let copiedTextRange = NSRange(location: 0, length: modifiedText.count)
+        attributedString.addAttribute(.backgroundColor, value: UIColor.systemGray, range: copiedTextRange)
+        attributedString.addAttribute(.foregroundColor, value: UIColor.white, range: copiedTextRange)
+        let font = UIFont.systemFont(ofSize: 16)
+        attributedString.addAttribute(.font, value: font, range: copiedTextRange)
+        self.messageInputBar.inputTextView.attributedText = attributedString
+    }
+
+    func didTapMessage(in cell: MessageCollectionViewCell) {
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
+
+        let comment = commentsArray[indexPath.section]
+        guard comment.sender.senderId != userEmail else {return}
+        let sender = comment.sender.displayName
+
+        switch comment.kind {
+        case .text(let text):
+            self.replyTo(sender: sender, message: text)
+        default: break
+        }
+    }
 }
 
 extension CommentsViewController: InputBarAccessoryViewDelegate {

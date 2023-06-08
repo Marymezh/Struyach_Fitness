@@ -56,8 +56,6 @@ final class ProfileTableViewController: UITableViewController {
     
     //MARK: - Setup methods
     private func setupTableView() {
-//        tableView.isScrollEnabled = false
-//        tableView.isUserInteractionEnabled = true
         tableView.backgroundColor = .customDarkGray
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: ProfileTableViewCell.reuseIdentifier)
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")

@@ -37,8 +37,8 @@ class CommentsMessagesViewController: MessagesViewController {
         messageInputBar.inputTextView.placeholder = " Write a comment...".localized()
         messageInputBar.inputTextView.placeholderTextColor = .gray
         messageInputBar.inputTextView.backgroundColor = .systemGray6
-        messageInputBar.inputTextView.layer.cornerRadius = 15
-        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 10, left: 5, bottom: 5, right: 0)
+        messageInputBar.inputTextView.layer.cornerRadius = 10
+        messageInputBar.inputTextView.textContainerInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         messageInputBar.tintColor = .systemGray
         messageInputBar.setLeftStackViewWidthConstant(to: 35, animated: false)
         messageInputBar.setRightStackViewWidthConstant(to: 35, animated: false)

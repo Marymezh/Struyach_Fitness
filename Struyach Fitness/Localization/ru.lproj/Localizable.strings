@@ -87,6 +87,7 @@
 "Unable to update selected photo comment" = "Не удалось отредактировать фото";
 "Updating video (%d%%)" = "Загрузка нового видео (%d%%)";
 "Unable to update selected video comment" = "Не удалось отредактировать видео";
+"Reply to" = "Ответить";
 
 //MARK: - ALERT CONTROLLERS
 "Error" = "Ошибка";
