@@ -69,7 +69,6 @@ final class AboutTableViewCell: UITableViewCell {
             
             titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 45)
-        
         ]
         
         NSLayoutConstraint.activate(constraints)

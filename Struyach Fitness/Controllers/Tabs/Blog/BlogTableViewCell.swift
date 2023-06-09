@@ -23,12 +23,11 @@ final class BlogTableViewCell: UITableViewCell {
         view.backgroundColor = .white
         view.layer.borderWidth = 0.5
         view.layer.borderColor = UIColor.black.cgColor
-        view.layer.cornerRadius = 5
+        view.layer.cornerRadius = 15
         view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowRadius = 5
+        view.layer.shadowRadius = 15
         view.layer.shadowOffset = CGSize(width: 5, height: 5)
         view.layer.shadowOpacity = 0.7
-        //view.alpha = 1
         view.toAutoLayout()
         return view
     }()
@@ -71,7 +70,6 @@ final class BlogTableViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
         setupSubviews()
     }
     
@@ -79,8 +77,7 @@ final class BlogTableViewCell: UITableViewCell {
          print ("blog cell is deallocated")
     }
     
-    //MARK: - setup subviews and handle buttons 
-    
+    //MARK: - setup subviews and handle buttons
     private func setupSubviews(){
         likesAndCommentsView.toAutoLayout()
         likesAndCommentsView.likeButton.addTarget(self, action: #selector(manageLikes), for: .touchUpInside)

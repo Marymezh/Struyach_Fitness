@@ -44,6 +44,8 @@ final class SettingsTableViewController: UITableViewController {
         
         tableView.backgroundColor = .customDarkGray
         tableView.separatorStyle = .singleLine
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 30, bottom: 0, right: 30)
+        tableView.separatorColor = .black
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -177,6 +179,17 @@ final class SettingsTableViewController: UITableViewController {
             } else if indexPath.row == 1 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: EmailTableViewCell.reuseIdentifier, for: indexPath) as! EmailTableViewCell
                 cell.containerView.layer.cornerRadius = 0
+                cell.onClose = { result in
+                    switch result {
+                case .sent:
+                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Your message is successfully sent! \nThank you for your feedback!".localized(), cancelAction: "Ok", style: .cancel)
+                    case .saved:
+                        AlertManager.shared.showAlert(title: "Done".localized(), message: "Your message is saved to drafts".localized(), cancelAction: "Ok", style: .cancel)
+                    case .failed:
+                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error sending message".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                    default: break
+                    }
+                }
                 return cell
             } else if indexPath.row == 2 {
                 let cell = tableView.dequeueReusableCell(withIdentifier: RateTableViewCell.reuseIdentifier, for: indexPath) as! RateTableViewCell
@@ -204,9 +217,6 @@ final class SettingsTableViewController: UITableViewController {
                 cell.hideEmailSwitch.addTarget(self, action: #selector(hideEmailSwitchChanged(_:)), for: .valueChanged)
                 let hideEmail = UserDefaults.standard.bool(forKey: "hideEmail")
                 cell.hideEmailSwitch.isOn = hideEmail
-                print ("hide email switch is on = \(hideEmail)")
-
-                
                 return cell
             }
             

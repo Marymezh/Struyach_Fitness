@@ -46,21 +46,25 @@ class ManagementTableViewCell: UITableViewCell {
     private func setupSubviews() {
         self.backgroundColor = .customDarkGray
         selectionStyle = .none
-        contentView.addSubview(containerView)
-        containerView.addSubviews(imgView, titleLabel)
+        let disclosureIndicator = UIImageView(image: UIImage(systemName: "chevron.right"))
+        disclosureIndicator.contentMode = .scaleAspectFit
+        disclosureIndicator.tintColor = .white
+        accessoryView = disclosureIndicator
+        
+        self.addSubviews(containerView)
+        containerView.addSubviews(imgView,titleLabel)
         
         let constraints = [
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            containerView.topAnchor.constraint(equalTo: self.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 15),
+            containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
+            containerView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
-            imgView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            imgView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 11),
+            imgView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            imgView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12),
             
-            titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 45)
-        
         ]
         
         NSLayoutConstraint.activate(constraints)

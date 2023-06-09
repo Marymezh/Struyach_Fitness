@@ -135,6 +135,10 @@
 "Unable to open app rating page" = "Не удалось открыть страницу приложения";
 "You are not allowed to make purchases" = "ВЫ не можете совершать покупки";
 
+"Your message is successfully sent! \nThank you for your feedback!" = "Ваше сообщение успешно отправлено! Спасибо за обратную связь!";
+
+"Your message is saved to drafts" = "Черновик вашего сообщения успешно сохранен";
+"Error sending message" = "Сообщение не отправлено";
 
 //MARK: - PROFILE
 "Unknown user" = "Неизвестный пользователь";

@@ -59,6 +59,9 @@ final class ProfileTableViewController: UITableViewController {
         tableView.backgroundColor = .customDarkGray
         tableView.register(ProfileTableViewCell.self, forCellReuseIdentifier: ProfileTableViewCell.reuseIdentifier)
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CellID")
+        tableView.separatorStyle = .singleLine
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 30, bottom: 0, right: 30)
+        tableView.separatorColor = .black
     }
     
     private func setupHeaderView() {
@@ -196,7 +199,6 @@ final class ProfileTableViewController: UITableViewController {
             return cell
         default:
             let cell: ProfileTableViewCell = tableView.dequeueReusableCell(withIdentifier: ProfileTableViewCell.reuseIdentifier, for: indexPath) as! ProfileTableViewCell
-            
             if indexPath.row == 1 {
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
@@ -208,23 +210,36 @@ final class ProfileTableViewController: UITableViewController {
             } else {
                 cell.containerView.layer.cornerRadius = 0
             }
+            cell.movementLabel.text = movements[indexPath.row]
+            cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
+            cell.weightIsSet = { [weak self] text in
+                guard let self = self else {return}
+                self.weights.remove(at: indexPath.row)
+                self.weights.insert(text, at: indexPath.row)
+                self.tableView.reloadData()
+            }
             
-            if email == currentUserEmail {
-                cell.movementLabel.text = movements[indexPath.row]
-                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
-                cell.weightIsSet = { [weak self] text in
-                    guard let self = self else {return}
-                    self.weights.remove(at: indexPath.row)
-                    self.weights.insert(text, at: indexPath.row)
-                    self.tableView.reloadData()
-                    
-                }
-            } else {
-                cell.movementLabel.text = movements[indexPath.row]
-                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
+            if email != currentUserEmail {
                 cell.weightTextField.isHidden = true
                 cell.saveButton.isHidden = true
             }
+                
+            
+//            if email == currentUserEmail {
+//                cell.movementLabel.text = movements[indexPath.row]
+//                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
+//                cell.weightIsSet = { [weak self] text in
+//                    guard let self = self else {return}
+//                    self.weights.remove(at: indexPath.row)
+//                    self.weights.insert(text, at: indexPath.row)
+//    //                self.tableView.reloadData()
+//                }
+//            } else {
+//                cell.movementLabel.text = movements[indexPath.row]
+//                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
+//                cell.weightTextField.isHidden = true
+//                cell.saveButton.isHidden = true
+//            }
             return cell
         }
     }
@@ -235,6 +250,10 @@ final class ProfileTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         return headerView
+    }
+    override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let footerView = UIView()
+        return footerView
     }
 }
 
