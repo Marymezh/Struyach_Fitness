@@ -51,7 +51,7 @@
 //MARK: - LIKES AND COMMENTS
 "No comments posted yet" = "Комментариев пока нет";
 "1 comment" = "1 комментарий";
-"%d comments" = "Всего комментариев - %d";
+"%d comments" = "Всего комментариев: %d";
 " Write a comment..." = " Оставьте свой комментарий...";
 
 //MARK: - WORKOUTS AND POSTS

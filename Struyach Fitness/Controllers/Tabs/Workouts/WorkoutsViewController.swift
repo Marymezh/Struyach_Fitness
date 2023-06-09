@@ -61,7 +61,7 @@ final class WorkoutsViewController: UIViewController {
             self.listOfWorkouts = updatedWorkouts
             self.filteredWorkouts = self.listOfWorkouts
             self.workoutsCollection.reloadData()
-            print ("workouts updated, total number of workouts - \(updatedWorkouts.count)")
+            print ("workouts updated, total number of workouts: \(updatedWorkouts.count)")
             if self.selectedWorkout != nil {
                 for updatedWorkout in updatedWorkouts {
                     if updatedWorkout.id == self.selectedWorkout!.id {

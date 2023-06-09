@@ -81,6 +81,18 @@ final class AuthManager {
         }
     }
     
+    public func deleteAccount(completion: @escaping (Bool) -> ()) {
+        let user = Auth.auth().currentUser
+        
+        user?.delete { error in
+            if error != nil {
+                completion (false)
+            } else {
+                completion(true)
+            }
+        }
+    }
+    
     public func restorePassword(email: String, completion: @escaping (Result<Void, Error>) -> ()) {
         auth.sendPasswordReset(withEmail: email) { error in
             if let error = error {

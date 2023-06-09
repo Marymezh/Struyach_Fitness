@@ -652,7 +652,6 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
         return sender
     }
     
-    
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
         return commentsArray[indexPath.section]
     }
@@ -768,7 +767,6 @@ extension CommentsViewController: MessageCellDelegate {
         let comment = commentsArray[indexPath.section]
         
         switch comment.kind {
-            
         case .photo(let media): guard let imageUrl = media.url else {return}
             let vc = PhotoPresenterViewController(url: imageUrl)
             self.navigationController?.present(vc, animated: true)
@@ -778,7 +776,6 @@ extension CommentsViewController: MessageCellDelegate {
             vc.player = AVPlayer(url: videoUrl)
             vc.player?.play()
             self.present(vc, animated: true)
-            
         default:break
             
         }
@@ -786,24 +783,17 @@ extension CommentsViewController: MessageCellDelegate {
     
     func replyTo(sender: String, message: String) {
         let replyTo = "Reply to".localized()
-        let modifiedText = "\(replyTo) \(sender): \n \" \(message) \"\n"
+        let modifiedText = "\(replyTo) \(sender): \n \" \(message) \"\n\n"
         self.messageInputBar.inputTextView.text = modifiedText
-        let attributedString = NSMutableAttributedString(string: modifiedText)
-        let copiedTextRange = NSRange(location: 0, length: modifiedText.count)
-        attributedString.addAttribute(.backgroundColor, value: UIColor.systemGray, range: copiedTextRange)
-        attributedString.addAttribute(.foregroundColor, value: UIColor.white, range: copiedTextRange)
-        let font = UIFont.systemFont(ofSize: 16)
-        attributedString.addAttribute(.font, value: font, range: copiedTextRange)
-        self.messageInputBar.inputTextView.attributedText = attributedString
     }
 
     func didTapMessage(in cell: MessageCollectionViewCell) {
+        self.messageInputBar.becomeFirstResponder()
+        self.messageInputBar.inputTextView.becomeFirstResponder()
         guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
-
         let comment = commentsArray[indexPath.section]
         guard comment.sender.senderId != userEmail else {return}
         let sender = comment.sender.displayName
-
         switch comment.kind {
         case .text(let text):
             self.replyTo(sender: sender, message: text)
@@ -814,7 +804,6 @@ extension CommentsViewController: MessageCellDelegate {
 
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
-        print("executing \(#function)")
         inputBar.inputTextView.resignFirstResponder()
         postComment(text: text)
     }
