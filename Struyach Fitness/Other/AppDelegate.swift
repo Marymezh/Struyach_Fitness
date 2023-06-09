@@ -83,7 +83,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func applicationWillTerminate(_ application: UIApplication) {
         IAPManager.shared.logOutRevenueCat { error in
-            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases", cancelAction: "Cancel".localized(), style: .cancel)
+            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases".localized(), cancelAction: "Cancel".localized())
             print (error.localizedDescription)
         }
     }

@@ -132,7 +132,7 @@ final class BlogViewController: UIViewController {
                         self.scrollToTheTop()
                     }
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to add new post".localized(), cancelAction: "Ok", style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to add new post".localized(), cancelAction: "Ok")
                 }
             }
         }
@@ -171,12 +171,12 @@ final class BlogViewController: UIViewController {
                         print ("number of posts left - \(self.blogPosts.count)")
                         switch self.blogPosts.isEmpty {
                         case true:
-                            AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully deleted! No more posts left in the Blog".localized(), cancelAction: "Ok", style: .cancel)
+                            AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully deleted! No more posts left in the Blog".localized(), cancelAction: "Ok")
                         case false:
-                            AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully deleted!".localized(), cancelAction: "Ok", style: .cancel)
+                            AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully deleted!".localized(), cancelAction: "Ok")
                         }
                     } else {
-                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete selected post".localized(), cancelAction: "Ok", style: .cancel)
+                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete selected post".localized(), cancelAction: "Ok")
                     }
                 }
             }
@@ -189,7 +189,7 @@ final class BlogViewController: UIViewController {
                 self.navigationController?.pushViewController(workoutVC, animated: true)
                 workoutVC.onWorkoutSave = {text in
                     DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { post in
-                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully updated!".localized(), cancelAction: "Ok", style: .cancel)
+                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully updated!".localized(), cancelAction: "Ok")
                     }
                 }
             }

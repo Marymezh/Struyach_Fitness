@@ -13,15 +13,46 @@ final class AlertManager {
     
     private init() {}
     
-    func showAlert(title: String, message: String, cancelAction: String, style: UIAlertAction.Style, completion: ((UIAlertAction) -> Void)? = nil) {
-        guard let topViewController = UIApplication.shared.topViewController else {
-            return
-        }
+    func showAlert(title: String, message: String, cancelAction: String, completion: ((UIAlertAction) -> Void)? = nil) {
+        guard let topViewController = UIApplication.shared.topViewController else {return}
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: cancelAction, style: style, handler: completion)
+        let cancelAction = UIAlertAction(title: cancelAction, style: .cancel, handler: completion)
         alert.addAction(cancelAction)
         alert.view.tintColor = .systemGreen
+
+        topViewController.present(alert, animated: true, completion: nil)
+    }
+    
+    func showAlert(title: String, message: String?, placeholderText: String, cancelAction: String, cancelCompletion: ((UIAlertAction) -> Void)? = nil, confirmActionTitle: String, confirmActionHandler: @escaping ((Bool, String?) -> Void)) {
+        guard let topViewController = UIApplication.shared.topViewController else {return}
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addTextField { textfield in
+            textfield.placeholder = placeholderText
+        }
+        let confirmAction = UIAlertAction(title: confirmActionTitle, style: .default) { action in
+            if let text = alert.textFields?[0].text, text != "" {
+                confirmActionHandler(true, text)
+            } else {
+                confirmActionHandler(false, nil)
+            }
+        }
+        let cancelAction = UIAlertAction(title: cancelAction, style: .destructive, handler: cancelCompletion)
+        alert.addAction(cancelAction)
+        alert.addAction(confirmAction)
+
+        alert.view.tintColor = .gray
+        topViewController.present(alert, animated: true, completion: nil)
+    }
+    
+    func showActionSheet(title: String, message: String, confirmActionTitle: String, confirmHandler: @escaping ((UIAlertAction) -> Void)) {
+        guard let topViewController = UIApplication.shared.topViewController else {return}
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        let confirmAction = UIAlertAction(title: confirmActionTitle, style: .destructive, handler: confirmHandler)
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
+        alert.addAction(confirmAction)
+        alert.addAction(cancelAction)
+        alert.view.tintColor = .gray
         
         topViewController.present(alert, animated: true, completion: nil)
     }

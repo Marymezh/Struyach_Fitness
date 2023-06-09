@@ -153,17 +153,17 @@ final class PaywallViewController: UIViewController {
                         case .failure(let error):
                             self.activityView.hide()
                             let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
-                            AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok", style: .cancel)
+                            AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok")
                         }
                     }
                 case .failure(let error):
                     self.activityView.hide()
                     let message = String(format: "Unable to complete in-app purchase: %@".localized(), error.localizedDescription)
-                    AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok", style: .cancel)
+                    AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok")
                 }
             }
         }  else {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You are not allowed to make purchases".localized(), cancelAction: "Ok", style: .cancel)
+            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You are not allowed to make purchases".localized(), cancelAction: "Ok")
             self.activityView.hide()
         }
     }
@@ -176,10 +176,10 @@ final class PaywallViewController: UIViewController {
             case .failure(let error):
                 self.activityView.hide()
                 let message = String(format: "Unable to restore purchases: %@".localized(), error.localizedDescription)
-                AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok", style: .cancel)
+                AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok")
             case .success(_):
                 self.activityView.hide()
-                AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok", style: .cancel){_ in
+                AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok"){_ in
                     self.onPaywallClose?()
                     self.dismiss(animated: true)
                 }

@@ -160,7 +160,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading image".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading image".localized(), cancelAction: "Cancel".localized())
                         }
                         self.progressView.hide()
                     }
@@ -177,7 +177,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading image".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading image".localized(), cancelAction: "Cancel".localized())
                         }
                         self.progressView.hide()
                     }
@@ -207,7 +207,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading image".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading image".localized(), cancelAction: "Cancel".localized())
                         }
                         self.progressView.hide()
                         self.activityView.showActivityIndicator()
@@ -225,7 +225,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postPhotoComment(photoUrl: safeUrl, photoRef: safeRef)
                             }
                         } else {
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading image".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading image".localized(), cancelAction: "Cancel".localized())
                         }
                         self.progressView.hide()
                         self.activityView.showActivityIndicator()
@@ -243,7 +243,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             self.showImagePickerController(type: .video)
             self.onFinishPicking = { info in
                 guard let videoUrl = info[.mediaURL] as? URL else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Couldn't get media URL from image picker".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Couldn't get media URL from image picker".localized(), cancelAction: "Cancel".localized())
                     return
                 }
                 let videoData = try! Data(contentsOf: videoUrl)
@@ -260,7 +260,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
                             }
                         } else {
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading video".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading video".localized(), cancelAction: "Cancel".localized())
                         }
                         self.progressView.hide()
                         self.activityView.showActivityIndicator()
@@ -277,7 +277,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
                             }
                         } else {
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading video".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading video".localized(), cancelAction: "Cancel".localized())
                         }
                         self.progressView.hide()
                         self.activityView.showActivityIndicator()
@@ -320,7 +320,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
             messageInputBar.inputTextView.text = nil
@@ -338,7 +338,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
             messageInputBar.inputTextView.text = nil
@@ -368,7 +368,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
         } else if let post = self.blogPost {
@@ -384,7 +384,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
         }
@@ -414,7 +414,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
         } else if let post = self.blogPost {
@@ -430,7 +430,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     }
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
         }
@@ -476,7 +476,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 }
                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                             } else {
-                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete comment".localized(), cancelAction: "Cancel".localized())
                             }
                         }
                     } else if let post = self.blogPost {
@@ -487,7 +487,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 }
                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                             } else {
-                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete comment".localized(), cancelAction: "Cancel".localized())
                             }
                         }
                     }
@@ -508,7 +508,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     if success{
                                         self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                     } else {
-                                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected comment".localized(), cancelAction: "Cancel".localized())
                                     }
                                 }
                             } else if let post = self.blogPost {
@@ -516,7 +516,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     if success{
                                         self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                     } else {
-                                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected comment".localized(), cancelAction: "Cancel".localized())
                                     }
                                 }
                             }
@@ -545,7 +545,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                             if success {
                                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                             } else {
-                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected photo comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected photo comment".localized(), cancelAction: "Cancel".localized())
                                             }
                                             self.progressView.hide()
                                         }
@@ -568,7 +568,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                             if success {
                                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                             } else {
-                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected photo comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected photo comment".localized(), cancelAction: "Cancel".localized())
                                             }
                                             self.progressView.hide()
                                         }
@@ -600,7 +600,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                             if success {
                                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
                                             } else {
-                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized(), cancelAction: "Cancel".localized())
                                             }
                                             self.progressView.hide()
                                         }
@@ -623,7 +623,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                             if success {
                                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
                                             } else {
-                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized(), cancelAction: "Cancel".localized())
                                             }
                                             self.progressView.hide()
                                         }

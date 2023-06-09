@@ -202,7 +202,7 @@ final class WorkoutsViewController: UIViewController {
                     self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
                     print ("success! should reload collection view and select first item")
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post new workout".localized(), cancelAction: "Ok", style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post new workout".localized(), cancelAction: "Ok")
                 }
             }
         }
@@ -270,7 +270,7 @@ final class WorkoutsViewController: UIViewController {
                             self.selectedWorkoutView.workoutDescriptionTextView.text = "Workout successfully deleted".localized()
                         }
                     } else {
-                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete this workout".localized(), cancelAction: "Ok", style: .cancel)
+                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete this workout".localized(), cancelAction: "Ok")
                     }
                 }
             }
@@ -284,7 +284,7 @@ final class WorkoutsViewController: UIViewController {
                 self.navigationController?.pushViewController(workoutVC, animated: true)
                 workoutVC.onWorkoutSave = {text in
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { workout in
-                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Workout is successfully updated!".localized(), cancelAction: "Ok", style: .cancel)
+                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Workout is successfully updated!".localized(), cancelAction: "Ok")
                     }
                 }
             }

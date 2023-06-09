@@ -61,11 +61,11 @@ final class LoginViewController: UIViewController {
     @objc private func loginTapped() {
         self.activityView.showActivityIndicator()
         guard let email = loginView.emailTextField.text, !email.isEmpty else {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Enter your email".localized(), cancelAction: "Retry".localized(), style: .cancel)
+            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Enter your email".localized(), cancelAction: "Retry".localized())
             self.activityView.hide()
             return}
         guard let password = loginView.passwordTextField.text, !password.isEmpty, password.count > 6 else {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Check your password".localized(), cancelAction: "Retry".localized(), style: .cancel)
+            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Check your password".localized(), cancelAction: "Retry".localized())
             self.activityView.hide()
             return}
         #if Admin
@@ -101,11 +101,11 @@ final class LoginViewController: UIViewController {
                 if user.isAdmin == true {
                     self.logIn(email: email, password: password)
                 } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "You are not authorized to sign in as an admin!".localized(), cancelAction: "Retry".localized(), style: .cancel)
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "You are not authorized to sign in as an admin!".localized(), cancelAction: "Retry".localized())
                     self.activityView.hide()
                 }
             } else {
-                AlertManager.shared.showAlert(title: "Error".localized(), message: "No such user! Check your e-mail".localized(), cancelAction: "Retry".localized(), style: .cancel)
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "No such user! Check your e-mail".localized(), cancelAction: "Retry".localized())
                 self.activityView.hide()
             }
         }
@@ -136,7 +136,7 @@ final class LoginViewController: UIViewController {
             case .failure(let error):
                 print (error.localizedDescription)
                 self.activityView.hide()
-                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: There is no user record corresponding to this email. Check your email".localized(), cancelAction: "Retry".localized(), style: .cancel)
+                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: There is no user record corresponding to this email. Check your email".localized(), cancelAction: "Retry".localized())
             }
         }
     }

@@ -59,7 +59,7 @@ final class RestorePasswordViewController: UIViewController {
     @objc private func sendButtonTapped() {
         self.activityView.showActivityIndicator()
         guard let email = restoreView.emailTextField.text, !email.isEmpty else {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Enter your email".localized(), cancelAction: "Retry".localized(), style: .cancel)
+            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Enter your email".localized(), cancelAction: "Retry".localized())
             self.activityView.hide()
             return}
         send(email: email)
@@ -70,14 +70,14 @@ final class RestorePasswordViewController: UIViewController {
             guard let self = self else {return}
             switch result {
             case .success(()):
-                AlertManager.shared.showAlert(title: "Success".localized(), message: "Email with instructions was successfully sent!".localized(), cancelAction: "Ok", style: .cancel) {  [weak self] _ in
+                AlertManager.shared.showAlert(title: "Success".localized(), message: "Email with instructions was successfully sent!".localized(), cancelAction: "Ok") {  [weak self] _ in
                     guard let self = self else {return}
                     self.dismiss(animated: true)
                 }
                 self.activityView.hide()
             case .failure(let error):
                 let message = String(format: "Failed sending email: %@".localized(), error.localizedDescription)
-                AlertManager.shared.showAlert(title: "Error".localized(), message: message, cancelAction: "Calcel".localized(), style: .cancel)
+                AlertManager.shared.showAlert(title: "Error".localized(), message: message, cancelAction: "Calcel".localized())
                 self.activityView.hide()
             }
         }

@@ -182,11 +182,11 @@ final class SettingsTableViewController: UITableViewController {
                 cell.onClose = { result in
                     switch result {
                 case .sent:
-                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Your message is successfully sent! \nThank you for your feedback!".localized(), cancelAction: "Ok", style: .cancel)
+                        AlertManager.shared.showAlert(title: "Success".localized(), message: "Your message is successfully sent! \nThank you for your feedback!".localized(), cancelAction: "Ok")
                     case .saved:
-                        AlertManager.shared.showAlert(title: "Done".localized(), message: "Your message is saved to drafts".localized(), cancelAction: "Ok", style: .cancel)
+                        AlertManager.shared.showAlert(title: "Done".localized(), message: "Your message is saved to drafts".localized(), cancelAction: "Ok")
                     case .failed:
-                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error sending message".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error sending message".localized(), cancelAction: "Cancel".localized())
                     default: break
                     }
                 }
@@ -377,7 +377,7 @@ final class SettingsTableViewController: UITableViewController {
                 if let cell = tableView.cellForRow(at: indexPath) as? EmailTableViewCell {
                     cell.sendEmail { error in
                         if let error = error {
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: error.localizedDescription, cancelAction: "Ok", style: .cancel)
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: error.localizedDescription, cancelAction: "Ok")
                         }
                     }
                 }
@@ -386,7 +386,7 @@ final class SettingsTableViewController: UITableViewController {
                 if let cell = tableView.cellForRow(at: indexPath) as? RateTableViewCell {
                     cell.openAppRatingPage { success in
                         if !success {
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to open app rating page".localized(), cancelAction: "Ok", style: .cancel)
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to open app rating page".localized(), cancelAction: "Ok")
                         }
                     }
                 }
@@ -402,8 +402,7 @@ final class SettingsTableViewController: UITableViewController {
         case 4:
             switch indexPath.row {
             case 0: signOut()
-            default:  print("delete account")
-                //delete account
+            default: deleteAccount()
             }
 
             #else
@@ -416,8 +415,7 @@ final class SettingsTableViewController: UITableViewController {
         case 6:
             switch indexPath.row {
             case 0: signOut()
-            default:  print("delete account")
-                //delete account
+            default: deleteAccount()
             }
 
             #endif
@@ -434,9 +432,9 @@ final class SettingsTableViewController: UITableViewController {
             switch result {
             case .failure(let error):
                 let message = String(format: "Unable to restore purchases: %@".localized(), error.localizedDescription)
-                AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok", style: .cancel)
+                AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok")
             case .success(_):
-                AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok", style: .cancel)
+                AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok")
             }
         }
     }
@@ -454,7 +452,7 @@ final class SettingsTableViewController: UITableViewController {
                 AuthManager.shared.signOut { success in
                     if success {
                         IAPManager.shared.logOutRevenueCat { error in
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases", cancelAction: "Cancel".localized(), style: .cancel)
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases".localized(), cancelAction: "Cancel".localized())
                             print (error.localizedDescription)
                         }
                         DispatchQueue.main.async {
@@ -477,36 +475,37 @@ final class SettingsTableViewController: UITableViewController {
             present(alert, animated: true)
     }
     
-    private func changeUserName() {
-        let alertController = UIAlertController(title: "Change user name".localized(), message: nil, preferredStyle: .alert)
-        alertController.addTextField { textfield in
-            textfield.placeholder = "Enter new name here".localized()
+    private func deleteAccount() {
+        let message = "Deleting your account will permanently remove all your data and cannot be undone. This action is irreversible.\nBefore deleting your account, please consider the following:\n1. Data Loss: All your personal information, including profile details, messages, and preferences, will be deleted and cannot be recovered.\n2. Access Revocation: You will lose access to any associated services, features, or benefits linked to your account.\n3. Subscription Cancellation: If you have an active subscription, deleting your account will not cancel any active subscriptions tied to your account, you have to cancel them on your own in Settings -> Apple ID -> Subscriptions. \n4. Social Connections: Connections or interactions with other users, friends and coach may be lost. You will no longer be able to communicate with them through the platform.\nPlease take your time to consider this decision carefully. If you have any concerns or questions, we recommend you to send a message to the developer for assistance before proceeding.\nTo confirm the deletion of your account and proceed, tap \"Delete Account\". To cancel and retain your account, tap \"Cancel\"."
+        AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: message.localized(), confirmActionTitle: "Delete Account".localized()) { action in
+            AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), confirmActionTitle: "Confirm".localized()) { success, text in
+                if let text = text, text == "Confirm" {
+                    print ("ready to delete account")
+                }
+            }
         }
-        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .default)
-        let changeAction = UIAlertAction(title: "Save".localized(), style: .default) { action in
-            if let text = alertController.textFields?[0].text,
-               text != "" {
-                DatabaseManager.shared.updateUserName(email: self.email, newUserName: text) { success in
-                    if success {
-                        UserDefaults.standard.set(text, forKey: "userName")
+    }
+    
+    private func changeUserName() {
+        AlertManager.shared.showAlert(title: "Change user name".localized(), message: nil, placeholderText: "Enter new name here".localized(), cancelAction: "Cancel".localized(), confirmActionTitle: "Save".localized()) { success, text in
+            if success {
+                if let text = text, text != "" {
+                    DatabaseManager.shared.updateUserName(email: self.email, newUserName: text) { success in
+                        if success {
+                            UserDefaults.standard.set(text, forKey: "userName")
+                            AlertManager.shared.showAlert(title: "Done".localized(), message: "User name is successfully changed".localized(), cancelAction: "Ok")
+                        }
                     }
                 }
             } else {
-                AlertManager.shared.showAlert(title: "Error".localized(), message: "User name can not be blank!".localized(), cancelAction: "Cancel".localized(), style: .cancel)
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "User name can not be blank!".localized(), cancelAction: "Cancel".localized())
             }
         }
-        
-        alertController.addAction(changeAction)
-        alertController.addAction(cancelAction)
-
-        alertController.view.tintColor = .darkGray
-        present(alertController, animated: true)
     }
     
     @objc private func hideEmailSwitchChanged(_ sender: UISwitch) {
         DatabaseManager.shared.hideOrShowEmail(email: self.email, isHidden: sender.isOn) { success in
             UserDefaults.standard.set(sender.isOn, forKey: "hideEmail")
-            
         }
     }
 

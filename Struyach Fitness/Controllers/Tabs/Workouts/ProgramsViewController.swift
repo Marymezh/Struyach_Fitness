@@ -57,7 +57,7 @@ final class ProgramsViewController: UITableViewController {
             switch result {
             case .failure(let error):
                 let message = String(format: "Unable to syncronize purchases: %@".localized(), error.localizedDescription)
-                AlertManager.shared.showAlert(title: "Error".localized(), message:  message, cancelAction: "Ok", style: .cancel)
+                AlertManager.shared.showAlert(title: "Error".localized(), message:  message, cancelAction: "Ok")
             case .success(_):
                 self.tableView.reloadData()
             }

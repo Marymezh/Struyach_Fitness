@@ -90,7 +90,7 @@ final class CreateAccountViewController: UIViewController {
             if success {
                 self.createNewUser(name: name, email: email, password: password, imageData: imageData, isAdmin: true)
             } else {
-                AlertManager.shared.showAlert(title: "Error".localized(), message: "The secret code is wrong, you can not be registered as an admin!".localized(), cancelAction: "Retry".localized(), style: .cancel)
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "The secret code is wrong, you can not be registered as an admin!".localized(), cancelAction: "Retry".localized())
             }
         }
         #else
@@ -139,7 +139,7 @@ final class CreateAccountViewController: UIViewController {
                                 do {
                                     try data.write(to: fileURL)
                                 } catch {
-                                    AlertManager.shared.showAlert(title: "Error".localized(), message: error.localizedDescription, cancelAction: "Cancel".localized(), style: .cancel)
+                                    AlertManager.shared.showAlert(title: "Error".localized(), message: error.localizedDescription, cancelAction: "Cancel".localized())
                                 }
                             }
                             task.resume()
@@ -163,7 +163,7 @@ final class CreateAccountViewController: UIViewController {
                 case .unknownError:
                     errorMessage = "\(error.localizedDescription)"
                 }
-                AlertManager.shared.showAlert(title: "Error".localized(), message: errorMessage, cancelAction: "Cancel".localized(), style: .cancel)
+                AlertManager.shared.showAlert(title: "Error".localized(), message: errorMessage, cancelAction: "Cancel".localized())
                 self.activityView.hide()
             }
         }
@@ -176,7 +176,7 @@ extension CreateAccountViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == signUpView.confirmPasswordTextField {
             if textField.text != signUpView.passwordTextField.text {
-                AlertManager.shared.showAlert(title: "Error".localized(), message: "Passwords don't match!".localized(), cancelAction: "Retry".localized(), style: .cancel)
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "Passwords don't match!".localized(), cancelAction: "Retry".localized())
                 textField.text = ""
             }
         }

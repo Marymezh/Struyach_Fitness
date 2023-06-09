@@ -126,6 +126,7 @@
 "Change user name" = "Изменить имя пользователя";
 "Enter new name here" = "Введите новое имя";
 "User name can not be blank!" = "Имя пользователя не может быть пустым!";
+"User name is successfully changed" = "Имя пользователя успешно изменено!";
 "Are you sure you would like to sign out?" = "Вы уверены, что хотите выйти из профиля?";
 "Unable to log out" = "Не удалось выйти";
 "Unable to complete in-app purchase: %@" = "Невозможно завершить покупку: %@";
@@ -139,6 +140,15 @@
 
 "Your message is saved to drafts" = "Черновик вашего сообщения успешно сохранен";
 "Error sending message" = "Сообщение не отправлено";
+
+"Unable to log out from purchases" = "Не удалось выйти за аккаунта магазина";
+
+"Deleting your account will permanently remove all your data and cannot be undone. This action is irreversible.\nBefore deleting your account, please consider the following:\n1. Data Loss: All your personal information, including profile details, messages, and preferences, will be deleted and cannot be recovered.\n2. Access Revocation: You will lose access to any associated services, features, or benefits linked to your account.\n3. Subscription Cancellation: If you have an active subscription, deleting your account will not cancel any active subscriptions tied to your account, you have to cancel them on your own in Settings -> Apple ID -> Subscriptions. \n4. Social Connections: Connections or interactions with other users, friends and coach may be lost. You will no longer be able to communicate with them through the platform.\nPlease take your time to consider this decision carefully. If you have any concerns or questions, we recommend you to send a message to the developer for assistance before proceeding.\nTo confirm the deletion of your account and proceed, tap \"Delete Account\". To cancel and retain your account, tap \"Cancel\"." = "Удаление учетной записи приведет к безвозвратной потере всех ваших данных. Это действие нельзя отменить.\nПеред удалением учетной записи, пожалуйста, учтите следующее:\n1. Потеря данных: Все ваши личные данные, включая информацию профиля, сообщения и предпочтения, будут удалены и не могут быть восстановлены.\n2. Потеря доступа: Вы потеряете доступ к любым связанным услугам, функциям или преимуществам, связанным с вашей учетной записью.\n3. Отмена подписки: Если у вас есть активные подписки, удаление учетной записи не приведет к их автоматической отмене. Вам необходимо самостоятельно отменить активные подписки в Настройки -> Apple ID -> Подписки.\n4. Социальные связи: Связи или взаимодействия с другими пользователями, друзьями и тренером могут быть потеряны. Вы больше не сможете общаться с ними через эту платформу.\nПожалуйста, тщательно обдумайте свое решение. Если у вас есть вопросы или опасения, мы рекомендуем написать разработчику для получения помощи перед продолжением.\nЧтобы подтвердить удаление учетной записи, нажмите \"Удалить учётную запись\". Чтобы отменить и сохранить учетную запись, нажмите \"Отменить\"";
+
+"Delete Account" = "Удалить учётную запись";
+"Confirm" = "Подтвердить";
+
+"If you for sure want to permanently delete your account, please type \"Confirm\" below" = "Если вы уверены, что хотите навсегда удалить свою учётную запись, напечатайте \"Confirm\" ниже";
 
 //MARK: - PROFILE
 "Unknown user" = "Неизвестный пользователь";
@@ -160,7 +170,6 @@
 "App Feedback" = "Отзыв о приложении";
 "Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]" = "Добрый день, \n\nХочу поделиться своим мнением о приложении... \n\nС уважением, \n[Ваше имя]";
 "Rate this app" = "Оценить приложение";
-"Change user name" = "Изменить имя пользователя";
 "Hide email" = "Скрыть email";
 "Profile email is hidden" = "Скрыть email в профиле";
 "Subscription status" = "Статус подписок";
