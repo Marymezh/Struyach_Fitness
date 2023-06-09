@@ -128,6 +128,8 @@ final class LoginViewController: UIViewController {
                 #endif
                 DispatchQueue.main.async {
                     self.activityView.hide()
+//                    guard let userUID = AuthManager.shared.userUID else {return}
+//                    UserDefaults.standard.set(userUID, forKey: "userUID")
                     UserDefaults.standard.set(email, forKey: "email")
                     let vc = TabBarController()
                     vc.modalPresentationStyle = .fullScreen

@@ -12,8 +12,8 @@
 //MARK: - LOG IN AND SIGN UP
 
 "Log In" = "Войти";
-"Create Account" = "Создать аккаунт";
-"Create new account" = "Создать новый аккаунт";
+"Create Account" = "Создать учётную запись";
+"Create new account" = "Новая учётная запись";
 "Restore Password" = "Восстанoвить пароль";
 "Forgot password" = "Восстановить пароль";
 "Password" = "Пароль";
@@ -150,6 +150,11 @@
 
 "If you for sure want to permanently delete your account, please type \"Confirm\" below" = "Если вы уверены, что хотите навсегда удалить свою учётную запись, напечатайте \"Confirm\" ниже";
 
+"Account is successfully deleted" = "Учётная запись удалена";
+"Error occured, account is not deleted" = "Ошибка: не удалось удалить учётную запись";
+"Incorrect confirmation entry, check spelling" = "Подтверждающее слово не верно";
+"This operation is sensitive and requires recent authentication. Log in again before retrying this request" = "Эта операция требует свежую аутентификацию. Чтобы закончить эту операцию необходимо выйти из учётной записи и снова зайти";
+
 //MARK: - PROFILE
 "Unknown user" = "Неизвестный пользователь";
 "Rename user" = "Изменить имя";
@@ -162,7 +167,7 @@
 
 "App information" = "Информация о приложении";
 "Notifications settings" = "Настройка уведомлений";
-"Log out or delete account" = "Выход и удаление аккаунта";
+"Log out or delete account" = "Выход и удаление учётной записи";
 "User profile settings" = "Настойки профиля пользователя";
 "Language settings" = "Выбор языка";
 "About this app" = "О приложении";
@@ -183,8 +188,8 @@
 
 "Request a refund" = "Запросить возврат";
 
-"Sign out" = "Выйти из аккаунта";
-"Delete account and all data" = "Удалить аккаунт и все данные";
+"Sign out" = "Выйти из учётной записи";
+"Delete account and all data" = "Удалить учётную запись";
 
 //MARK: - APP DESCRIPTION TEXTS
 

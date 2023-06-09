@@ -446,33 +446,24 @@ final class SettingsTableViewController: UITableViewController {
     }
     
     private func signOut() {
-            let alert = UIAlertController(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), preferredStyle: .actionSheet)
-            alert.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
-            alert.addAction(UIAlertAction(title: "Sign Out".localized(), style: .destructive, handler: { action in
-                AuthManager.shared.signOut { success in
-                    if success {
-                        IAPManager.shared.logOutRevenueCat { error in
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases".localized(), cancelAction: "Cancel".localized())
-                            print (error.localizedDescription)
-                        }
-                        DispatchQueue.main.async {
-                            UserDefaults.standard.set(nil, forKey: "userName")
-                            UserDefaults.standard.set(nil, forKey: "email")
-                            UserDefaults.standard.set(nil, forKey: "userImage")
-                            
-                    //update root vc
-                            let signInVC = LoginViewController()
-                            let navVC = UINavigationController(rootViewController: signInVC)
-                            navVC.navigationBar.prefersLargeTitles = false
-                            let window = UIApplication.shared.windows.first
-                            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-                                window?.rootViewController = navVC
-                            }, completion: nil)
-                        }
+        AlertManager.shared.showActionSheet(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), confirmActionTitle: "Sign Out".localized()) { action in
+            AuthManager.shared.signOut { success in
+                if success {
+                    IAPManager.shared.logOutRevenueCat { error in
+                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases".localized(), cancelAction: "Cancel".localized())
+                        print (error.localizedDescription)
+                    }
+                    DispatchQueue.main.async {
+                        UserDefaults.standard.set(nil, forKey: "userName")
+                        UserDefaults.standard.set(nil, forKey: "email")
+                        UserDefaults.standard.set(nil, forKey: "userImage")
+                        
+                        let signInVC = LoginViewController()
+                        AuthManager.shared.updateRootViewController(vc: signInVC)
                     }
                 }
-            }))
-            present(alert, animated: true)
+            }
+        }
     }
     
     private func deleteAccount() {
@@ -480,7 +471,26 @@ final class SettingsTableViewController: UITableViewController {
         AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: message.localized(), confirmActionTitle: "Delete Account".localized()) { action in
             AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), confirmActionTitle: "Confirm".localized()) { success, text in
                 if let text = text, text == "Confirm" {
-                    print ("ready to delete account")
+                    AuthManager.shared.deleteAccount { result in
+                        switch result {
+                        case .failure(let error):
+//                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: error.localizedDescription, cancelAction: "Ok")
+                        case .success(()):
+                            AlertManager.shared.showAlert(title: "Done".localized(), message: "Account is successfully deleted".localized(), cancelAction: "Ok"){ action in
+                                DispatchQueue.main.async {
+                                    UserDefaults.standard.set(nil, forKey: "userName")
+                                    UserDefaults.standard.set(nil, forKey: "email")
+                                    UserDefaults.standard.set(nil, forKey: "userImage")
+
+                                    let signInVC = LoginViewController()
+                                    AuthManager.shared.updateRootViewController(vc: signInVC)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Incorrect confirmation entry, check spelling".localized(), cancelAction: "Retry")
                 }
             }
         }
@@ -552,16 +562,9 @@ extension SettingsTableViewController: LanguageSwitchDelegate {
         LanguageManager.shared.setCurrentLanguage(language)
         tableView.reloadData()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.updateRootViewController()
+            let tabBarController = TabBarController()
+            AuthManager.shared.updateRootViewController(vc: tabBarController)
         }
-    }
-
-    func updateRootViewController() {
-        let tabBarController = TabBarController()
-        let window = UIApplication.shared.windows.first
-        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-            window?.rootViewController = tabBarController
-        }, completion: nil)
     }
 }
 

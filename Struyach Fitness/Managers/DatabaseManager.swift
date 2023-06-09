@@ -459,7 +459,7 @@ final class DatabaseManager {
 
     public func getAllBlogComments(blogPost: Post, completion: @escaping([Comment])->()){
         print ("executing loading comments from database \(#function)")
-
+        
         database
             .collection("blogPosts")
             .document(blogPost.id)
@@ -526,7 +526,7 @@ final class DatabaseManager {
     
     public func updateBlogCommentsCount(blogPost: Post, commentsCount: Int, completion: @escaping (Post)->()){
         print("Executing function: \(#function)")
-  
+        
         let dbRef = database
             .collection("blogPosts")
             .document(blogPost.id)
@@ -534,7 +534,7 @@ final class DatabaseManager {
         dbRef.updateData(["comments": commentsCount]) { error in
             if error == nil {
                 var updatedPost = blogPost
-                updatedPost .comments = commentsCount
+                updatedPost.comments = commentsCount
                 completion(updatedPost)
             }
         }
@@ -562,6 +562,7 @@ final class DatabaseManager {
     
     public func deleteBlogComment(comment: Comment, blogPost: Post, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
+        
         
         let commentsRef = database
             .collection("blogPosts")
@@ -855,15 +856,11 @@ final class DatabaseManager {
     
     //MARK: - Adding, fetching and editing users
     
-    public func insertUser(user: User,
-                           completion: @escaping(Bool) ->()
-    ){
+    public func insertUser(user: User, completion: @escaping(Bool) ->()){
         
         let documentID = user.email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
-        
-        
         
         let data: [String : Any] = [
             "email": user.email,
@@ -881,9 +878,7 @@ final class DatabaseManager {
             }
     }
     
-    public func getUser(email: String,
-                        completion: @escaping(User?)->()
-    ){
+    public func getUser(email: String, completion: @escaping(User?)->()){
         let documentID = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
@@ -957,7 +952,7 @@ final class DatabaseManager {
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
         
-        let photoReference = "profile_pictures/\(path)/photo.png"
+        let photoReference = "users/\(path)/profile_picture.png"
         
         let dbRef = database
             .collection("users")
@@ -978,7 +973,7 @@ final class DatabaseManager {
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
         
-        let recordsReference = "personal_records/\(path)/records.json"
+        let recordsReference = "users/\(path)/personal_records.json"
         
         let dbRef = database
             .collection("users")
@@ -1015,5 +1010,4 @@ final class DatabaseManager {
             }
         }
     }
-    
 }

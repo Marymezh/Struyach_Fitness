@@ -12,13 +12,13 @@ import UIKit
 final class StorageManager {
     static let shared = StorageManager()
     private let container = Storage.storage()
+
     
     private init() {}
     //TODO: - write methods to upload image and video URL to Firebase Storage
     
     public func uploadImageForComment(image: Data?, imageId: String, workout: Workout, progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
         guard let pngData = image else {return}
-        
         let imageRef = "comments_photo_and_video/photo/\(workout.programID)/\(imageId)_photo.png"
         let storageRef = container.reference(withPath: imageRef)
         let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
@@ -36,7 +36,6 @@ final class StorageManager {
     
     public func uploadImageForBlogComment(image: Data?, imageId: String, blogPost: Post, progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
         guard let pngData = image else {return}
-        
         let imageRef = "blog_comments_photo_and_video/photo/\(blogPost.id)/\(imageId)_photo.png"
         let storageRef = container.reference(withPath: imageRef)
         let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
@@ -53,7 +52,6 @@ final class StorageManager {
     }
     
     public func uploadVideoURLForComment(videoID: String, videoData: Data, workout: Workout, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
-        
         let videoRef = "comments_photo_and_video/video/\(workout.programID)/\(videoID)"
         print(videoData)
         let storageRef = container.reference(withPath: videoRef)
@@ -72,7 +70,7 @@ final class StorageManager {
     }
     
     public func uploadVideoURLForBlogComment(videoID: String, videoData: Data, blogPost: Post, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
-        
+
         let videoRef = "blog_comments_photo_and_video/video/\(blogPost.id)/\(videoID)"
         print(videoData)
         let storageRef = container.reference(withPath: videoRef)
@@ -111,7 +109,7 @@ final class StorageManager {
         
         guard let pngData = image else {return}
         container
-            .reference(withPath: "profile_pictures/\(path)/photo.png")
+            .reference(withPath: "users/\(path)/profile_picture.png")
             .putData(pngData, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
                     completion(false)
@@ -129,7 +127,7 @@ final class StorageManager {
         guard let pngData = image else {
             print("no png data available")
             return}
-        let imageRef = "profile_pictures/\(path)/photo.png"
+        let imageRef = "users/\(path)/profile_picture.png"
         container
             .reference(withPath: imageRef)
             .putData(pngData, metadata: nil) { metadata, error in
@@ -147,11 +145,11 @@ final class StorageManager {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
-        
+ 
         let data = try! JSONEncoder().encode(weights)
         
         container
-            .reference(withPath: "personal_records/\(path)/records.json")
+            .reference(withPath: "users/\(path)/personal_records.json")
             .putData(data, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
                     completion(false)

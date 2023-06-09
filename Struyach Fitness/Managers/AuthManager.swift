@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseAuth
+import UIKit
 
 enum AuthError: Error {
     case emailAlreadyExists
@@ -35,18 +36,15 @@ final class AuthManager {
                 completion(.failure(.unknownError))
                 return
             }
-            
             if let signInMethods = signInMethods, !signInMethods.isEmpty {
                 completion(.failure(.emailAlreadyExists))
                 return
             }
         }
-        
         if password.count < 6 {
             completion(.failure(.passwordTooShort))
             return
         }
-        
         self.auth.createUser(withEmail: email, password: password) { (authResult, error) in
             if let error = error {
                 print("Failed to sign up user: \(error.localizedDescription)")
@@ -81,14 +79,13 @@ final class AuthManager {
         }
     }
     
-    public func deleteAccount(completion: @escaping (Bool) -> ()) {
+    public func deleteAccount(completion: @escaping (Result<Void, Error>) -> ()) {
         let user = Auth.auth().currentUser
-        
         user?.delete { error in
-            if error != nil {
-                completion (false)
+            if let error = error {
+                completion (.failure(error))
             } else {
-                completion(true)
+                completion(.success(()))
             }
         }
     }
@@ -101,5 +98,12 @@ final class AuthManager {
                 completion(.success(()))
             }
         }
+    }
+    
+    public func updateRootViewController(vc: UIViewController) {
+        let window = UIApplication.shared.windows.first
+        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+            window?.rootViewController = vc
+        }, completion: nil)
     }
 }
