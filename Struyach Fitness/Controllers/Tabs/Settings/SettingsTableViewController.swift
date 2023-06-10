@@ -348,13 +348,17 @@ final class SettingsTableViewController: UITableViewController {
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
                 cell.titleLabel.text = "Sign out".localized()
+                cell.titleLabel.textColor = .systemRed
                 cell.imgView.image = UIImage(systemName: "trash")
+                cell.imgView.tintColor = .systemRed
             } else {
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 cell.titleLabel.text = "Delete account and all data".localized()
+                cell.titleLabel.textColor = .systemRed
                 cell.imgView.image = UIImage(systemName: "xmark.square")
+                cell.imgView.tintColor = .systemRed
             }
             return cell
 #endif
@@ -449,10 +453,12 @@ final class SettingsTableViewController: UITableViewController {
         AlertManager.shared.showActionSheet(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), confirmActionTitle: "Sign Out".localized()) { action in
             AuthManager.shared.signOut { success in
                 if success {
+                    #if Client
                     IAPManager.shared.logOutRevenueCat { error in
                         AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases".localized(), cancelAction: "Cancel".localized())
                         print (error.localizedDescription)
                     }
+                    #endif
                     DispatchQueue.main.async {
                         UserDefaults.standard.set(nil, forKey: "userName")
                         UserDefaults.standard.set(nil, forKey: "email")
@@ -480,9 +486,13 @@ final class SettingsTableViewController: UITableViewController {
                             AlertManager.shared.showAlert(title: "Done".localized(), message: "Account is successfully deleted".localized(), cancelAction: "Ok"){ action in
                                 DispatchQueue.main.async {
                                     UserDefaults.standard.set(nil, forKey: "userName")
+                                    UserDefaults.standard.set(nil, forKey: "userUID")
                                     UserDefaults.standard.set(nil, forKey: "email")
+                                    UserDefaults.standard.set(nil, forKey: "hideEmail")
                                     UserDefaults.standard.set(nil, forKey: "userImage")
-
+                                    UserDefaults.standard.set(nil, forKey: "fcmToken")
+                                    UserDefaults.standard.set(false, forKey: "program")
+                                    
                                     let signInVC = LoginViewController()
                                     AuthManager.shared.updateRootViewController(vc: signInVC)
                                 }

@@ -898,7 +898,9 @@ final class DatabaseManager {
                 }
                 let token = data["fcmToken"] as? String
                 let personalRecords = data["personal_records"] as? String
-                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail)
+                let likedWorkouts = data["liked_workouts"] as? String
+                let likedPosts = data["liked_posts"] as? String
+                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail, likedWorkouts: likedWorkouts, likedPosts: likedPosts)
                         completion(user)
                     }
                 }
@@ -939,6 +941,50 @@ final class DatabaseManager {
         dbRef.getDocument { snapshot, error in
             guard var data = snapshot?.data(), error == nil else {return}
             data["fcmToken"] = newToken
+            dbRef.setData(data) { error in
+                if error == nil {
+                    completion(true)
+                }
+            }
+        }
+    }
+    
+    public func updateLikedWorkouts(email: String, completion: @escaping(Bool)->()){
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let reference = "users/\(path)/liked_workouts.json"
+        
+        let dbRef = database
+            .collection("users")
+            .document(path)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            data["liked_workouts"] = reference
+            dbRef.setData(data) { error in
+                if error == nil {
+                    completion(true)
+                }
+            }
+        }
+    }
+    
+    public func updateLikedPosts(email: String, completion: @escaping(Bool)->()){
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let reference = "users/\(path)/liked_posts.json"
+        
+        let dbRef = database
+            .collection("users")
+            .document(path)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            data["liked_posts"] = reference
             dbRef.setData(data) { error in
                 if error == nil {
                     completion(true)

@@ -15,4 +15,6 @@ struct User: Codable {
     let isAdmin: Bool
     let fcmToken: String?
     let emailIsHidden: Bool
+    let likedWorkouts: String?
+    let likedPosts: String?
 }

@@ -14,6 +14,7 @@ final class BlogViewController: UIViewController {
     
     private var blogPosts: [Post] = []
     private var selectedPost: Post?
+    private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
     private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
     private let pageSize = 10
     private var lastDocumentSnapshot: DocumentSnapshot? = nil
@@ -201,6 +202,42 @@ final class BlogViewController: UIViewController {
             present(alertController, animated: true)
         }
     }
+    
+    //functions to upload and fetch liked posts
+    func fetchLikedPosts() {
+        guard let email = currentUserEmail else {return}
+        DatabaseManager.shared.getUser(email: email) { [weak self] user in
+            guard let user = user,
+                  let self = self,
+                  let ref = user.likedPosts else {return}
+            StorageManager.shared.downloadUrl(path: ref) { url in
+                guard let url = url else {return}
+                
+                let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+                    guard let data = data else {return}
+                    self.likedPosts = try! JSONDecoder().decode([String].self, from: data)
+                    UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
+                }
+                task.resume()
+            }
+        }
+    }
+    
+    private func uploadLikedPosts() {
+        // upload saved likedPosts array to Firebase Storage
+        guard let email = currentUserEmail else {return}
+        StorageManager.shared.uploadLikedPosts(email: email, likedPosts: likedPosts) { success in
+            if success {
+                DatabaseManager.shared.updateLikedPosts(email: email) { [weak self] success in
+                    guard success else {return}
+                    guard let self = self else {return}
+                    print ("liked posts are updated")
+                    self.fetchLikedPosts()
+                }
+            }
+        }
+    }
+    
 }
 
     // MARK: - Table view dataSource and delegate methods
@@ -270,7 +307,10 @@ final class BlogViewController: UIViewController {
 
                     if !self.likedPosts.contains(post.id) {
                         self.likedPosts.append(post.id)
-                        UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
+//                        UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
+                        //here update likedPosts for storage and database
+                        self.uploadLikedPosts()
+                
                     }
                 }
             } else {
@@ -287,7 +327,10 @@ final class BlogViewController: UIViewController {
 
                     if let index = self.likedPosts.firstIndex(of: post.id) {
                         self.likedPosts.remove(at: index)
-                        UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
+//                        UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
+                        //here update likedPosts for storage and database
+                        self.uploadLikedPosts()
+                    
                     }
                 }
             }

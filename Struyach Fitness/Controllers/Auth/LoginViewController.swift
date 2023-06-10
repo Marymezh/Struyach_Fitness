@@ -118,7 +118,7 @@ final class LoginViewController: UIViewController {
             case .success:
                 #if Client
                 let userId = email
-             //   guard let userUID = AuthManager.shared.userUID else {return}
+         
                 let safeUserId = userId
                     .replacingOccurrences(of: "@", with: "_")
                     .replacingOccurrences(of: ".", with: "_")
@@ -128,8 +128,6 @@ final class LoginViewController: UIViewController {
                 #endif
                 DispatchQueue.main.async {
                     self.activityView.hide()
-//                    guard let userUID = AuthManager.shared.userUID else {return}
-//                    UserDefaults.standard.set(userUID, forKey: "userUID")
                     UserDefaults.standard.set(email, forKey: "email")
                     let vc = TabBarController()
                     vc.modalPresentationStyle = .fullScreen

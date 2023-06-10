@@ -119,7 +119,7 @@ final class CreateAccountViewController: UIViewController {
                 
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
-                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, isAdmin: isAdmin, fcmToken: nil, emailIsHidden: false)
+                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, isAdmin: isAdmin, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
                     DatabaseManager.shared.insertUser(user: newUser) { inserted in
                         guard inserted else {
                             print ("cant insert new user")

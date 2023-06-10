@@ -102,22 +102,22 @@ final class StorageManager {
         }
     }
     
-    public func uploadUserProfilePicture(email: String, image: Data?, completion: @escaping (Bool)->()) {
-        let path = email
-            .replacingOccurrences(of: ".", with: "_")
-            .replacingOccurrences(of: "@", with: "_")
-        
-        guard let pngData = image else {return}
-        container
-            .reference(withPath: "users/\(path)/profile_picture.png")
-            .putData(pngData, metadata: nil) { metadata, error in
-                guard metadata != nil, error == nil else {
-                    completion(false)
-                    return
-                }
-                completion(true)
-            }
-    }
+//    public func uploadUserProfilePicture(email: String, image: Data?, completion: @escaping (Bool)->()) {
+//        let path = email
+//            .replacingOccurrences(of: ".", with: "_")
+//            .replacingOccurrences(of: "@", with: "_")
+//
+//        guard let pngData = image else {return}
+//        container
+//            .reference(withPath: "users/\(path)/profile_picture.png")
+//            .putData(pngData, metadata: nil) { metadata, error in
+//                guard metadata != nil, error == nil else {
+//                    completion(false)
+//                    return
+//                }
+//                completion(true)
+//            }
+//    }
     
     public func setUserProfilePicture(email: String, image: Data?, completion: @escaping (String?)->()) {
         let path = email
@@ -150,6 +150,42 @@ final class StorageManager {
         
         container
             .reference(withPath: "users/\(path)/personal_records.json")
+            .putData(data, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(false)
+                    return
+                }
+                completion(true)
+            }
+    }
+    
+    public func uploadLikedPosts(email: String, likedPosts: [String]?, completion: @escaping (Bool)->()) {
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let data = try! JSONEncoder().encode(likedPosts)
+        
+        container
+            .reference(withPath: "users/\(path)/liked_posts.json")
+            .putData(data, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(false)
+                    return
+                }
+                completion(true)
+            }
+    }
+    
+    public func uploadLikedWorkouts(email: String, likedWorkouts: [String]?, completion: @escaping (Bool)->()) {
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+ 
+        let data = try! JSONEncoder().encode(likedWorkouts)
+        
+        container
+            .reference(withPath: "users/\(path)/liked_workouts.json")
             .putData(data, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
                     completion(false)
