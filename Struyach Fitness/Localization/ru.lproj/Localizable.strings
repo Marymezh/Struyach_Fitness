@@ -26,7 +26,7 @@
 "Enter your email" = "Введите e-mail";
 "No such user! Check your e-mail" = "Пользователь с таким адресом не найден, проверьте свой e-mail";
 "Send" = "Отправить";
-
+"Missing or insufficient permissions" = "Нет доступа к базе данных пользователей";
 "To restore your forgotten password please enter the email address of the registered user. You will receive an email with further instructions." = "Чтобы восстановить пароль, пожалуйста, введите адрес электронной почты зарегистрированного пользователя. Дальнейшие инструкции вы получите по email.";
 "Email with instructions was successfully sent!" = "Письмо с инструкциями по восстановлению пароля успешно отправлено!";
 "Failed sending email: %@" = "Письмо не отправлено: %@";

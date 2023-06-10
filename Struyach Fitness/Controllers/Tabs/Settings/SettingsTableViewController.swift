@@ -463,6 +463,8 @@ final class SettingsTableViewController: UITableViewController {
                         UserDefaults.standard.set(nil, forKey: "userName")
                         UserDefaults.standard.set(nil, forKey: "email")
                         UserDefaults.standard.set(nil, forKey: "userImage")
+                        UserDefaults.standard.set(nil, forKey: "likedPosts")
+                        UserDefaults.standard.set(nil, forKey: "likedWorkouts")
                         
                         let signInVC = LoginViewController()
                         AuthManager.shared.updateRootViewController(vc: signInVC)

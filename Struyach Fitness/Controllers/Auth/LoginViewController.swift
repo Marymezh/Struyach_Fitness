@@ -105,8 +105,9 @@ final class LoginViewController: UIViewController {
                     self.activityView.hide()
                 }
             } else {
-                AlertManager.shared.showAlert(title: "Error".localized(), message: "No such user! Check your e-mail".localized(), cancelAction: "Retry".localized())
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "Missing or insufficient permissions".localized(), cancelAction: "Retry".localized())
                 self.activityView.hide()
+                print("not user")
             }
         }
     }
@@ -116,12 +117,13 @@ final class LoginViewController: UIViewController {
             guard let self = self else {return}
             switch result {
             case .success:
-                #if Client
+               
                 let userId = email
          
                 let safeUserId = userId
                     .replacingOccurrences(of: "@", with: "_")
                     .replacingOccurrences(of: ".", with: "_")
+#if Client
                 IAPManager.shared.logInRevenueCat(userId: safeUserId) { error in
                     print(error.localizedDescription)
                 }

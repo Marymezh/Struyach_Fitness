@@ -893,6 +893,7 @@ final class DatabaseManager {
                       let hideEmail = data["hideEmail"] as? Bool,
                       let isAdmin = data["isAdmin"] as? Bool,
                       error == nil else {
+                    print (error?.localizedDescription)
                     completion(nil)
                     return
                 }

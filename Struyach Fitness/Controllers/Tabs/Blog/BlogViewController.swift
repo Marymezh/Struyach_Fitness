@@ -15,7 +15,8 @@ final class BlogViewController: UIViewController {
     private var blogPosts: [Post] = []
     private var selectedPost: Post?
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
-    private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
+    private var likedPosts:[String] = []
+//    private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
     private let pageSize = 10
     private var lastDocumentSnapshot: DocumentSnapshot? = nil
     private var isFetching = false
@@ -34,6 +35,7 @@ final class BlogViewController: UIViewController {
         setupAdminFunctionality()
 #endif
         loadBlogPostsWithPagination(pageSize: pageSize)
+        fetchLikedPosts()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -217,6 +219,9 @@ final class BlogViewController: UIViewController {
                     guard let data = data else {return}
                     self.likedPosts = try! JSONDecoder().decode([String].self, from: data)
                     UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
                 }
                 task.resume()
             }
