@@ -17,9 +17,14 @@ final class StorageManager {
     private init() {}
     //TODO: - write methods to upload image and video URL to Firebase Storage
     
-    public func uploadImageForComment(image: Data?, imageId: String, workout: Workout, progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
+    public func uploadImageForComment(email: String, image: Data?, imageId: String, progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
+        
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
         guard let pngData = image else {return}
-        let imageRef = "comments_photo_and_video/photo/\(workout.programID)/\(imageId)_photo.png"
+        let imageRef = "users/\(path)/\(imageId)_photo.png"
         let storageRef = container.reference(withPath: imageRef)
         let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
@@ -34,9 +39,14 @@ final class StorageManager {
                 }
     }
     
-    public func uploadImageForBlogComment(image: Data?, imageId: String, blogPost: Post, progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
+    public func uploadImageForBlogComment(email: String, image: Data?, imageId: String,  progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
+        
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
         guard let pngData = image else {return}
-        let imageRef = "blog_comments_photo_and_video/photo/\(blogPost.id)/\(imageId)_photo.png"
+        let imageRef = "users/\(path)/\(imageId)_photo.png"
         let storageRef = container.reference(withPath: imageRef)
         let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
@@ -51,8 +61,13 @@ final class StorageManager {
                 }
     }
     
-    public func uploadVideoURLForComment(videoID: String, videoData: Data, workout: Workout, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
-        let videoRef = "comments_photo_and_video/video/\(workout.programID)/\(videoID)"
+    public func uploadVideoURLForComment(email: String, videoID: String, videoData: Data, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
+        
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let videoRef = "users/\(path)/\(videoID)"
         print(videoData)
         let storageRef = container.reference(withPath: videoRef)
            let uploadTask = storageRef.putData(videoData, metadata: nil) { metadata, error in
@@ -69,9 +84,13 @@ final class StorageManager {
                 }
     }
     
-    public func uploadVideoURLForBlogComment(videoID: String, videoData: Data, blogPost: Post, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
+    public func uploadVideoURLForBlogComment(email: String, videoID: String, videoData: Data, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
+        
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
 
-        let videoRef = "blog_comments_photo_and_video/video/\(blogPost.id)/\(videoID)"
+        let videoRef = "users/\(path)/\(videoID)"
         print(videoData)
         let storageRef = container.reference(withPath: videoRef)
            let uploadTask = storageRef.putData(videoData, metadata: nil) { metadata, error in
@@ -86,6 +105,28 @@ final class StorageManager {
                     guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
                     progress(Float(percentComplete))
                 }
+    }
+    
+    public func uploadCommentText(email: String, commentID: String, completion: @escaping (String?) -> ()) {
+        
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+
+        let data = try! JSONEncoder().encode(commentID)
+        
+        let commentRef = "users/\(path)/\(commentID).json"
+        
+        container
+            .reference(withPath: commentRef)
+            .putData(data, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(nil)
+                    return
+                }
+               completion(commentRef)
+           }
+     
     }
   
     public func deleteCommentsPhotoAndVideo(mediaRef: String) {
@@ -93,31 +134,12 @@ final class StorageManager {
         let storageRef = container.reference(withPath: mediaRef)
         storageRef.delete { error in
             if let error = error {
-                // Uh-oh, an error occurred!
                 print(error.localizedDescription)
             } else {
-                // Photo deleted successfully
                 print("Photo deleted successfully!")
             }
         }
     }
-    
-//    public func uploadUserProfilePicture(email: String, image: Data?, completion: @escaping (Bool)->()) {
-//        let path = email
-//            .replacingOccurrences(of: ".", with: "_")
-//            .replacingOccurrences(of: "@", with: "_")
-//
-//        guard let pngData = image else {return}
-//        container
-//            .reference(withPath: "users/\(path)/profile_picture.png")
-//            .putData(pngData, metadata: nil) { metadata, error in
-//                guard metadata != nil, error == nil else {
-//                    completion(false)
-//                    return
-//                }
-//                completion(true)
-//            }
-//    }
     
     public func setUserProfilePicture(email: String, image: Data?, completion: @escaping (String?)->()) {
         let path = email
@@ -200,5 +222,52 @@ final class StorageManager {
             .downloadURL { url, _ in
                 completion(url)
             }
+    }
+    
+//    public func deleteUserData(email: String, completion: @escaping (Bool, Error?) -> Void) {
+//        let path = email
+//            .replacingOccurrences(of: ".", with: "_")
+//            .replacingOccurrences(of: "@", with: "_")
+//
+//        let userFolderRef = "users/\(path)/"
+//        let storageRef = container.reference(withPath: userFolderRef)
+//
+//        storageRef.delete { error in
+//            if let error = error {
+//                print("Error deleting user data:", error)
+//                completion(false, error)
+//            } else {
+//                completion(true, nil)
+//            }
+//        }
+//    }
+    public func deleteUserData(email: String, completion: @escaping (Bool, Error?) -> Void) {
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let userFolderRef = "users/\(path)"
+        
+        let storageReference = container.reference().child(userFolderRef)
+        storageReference.listAll { (result, error) in
+            if let error = error {
+                print ("error listing folder contents: \(error.localizedDescription)")
+            } else if let result = result {
+                print ("Number of files to delete:\(result.items.count)")
+                if result.items.count == 0 {
+                    completion(true, nil)
+                }
+                for item in result.items {
+                    item.delete { error in
+                        if let error = error {
+                            print("Error deleting item:", error)
+                            completion(false, error)
+                        } else {
+                            completion(true, nil)
+                        }
+                    }
+                }
+            }
+        }
     }
 }

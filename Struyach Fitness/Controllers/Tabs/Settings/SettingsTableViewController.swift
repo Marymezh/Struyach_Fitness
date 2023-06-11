@@ -449,9 +449,22 @@ final class SettingsTableViewController: UITableViewController {
         }
     }
     
+    private func clearUserDefaults() {
+        UserDefaults.standard.set(nil, forKey: "userName")
+        UserDefaults.standard.set(nil, forKey: "email")
+        UserDefaults.standard.set(nil, forKey: "userImage")
+        UserDefaults.standard.set(nil, forKey: "likedPosts")
+        UserDefaults.standard.set(nil, forKey: "likedWorkouts")
+        UserDefaults.standard.set(nil, forKey: "userUID")
+        UserDefaults.standard.set(nil, forKey: "hideEmail")
+        UserDefaults.standard.set(nil, forKey: "fcmToken")
+        UserDefaults.standard.set(false, forKey: "program")
+    }
+    
     private func signOut() {
         AlertManager.shared.showActionSheet(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), confirmActionTitle: "Sign Out".localized()) { action in
-            AuthManager.shared.signOut { success in
+            AuthManager.shared.signOut { [weak self] success in
+                guard let self = self else {return}
                 if success {
                     #if Client
                     IAPManager.shared.logOutRevenueCat { error in
@@ -460,14 +473,13 @@ final class SettingsTableViewController: UITableViewController {
                     }
                     #endif
                     DispatchQueue.main.async {
-                        UserDefaults.standard.set(nil, forKey: "userName")
-                        UserDefaults.standard.set(nil, forKey: "email")
-                        UserDefaults.standard.set(nil, forKey: "userImage")
-                        UserDefaults.standard.set(nil, forKey: "likedPosts")
-                        UserDefaults.standard.set(nil, forKey: "likedWorkouts")
-                        
+                        self.clearUserDefaults()
                         let signInVC = LoginViewController()
-                        AuthManager.shared.updateRootViewController(vc: signInVC)
+                        let window = UIApplication.shared.windows.first
+                        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+                        let navVC = UINavigationController(rootViewController: signInVC)
+                        window?.rootViewController = navVC
+                    }, completion: nil)
                     }
                 }
             }
@@ -475,29 +487,42 @@ final class SettingsTableViewController: UITableViewController {
     }
     
     private func deleteAccount() {
-        let message = "Deleting your account will permanently remove all your data and cannot be undone. This action is irreversible.\nBefore deleting your account, please consider the following:\n1. Data Loss: All your personal information, including profile details, messages, and preferences, will be deleted and cannot be recovered.\n2. Access Revocation: You will lose access to any associated services, features, or benefits linked to your account.\n3. Subscription Cancellation: If you have an active subscription, deleting your account will not cancel any active subscriptions tied to your account, you have to cancel them on your own in Settings -> Apple ID -> Subscriptions. \n4. Social Connections: Connections or interactions with other users, friends and coach may be lost. You will no longer be able to communicate with them through the platform.\nPlease take your time to consider this decision carefully. If you have any concerns or questions, we recommend you to send a message to the developer for assistance before proceeding.\nTo confirm the deletion of your account and proceed, tap \"Delete Account\". To cancel and retain your account, tap \"Cancel\"."
-        AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: message.localized(), confirmActionTitle: "Delete Account".localized()) { action in
+        AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: K.accountDeleteMessage.localized(), confirmActionTitle: "Delete Account".localized()) { action in
             AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), confirmActionTitle: "Confirm".localized()) { success, text in
                 if let text = text, text == "Confirm" {
-                    AuthManager.shared.deleteAccount { result in
-                        switch result {
-                        case .failure(let error):
-//                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: error.localizedDescription, cancelAction: "Ok")
-                        case .success(()):
-                            AlertManager.shared.showAlert(title: "Done".localized(), message: "Account is successfully deleted".localized(), cancelAction: "Ok"){ action in
-                                DispatchQueue.main.async {
-                                    UserDefaults.standard.set(nil, forKey: "userName")
-                                    UserDefaults.standard.set(nil, forKey: "userUID")
-                                    UserDefaults.standard.set(nil, forKey: "email")
-                                    UserDefaults.standard.set(nil, forKey: "hideEmail")
-                                    UserDefaults.standard.set(nil, forKey: "userImage")
-                                    UserDefaults.standard.set(nil, forKey: "fcmToken")
-                                    UserDefaults.standard.set(false, forKey: "program")
-                                    
-                                    let signInVC = LoginViewController()
-                                    AuthManager.shared.updateRootViewController(vc: signInVC)
+                    StorageManager.shared.deleteUserData(email: self.email) { success, error in
+                        if success {
+                            DatabaseManager.shared.deleteUser(email: self.email) { success in
+                                if success {
+                                    AuthManager.shared.deleteAccount { result in
+                                        switch result {
+                                        case .failure(let error):
+                                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
+                                            print (error.localizedDescription)
+//                                            AlertManager.shared.showAlert(title: "Warning".localized(), message: error.localizedDescription, cancelAction: "Ok")
+                                        case .success(()):
+                                            AlertManager.shared.showAlert(title: "Done".localized(), message: "Account is successfully deleted".localized(), cancelAction: "Ok"){ [weak self] action in
+                                                guard let self = self else {return}
+                                                DispatchQueue.main.async {
+                                                    self.clearUserDefaults()
+                                                    let signInVC = LoginViewController()
+                                                    let window = UIApplication.shared.windows.first
+                                                    UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+                                                    let navVC = UINavigationController(rootViewController: signInVC)
+                                                    window?.rootViewController = navVC
+                                                }, completion: nil)
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    AlertManager.shared.showAlert(title: "Error", message: "Can not delete user from the database", cancelAction: "Cancel".localized())
                                 }
+                            }
+                        } else {
+                            if let error = error {
+                                let message = String(format: "User data can not be deleted: %@".localized(), error.localizedDescription)
+                                AlertManager.shared.showAlert(title: "Error".localized(), message: message, cancelAction: "Cancel".localized())
                             }
                         }
                     }
@@ -575,7 +600,10 @@ extension SettingsTableViewController: LanguageSwitchDelegate {
         tableView.reloadData()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             let tabBarController = TabBarController()
-            AuthManager.shared.updateRootViewController(vc: tabBarController)
+            let window = UIApplication.shared.windows.first
+            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+            window?.rootViewController = tabBarController
+        }, completion: nil)
         }
     }
 }

@@ -84,6 +84,7 @@ final class AuthManager {
         user?.delete { error in
             if let error = error {
                 completion (.failure(error))
+                print (error.localizedDescription)
             } else {
                 completion(.success(()))
             }
@@ -98,12 +99,5 @@ final class AuthManager {
                 completion(.success(()))
             }
         }
-    }
-    
-    public func updateRootViewController(vc: UIViewController) {
-        let window = UIApplication.shared.windows.first
-        UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-            window?.rootViewController = vc
-        }, completion: nil)
     }
 }

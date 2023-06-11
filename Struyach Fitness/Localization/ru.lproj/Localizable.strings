@@ -154,6 +154,7 @@
 "Error occured, account is not deleted" = "Ошибка: не удалось удалить учётную запись";
 "Incorrect confirmation entry, check spelling" = "Подтверждающее слово не верно";
 "This operation is sensitive and requires recent authentication. Log in again before retrying this request" = "Эта операция требует свежую аутентификацию. Чтобы закончить эту операцию необходимо выйти из учётной записи и снова зайти";
+"User data can not be deleted: %@" = "Данные учётной записи не могут быть удалены";
 
 //MARK: - PROFILE
 "Unknown user" = "Неизвестный пользователь";

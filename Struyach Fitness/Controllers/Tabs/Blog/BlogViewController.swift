@@ -15,8 +15,7 @@ final class BlogViewController: UIViewController {
     private var blogPosts: [Post] = []
     private var selectedPost: Post?
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
-    private var likedPosts:[String] = []
-//    private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
+    private var likedPosts = UserDefaults.standard.array(forKey: "likedPosts") as? [String] ?? []
     private let pageSize = 10
     private var lastDocumentSnapshot: DocumentSnapshot? = nil
     private var isFetching = false
@@ -206,7 +205,7 @@ final class BlogViewController: UIViewController {
     }
     
     //functions to upload and fetch liked posts
-    func fetchLikedPosts() {
+    private func fetchLikedPosts() {
         guard let email = currentUserEmail else {return}
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user,

@@ -893,7 +893,6 @@ final class DatabaseManager {
                       let hideEmail = data["hideEmail"] as? Bool,
                       let isAdmin = data["isAdmin"] as? Bool,
                       error == nil else {
-                    print (error?.localizedDescription)
                     completion(nil)
                     return
                 }
@@ -905,6 +904,26 @@ final class DatabaseManager {
                         completion(user)
                     }
                 }
+    
+    public func deleteUser(email: String, completion: @escaping (Bool)->()){
+        let documentID = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let dbRef = database
+            .collection("users")
+            .document(documentID)
+        
+        dbRef.delete() { error in
+            if let error = error {
+                print("Error deleting user: \(error.localizedDescription)")
+                completion(false)
+            } else {
+                print("user deleted successfully")
+                completion(true)
+            }
+        }
+    }
     
     public func updateUserName(email: String, newUserName: String,
                                completion: @escaping(Bool)->()

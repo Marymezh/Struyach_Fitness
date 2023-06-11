@@ -14,6 +14,7 @@ final class WorkoutsViewController: UIViewController {
     
     private var listOfWorkouts: [Workout] = []
     private var filteredWorkouts: [Workout] = []
+    private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
     private let selectedWorkoutView = SelectedWorkoutView()
     private let workoutsCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var selectedIndexPath: IndexPath?
@@ -30,9 +31,7 @@ final class WorkoutsViewController: UIViewController {
     private let likesAndCommentsView = LikesAndCommentsView()
     private let searchBarView = SearchBarView()
     private let plusButtonView = PlusButtonView()
-    
-    
-    
+
     //MARK: Lifecycle
     
     override func viewDidLoad() {
@@ -42,6 +41,7 @@ final class WorkoutsViewController: UIViewController {
         setupNavigationAndTabBar()
         setupCollectionView()
         setupSubviews()
+        fetchLikedWorkouts()
 #if Admin
         setupAdminFunctionality()
 #endif
@@ -324,6 +324,44 @@ final class WorkoutsViewController: UIViewController {
         return self.likedWorkouts.contains(workout.id)
     }
     
+    //functions to upload and fetch liked posts
+    private func fetchLikedWorkouts() {
+        guard let email = currentUserEmail else {return}
+        DatabaseManager.shared.getUser(email: email) { [weak self] user in
+            guard let user = user,
+                  let self = self,
+                  let ref = user.likedWorkouts else {return}
+            StorageManager.shared.downloadUrl(path: ref) { url in
+                guard let url = url else {return}
+                
+                let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+                    guard let data = data else {return}
+                    self.likedWorkouts = try! JSONDecoder().decode([String].self, from: data)
+                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+                    DispatchQueue.main.async {
+                        self.workoutsCollection.reloadData()
+                    }
+                }
+                task.resume()
+            }
+        }
+    }
+    
+    private func uploadLikedWorkouts() {
+        // upload saved likedPosts array to Firebase Storage
+        guard let email = currentUserEmail else {return}
+        StorageManager.shared.uploadLikedWorkouts(email: email, likedWorkouts: likedWorkouts) { success in
+            if success {
+                DatabaseManager.shared.updateLikedWorkouts(email: email) { [weak self] success in
+                    guard success else {return}
+                    guard let self = self else {return}
+                    print ("liked posts are updated")
+                    self.fetchLikedWorkouts()
+                }
+            }
+        }
+    }
+    
     @objc private func addLikeToWorkout() {
         likesAndCommentsView.likeButton.isSelected = !likesAndCommentsView.likeButton.isSelected
         guard var selectedWorkout = selectedWorkout,
@@ -341,7 +379,8 @@ final class WorkoutsViewController: UIViewController {
                 self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
                 if !self.likedWorkouts.contains(selectedWorkout.id) {
                     self.likedWorkouts.append(selectedWorkout.id)
-                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+//                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+                    self.uploadLikedWorkouts()
                 }
             }
         } else {
@@ -356,7 +395,8 @@ final class WorkoutsViewController: UIViewController {
                 self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
                 if let index = self.likedWorkouts.firstIndex(of: selectedWorkout.id) {
                     self.likedWorkouts.remove(at: index)
-                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+//                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
+                    self.uploadLikedWorkouts()
                 }
             }
         }
