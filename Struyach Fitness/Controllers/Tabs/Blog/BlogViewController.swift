@@ -274,14 +274,25 @@ final class BlogViewController: UIViewController {
         }
         let dateString = formatter.string(from: date)
         cell.postDateLabel.text = dateString
-        
-        cell.postDescriptionTextView.text = post.description
         cell.likesAndCommentsView.likesLabel.text = "\(post.likes)"
-        switch post.comments {
-        case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
-        case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
-        default: cell.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), post.comments)
+        cell.postDescriptionTextView.text = post.description
+        DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
+            DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak cell] blogPost in
+                guard let cell = cell else {return}
+                print ("number of blog post comments is \(blogPost.comments)")
+                    switch blogPost.comments {
+                    case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
+                    case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
+                    default: cell.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), post.comments)
+                }
+            }
         }
+        
+//        switch post.comments {
+//        case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
+//        case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
+//        default: cell.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), post.comments)
+//        }
         
         if likedPosts.contains(post.id) {
             cell.likesAndCommentsView.likeButton.isSelected = true
@@ -331,8 +342,6 @@ final class BlogViewController: UIViewController {
 
                     if let index = self.likedPosts.firstIndex(of: post.id) {
                         self.likedPosts.remove(at: index)
-//                        UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
-                        //here update likedPosts for storage and database
                         self.uploadLikedPosts()
                     
                     }

@@ -56,6 +56,19 @@ final class WorkoutsViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         DatabaseManager.shared.allWorkoutsLoaded = false
         guard let title = title else {return}
+        if let selectedWorkout = selectedWorkout {
+            DatabaseManager.shared.getCommentsCount(workout: selectedWorkout) { numberOfComments in
+                DatabaseManager.shared.updateWorkoutCommentsCount(workout: selectedWorkout, commentsCount: numberOfComments) { [weak self] workout in
+                    guard let self = self else {return}
+                    print ("number of workout comments is \(workout.comments)")
+                    if let index = self.filteredWorkouts.firstIndex(where: { $0.id == workout.id }) {
+                        self.filteredWorkouts[index] = workout
+                        self.updateUI(workout: workout)
+                        self.workoutsCollection.reloadData()
+                    }
+                }
+            }
+        }
         workoutsListener = DatabaseManager.shared.addWorkoutsListener(for: title) { [weak self] updatedWorkouts in
             guard let self = self else {return}
             self.listOfWorkouts = updatedWorkouts
