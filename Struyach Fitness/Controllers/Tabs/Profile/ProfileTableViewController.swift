@@ -35,11 +35,13 @@ final class ProfileTableViewController: UITableViewController {
         super.viewDidLoad()
         setupTableView()
         setupHeaderView()
+       
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchProfileData()
+        
 
     }
     

@@ -489,6 +489,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     print(messageMediaRef)
                                 }
                                 self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
+                                self.onCommentPosted?()
                             } else {
                                 AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete comment".localized(), cancelAction: "Cancel".localized())
                             }
@@ -500,6 +501,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
                                 }
                                 self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
+                                self.onCommentPosted?()
                             } else {
                                 AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to delete comment".localized(), cancelAction: "Cancel".localized())
                             }

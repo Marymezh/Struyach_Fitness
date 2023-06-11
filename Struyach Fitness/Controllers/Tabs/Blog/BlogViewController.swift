@@ -41,6 +41,7 @@ final class BlogViewController: UIViewController {
         super.viewWillAppear(animated)
         setupNavAndTabBar()
         DatabaseManager.shared.allPostsLoaded = false
+        tableView.reloadData()
         postUpdatesListener = DatabaseManager.shared.addBlogPostsListener { [weak self] updatedPosts in
             guard let self = self else {return}
             self.blogPosts = updatedPosts
@@ -241,7 +242,6 @@ final class BlogViewController: UIViewController {
             }
         }
     }
-    
 }
 
     // MARK: - Table view dataSource and delegate methods

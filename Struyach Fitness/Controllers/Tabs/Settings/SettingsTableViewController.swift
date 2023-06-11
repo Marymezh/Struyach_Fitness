@@ -490,33 +490,38 @@ final class SettingsTableViewController: UITableViewController {
         AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: K.accountDeleteMessage.localized(), confirmActionTitle: "Delete Account".localized()) { action in
             AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), confirmActionTitle: "Confirm".localized()) { success, text in
                 if let text = text, text == "Confirm" {
-                    StorageManager.shared.deleteUserData(email: self.email) { success, error in
+                    StorageManager.shared.deleteUserData(email: self.email) {[weak self] success, error in
+                        guard let self = self else {return}
                         if success {
-                            DatabaseManager.shared.deleteUser(email: self.email) { success in
-                                if success {
-                                    AuthManager.shared.deleteAccount { result in
-                                        switch result {
-                                        case .failure(let error):
-                                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
-                                            print (error.localizedDescription)
-//                                            AlertManager.shared.showAlert(title: "Warning".localized(), message: error.localizedDescription, cancelAction: "Ok")
-                                        case .success(()):
-                                            AlertManager.shared.showAlert(title: "Done".localized(), message: "Account is successfully deleted".localized(), cancelAction: "Ok"){ [weak self] action in
-                                                guard let self = self else {return}
-                                                DispatchQueue.main.async {
-                                                    self.clearUserDefaults()
-                                                    let signInVC = LoginViewController()
-                                                    let window = UIApplication.shared.windows.first
-                                                    UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-                                                    let navVC = UINavigationController(rootViewController: signInVC)
-                                                    window?.rootViewController = navVC
-                                                }, completion: nil)
+                            DatabaseManager.shared.deleteAllBlogCommentsForUser(userId: self.email) { blogCommentsSuccess in
+                                DatabaseManager.shared.deleteAllWorkoutCommentsForUser(userId: self.email) { workoutCommentsSuccess in
+                                    DatabaseManager.shared.deleteUser(email: self.email) { success in
+                                        if success && blogCommentsSuccess && workoutCommentsSuccess {
+                                            AuthManager.shared.deleteAccount { result in
+                                                switch result {
+                                                case .failure(let error):
+                                                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
+                                                    print (error.localizedDescription)
+                                                    //                                            AlertManager.shared.showAlert(title: "Warning".localized(), message: error.localizedDescription, cancelAction: "Ok")
+                                                case .success(()):
+                                                    AlertManager.shared.showAlert(title: "Done".localized(), message: "Account is successfully deleted".localized(), cancelAction: "Ok"){ [weak self] action in
+                                                        guard let self = self else {return}
+                                                        DispatchQueue.main.async {
+                                                            self.clearUserDefaults()
+                                                            let signInVC = LoginViewController()
+                                                            let window = UIApplication.shared.windows.first
+                                                            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+                                                                let navVC = UINavigationController(rootViewController: signInVC)
+                                                                window?.rootViewController = navVC
+                                                            }, completion: nil)
+                                                        }
+                                                    }
                                                 }
                                             }
+                                        } else {
+                                            AlertManager.shared.showAlert(title: "Error", message: "Can not delete user and its data from the database", cancelAction: "Cancel".localized())
                                         }
                                     }
-                                } else {
-                                    AlertManager.shared.showAlert(title: "Error", message: "Can not delete user from the database", cancelAction: "Cancel".localized())
                                 }
                             }
                         } else {

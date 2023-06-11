@@ -581,6 +581,63 @@ final class DatabaseManager {
         }
     }
     
+    public func deleteAllBlogCommentsForUser(userId: String, completion: @escaping ((Bool)-> Void)) {
+        let db = Firestore.firestore()
+       
+        db.collection("blogPosts").getDocuments { (snapshot, error) in
+            guard let documents = snapshot?.documents else {
+                print("Error retrieving blog posts: \(error?.localizedDescription ?? "Unknown error")")
+                completion(false)
+                return
+            }
+            
+            let dispatchGroup = DispatchGroup()
+            
+            for document in documents {
+                let postId = document.documentID
+                
+                let commentsCollection = db.collection("blogPosts").document(postId).collection("comments")
+                let query = commentsCollection.whereField("senderId", isEqualTo: userId)
+                
+                dispatchGroup.enter()
+                
+                query.getDocuments { (snapshot, error) in
+                    guard let documents = snapshot?.documents else {
+                        print("Error retrieving comments for post \(postId): \(error?.localizedDescription ?? "Unknown error")")
+                        dispatchGroup.leave()
+                        completion(false)
+                        return
+                    }
+                   
+                    let batch = db.batch()
+                    
+                    for document in documents {
+                        let commentId = document.documentID
+                        let commentRef = commentsCollection.document(commentId)
+                        
+                        batch.deleteDocument(commentRef)
+                    }
+               
+                    batch.commit { (error) in
+                        if let error = error {
+                            print("Error deleting comments for post \(postId): \(error.localizedDescription)")
+                            completion(false)
+                        } else {
+                            print("Comments deleted successfully for post \(postId)")
+                        }
+                        
+                        dispatchGroup.leave()
+                    }
+                }
+            }
+
+            dispatchGroup.notify(queue: .main) {
+                completion(true)
+                print("Deletion of comments for user \(userId) completed")
+            }
+        }
+    }
+    
     //MARK: - Comments for workouts: Adding, fetching, editing, deleting and listen to the changes 
     public func postComment(comment: Comment, completion: @escaping (Bool) ->()){
         print("posting comment to Firestore")
@@ -794,6 +851,75 @@ final class DatabaseManager {
                 print("comment deleted successfully")
                 completion(true)
             }
+        }
+    }
+    
+    public func deleteAllWorkoutCommentsForUser(userId: String, completion: @escaping (Bool) -> Void) {
+        let db = Firestore.firestore()
+        
+        let programsIDs = ["Belly_Burner_Plan", "Bodyweight", "ECD_Plan", "Pelvic_Power_Plan", "Struyach_Plan"]
+        
+        for program in programsIDs {
+            db.collection("programs")
+                .document(program)
+                .collection("workouts")
+                .getDocuments { (snapshot, error) in
+                    guard let documents = snapshot?.documents else {
+                        print("Error retrieving blog posts: \(error?.localizedDescription ?? "Unknown error")")
+                        completion(false)
+                        return
+                    }
+                    
+                    let dispatchGroup = DispatchGroup()
+                    
+                    for document in documents {
+                        let workoutId = document.documentID
+                        print ("workoutId: \(workoutId)")
+                        
+                        let commentsCollection = db.collection("programs")
+                            .document(program)
+                            .collection("workouts")
+                            .document(workoutId)
+                            .collection("comments")
+                        let query = commentsCollection.whereField("senderId", isEqualTo: userId)
+                        
+                        dispatchGroup.enter()
+                        
+                        query.getDocuments { (snapshot, error) in
+                            guard let documents = snapshot?.documents else {
+                                print("Error retrieving comments for post \(workoutId): \(error?.localizedDescription ?? "Unknown error")")
+                                dispatchGroup.leave()
+                                completion(false)
+                                return
+                            }
+                            
+                            let batch = db.batch()
+                            
+                            for document in documents {
+                                let commentId = document.documentID
+                                let commentRef = commentsCollection.document(commentId)
+                                
+                                batch.deleteDocument(commentRef)
+                            }
+                            
+                            batch.commit { (error) in
+                                if let error = error {
+                                    print("Error deleting comments for post \(workoutId): \(error.localizedDescription)")
+                                    completion(false)
+                                } else {
+                                    print("Comments deleted successfully for post \(workoutId)")
+                                }
+                                
+                                dispatchGroup.leave()
+                            }
+                        }
+                    }
+                    
+                    dispatchGroup.notify(queue: .main) {
+                        completion(true)
+                        print("Deletion of all workout comments for user \(userId) completed")
+                    }
+                }
         }
     }
     

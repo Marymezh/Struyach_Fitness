@@ -223,24 +223,7 @@ final class StorageManager {
                 completion(url)
             }
     }
-    
-//    public func deleteUserData(email: String, completion: @escaping (Bool, Error?) -> Void) {
-//        let path = email
-//            .replacingOccurrences(of: ".", with: "_")
-//            .replacingOccurrences(of: "@", with: "_")
-//
-//        let userFolderRef = "users/\(path)/"
-//        let storageRef = container.reference(withPath: userFolderRef)
-//
-//        storageRef.delete { error in
-//            if let error = error {
-//                print("Error deleting user data:", error)
-//                completion(false, error)
-//            } else {
-//                completion(true, nil)
-//            }
-//        }
-//    }
+
     public func deleteUserData(email: String, completion: @escaping (Bool, Error?) -> Void) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
@@ -257,6 +240,7 @@ final class StorageManager {
                 if result.items.count == 0 {
                     completion(true, nil)
                 }
+                
                 for item in result.items {
                     item.delete { error in
                         if let error = error {
