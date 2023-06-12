@@ -41,7 +41,6 @@ final class WorkoutsViewController: UIViewController {
         setupNavigationAndTabBar()
         setupCollectionView()
         setupSubviews()
-        fetchLikedWorkouts()
 #if Admin
         setupAdminFunctionality()
 #endif
@@ -56,6 +55,7 @@ final class WorkoutsViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         DatabaseManager.shared.allWorkoutsLoaded = false
         guard let title = title else {return}
+        fetchLikedWorkouts()
         if let selectedWorkout = selectedWorkout {
             self.updateUI(workout: selectedWorkout)
         }
@@ -195,15 +195,19 @@ final class WorkoutsViewController: UIViewController {
         let newWorkoutVC = TextViewController()
         newWorkoutVC.title = "Add new workout".localized()
         navigationController?.pushViewController(newWorkoutVC, animated: true)
-        newWorkoutVC.onWorkoutSave = {[weak self] text in
+        newWorkoutVC.onWorkoutSave = {[weak self] text, selectedDate in
             guard let title = self?.title else {return}
+            guard let selectedDate = selectedDate else {
+                return
+            }
+
             let timestamp = Date().timeIntervalSince1970
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
             let dateString = formatter.string(from: date)
             let workoutID = "\(title)_\(dateString.replacingOccurrences(of: " ", with: "_"))"
-            let newWorkout = Workout(id: workoutID, programID: title, description: text, timestamp: timestamp, likes: 0)
+            let newWorkout = Workout(id: workoutID, programID: title, description: text, timestamp: selectedDate, likes: 0)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
@@ -295,7 +299,7 @@ final class WorkoutsViewController: UIViewController {
                 let selectedWorkout = self.listOfWorkouts[indexPath.item]
                 workoutVC.text = selectedWorkout.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
-                workoutVC.onWorkoutSave = {text in
+                workoutVC.onWorkoutSave = {text, _ in
                     DatabaseManager.shared.updateWorkout(workout: selectedWorkout, newDescription: text) { workout in
                         AlertManager.shared.showAlert(title: "Success".localized(), message: "Workout is successfully updated!".localized(), cancelAction: "Ok")
                     }

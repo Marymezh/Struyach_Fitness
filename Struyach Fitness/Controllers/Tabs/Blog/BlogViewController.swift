@@ -119,14 +119,15 @@ final class BlogViewController: UIViewController {
         newPostVC.title = "Add new post".localized()
         tabBarController?.tabBar.isHidden = true
         navigationController?.pushViewController(newPostVC, animated: true)
-        newPostVC.onWorkoutSave = {[weak self] text in
+        newPostVC.onWorkoutSave = {[weak self] text, selectedDate in
+            guard let selectedDate = selectedDate else {return}
             let timestamp = Date().timeIntervalSince1970
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy"
             let dateString = formatter.string(from: date)
             let postID = dateString + (UUID().uuidString)
-            let newPost = Post(id: postID, description: text, timestamp: timestamp, likes: 0, comments: 0)
+            let newPost = Post(id: postID, description: text, timestamp: selectedDate, likes: 0, comments: 0)
             DatabaseManager.shared.saveBlogPost(with: newPost) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
@@ -190,7 +191,7 @@ final class BlogViewController: UIViewController {
                 let selectedPost = self.blogPosts[indexPath.item]
                 workoutVC.text = selectedPost.description
                 self.navigationController?.pushViewController(workoutVC, animated: true)
-                workoutVC.onWorkoutSave = {text in
+                workoutVC.onWorkoutSave = {text, _ in
                     DatabaseManager.shared.updatePost(blogPost: selectedPost, newDescription: text) { post in
                         AlertManager.shared.showAlert(title: "Success".localized(), message: "Post is successfully updated!".localized(), cancelAction: "Ok")
                     }

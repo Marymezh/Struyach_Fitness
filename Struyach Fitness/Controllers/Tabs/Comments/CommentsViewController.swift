@@ -518,7 +518,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         commentVC.title = "Edit comment".localized()
                         commentVC.text = textToEdit
                         self.navigationController?.pushViewController(commentVC, animated: true)
-                        commentVC.onWorkoutSave = { text in
+                        commentVC.onWorkoutSave = { text, _ in
                             if let workout = self.workout {
                                 DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: text, newMediaRef: nil) { success in
                                     if success{
