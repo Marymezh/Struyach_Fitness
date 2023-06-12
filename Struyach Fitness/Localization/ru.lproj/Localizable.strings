@@ -62,6 +62,10 @@
 "Workout successfully deleted" = "Тренировка успешно удалена";
 "Edit workout" = "Редактор тренировки";
 "Edit post" = "Редактор поста";
+"Today" = "Сегодня";
+"Tomorrow" = "Завтра";
+"Write some text before saving." = "Напишите что-нибудь, прежде чем сохранить.";
+"Please select a date." = "Необходимо выбрать дату";
 
 "Search for workouts" = "Что будем искать?";
 "Ooops! No workouts were found! Change your query and try again." = "Ой! По вашему запросу ничего не нашлось! Измените запрос и попробуйте снова!";

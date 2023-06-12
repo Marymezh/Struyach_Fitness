@@ -35,7 +35,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     
     private lazy var todayButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Today", for: .normal)
+        button.setTitle("Today".localized(), for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = .customTabBar
         button.layer.cornerRadius = 10
@@ -53,7 +53,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     
     private lazy var tomorrowButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Tomorrow", for: .normal)
+        button.setTitle("Tomorrow".localized(), for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = .customTabBar
         button.layer.cornerRadius = 10
@@ -179,7 +179,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     
     @objc private func addNewWorkout() {
         guard let text = workoutDescriptionTextView.text, !text.isEmpty else {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "This textfield cannot be blank!".localized(), cancelAction: "Cancel".localized())
+            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Write some text before saving.".localized(), cancelAction: "Cancel".localized())
             return
         }
         
