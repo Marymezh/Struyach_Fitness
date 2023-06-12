@@ -57,17 +57,7 @@ final class WorkoutsViewController: UIViewController {
         DatabaseManager.shared.allWorkoutsLoaded = false
         guard let title = title else {return}
         if let selectedWorkout = selectedWorkout {
-            DatabaseManager.shared.getCommentsCount(workout: selectedWorkout) { numberOfComments in
-                DatabaseManager.shared.updateWorkoutCommentsCount(workout: selectedWorkout, commentsCount: numberOfComments) { [weak self] workout in
-                    guard let self = self else {return}
-                    print ("number of workout comments is \(workout.comments)")
-                    if let index = self.filteredWorkouts.firstIndex(where: { $0.id == workout.id }) {
-                        self.filteredWorkouts[index] = workout
-                        self.updateUI(workout: workout)
-                        self.workoutsCollection.reloadData()
-                    }
-                }
-            }
+            self.updateUI(workout: selectedWorkout)
         }
         workoutsListener = DatabaseManager.shared.addWorkoutsListener(for: title) { [weak self] updatedWorkouts in
             guard let self = self else {return}
@@ -179,12 +169,22 @@ final class WorkoutsViewController: UIViewController {
     }
     
     private func updateUI(workout: Workout) {
-        selectedWorkoutView.workoutDescriptionTextView.text = workout.description
-        likesAndCommentsView.likesLabel.text = "\(workout.likes)"
-        switch workout.comments {
-        case 0: likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
-        case 1: likesAndCommentsView.commentsLabel.text = "1 comment".localized()
-        default: likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), workout.comments)
+        DatabaseManager.shared.getCommentsCount(workout: workout) { numberOfComments in
+            DatabaseManager.shared.updateWorkoutCommentsCount(workout: workout, commentsCount: numberOfComments) { [weak self] workout in
+                guard let self = self else {return}
+                print ("number of workout comments is \(workout.comments)")
+                if let index = self.filteredWorkouts.firstIndex(where: { $0.id == workout.id }) {
+                    self.filteredWorkouts[index] = workout
+                    self.selectedWorkoutView.workoutDescriptionTextView.text = workout.description
+                    self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
+                    switch workout.comments {
+                    case 0: self.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
+                    case 1: self.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
+                    default: self.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), workout.comments)
+                    }
+                    self.workoutsCollection.reloadData()
+                }
+            }
         }
     }
     
@@ -200,9 +200,9 @@ final class WorkoutsViewController: UIViewController {
             let timestamp = Date().timeIntervalSince1970
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
-            formatter.dateFormat = "dd.MM.yyyy"
+            formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
             let dateString = formatter.string(from: date)
-            let workoutID = dateString.replacingOccurrences(of: " ", with: "_") + (UUID().uuidString)
+            let workoutID = "\(title)_\(dateString.replacingOccurrences(of: " ", with: "_"))"
             let newWorkout = Workout(id: workoutID, programID: title, description: text, timestamp: timestamp, likes: 0)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 print("Executing function: \(#function)")
@@ -318,17 +318,9 @@ final class WorkoutsViewController: UIViewController {
         navigationController?.navigationBar.topItem?.backBarButtonItem = UIBarButtonItem(title: "Back".localized(), style: .plain, target: nil, action: nil)
         navigationController?.pushViewController(commentsVC, animated: true)
         
-        commentsVC.onCommentPosted = {
-            DatabaseManager.shared.getCommentsCount(workout: selectedWorkout) { [weak self] numberOfComments in
-                DatabaseManager.shared.updateWorkoutCommentsCount(workout: selectedWorkout, commentsCount: numberOfComments) { [weak self] workout in
-                    guard let self = self else {return}
-                    print ("number of workout comments is \(workout.comments)")
-                    if let index = self.filteredWorkouts.firstIndex(where: { $0.id == workout.id }) {
-                        self.filteredWorkouts[index] = workout
-                        self.updateUI(workout: workout)
-                    }
-                }
-            }
+        commentsVC.onCommentPosted = {[weak self] in
+            guard let self = self else {return}
+            self.updateUI(workout: selectedWorkout)
         }
     }
     
@@ -436,7 +428,12 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: WorkoutsCollectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: "workoutCell", for: indexPath) as! WorkoutsCollectionViewCell
         let workout = filteredWorkouts[indexPath.item]
+        
         cell.workout = workout
+        
+        if workout.programID == K.bellyBurner || workout.programID == K.pelvicPower {
+            cell.configure(with: indexPath)
+        }
         updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
             return cell
     }
@@ -446,7 +443,6 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
         if let selectedIndexPath = selectedIndexPath {
             collectionView.deselectItem(at: selectedIndexPath, animated: true)
         }
-        
         selectedIndexPath = indexPath
         DispatchQueue.main.async {
             self.workoutsCollection.reloadData()

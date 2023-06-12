@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 final class WorkoutsCollectionViewCell: UICollectionViewCell {
 
     var workout: Workout? {
@@ -26,7 +27,7 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
             self.workoutDateLabel.text = dateString
         }
     }
-    
+
     let workoutDateLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12, weight: .bold)
@@ -39,17 +40,21 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
         label.toAutoLayout()
         return label
     }()
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         
         setupUI()
-    //    prepareForReuse()
     }
+    
+    override func prepareForReuse() {
+          super.prepareForReuse()
+        workoutDateLabel.backgroundColor = .systemGreen
+      }
     
     deinit {
          print ("workout cell is deallocated")
@@ -74,8 +79,13 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
         NSLayoutConstraint.activate(constraints)
     }
     
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        self.workoutDateLabel.backgroundColor = .systemGreen
-    }
+    func configure(with indexPath: IndexPath) {
+           let serialNumber = indexPath.item + 1
+           workoutDateLabel.text = "\(serialNumber)"
+       }
+    
+//    override func prepareForReuse() {
+//        super.prepareForReuse()
+//
+//    }
 }
