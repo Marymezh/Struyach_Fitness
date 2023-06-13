@@ -253,3 +253,11 @@
 "This field can not be empty!" = "Вы не ввели код!";
 "Failed to open URL" = "Ссылка не работает";
 "Invalid URL" = "Неверная ссылка";
+
+
+//MARK: - Plist file localization:
+
+"Please, allow access to your camera to take a photo" = "Разрешите доступ к камере, чтобы сделать фото";
+"Please, allow access to your Media Library to upload photo or video" = "Разрешите доступ к медиа библиотеке, чтобы загрузить фото или видео";
+"Please, allow app to save a photo to your Photo Library" = "Разрешите приложению сохранить фото в вашу библиотеку";
+
