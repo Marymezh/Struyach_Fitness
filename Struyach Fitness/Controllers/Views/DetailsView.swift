@@ -63,8 +63,8 @@ final class DetailsView: UIView {
         
         let constraints = [
             containerView.topAnchor.constraint(equalTo: self.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10),
+            containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -10),
             
             secondContainerView.topAnchor.constraint(equalTo: containerView.topAnchor),
             secondContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),

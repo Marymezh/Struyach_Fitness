@@ -96,7 +96,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         messageInputBar.inputTextView.delegate = self
         let attachButton = InputBarButtonItem()
         attachButton.setSize(CGSize(width: 35, height: 35), animated: false)
-        attachButton.setImage(UIImage(systemName: "paperclip", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+        let image = UIImage(systemName: "paperclip", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium))?.withTintColor(.contrastGray)
+        attachButton.setImage(image, for: .normal)
         attachButton.onTouchUpInside { [weak self]_ in
             self?.presentInputOptions()
         }
@@ -194,7 +195,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 }
             }
         }
-        let cameraImage = UIImage(systemName: "camera")?.withTintColor(.systemGreen, renderingMode: .alwaysOriginal)
+        let cameraImage = UIImage(systemName: "camera")?.withTintColor(.contrastGreen ?? .green)
         cameraAction.setValue(cameraImage, forKey: "image")
         
         let photoAction = UIAlertAction(title: "Photo".localized(), style: .default) { [weak self] _ in
@@ -246,7 +247,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             }
         }
         
-        let photoImage = UIImage(systemName: "photo")?.withTintColor(.systemGreen, renderingMode: .alwaysOriginal)
+        let photoImage = UIImage(systemName: "photo")?.withTintColor(.contrastGreen ?? .green)
         photoAction.setValue(photoImage, forKey: "image")
         
         let videoAction = UIAlertAction(title: "Video".localized(), style: .default) { [weak self] _ in
@@ -300,14 +301,14 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             }
         }
         
-        let videoImage = UIImage(named: "popcorn")?.withTintColor(.systemGreen, renderingMode: .alwaysOriginal)
+        let videoImage = UIImage(systemName: "tv")?.withTintColor(.contrastGreen ?? .green)
         videoAction.setValue(videoImage, forKey: "image")
 
         actionSheet.addAction(cameraAction)
         actionSheet.addAction(photoAction)
         actionSheet.addAction(videoAction)
         actionSheet.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
-       
+        actionSheet.view.tintColor = .contrastGreen
         present(actionSheet, animated: true)
     }
     

@@ -87,8 +87,8 @@ final class BlogViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            plusButtonView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -25),
-            plusButtonView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -25),
+            plusButtonView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -5),
+            plusButtonView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             plusButtonView.widthAnchor.constraint(equalToConstant: 60),
             plusButtonView.heightAnchor.constraint(equalTo: plusButtonView.widthAnchor)
         ]

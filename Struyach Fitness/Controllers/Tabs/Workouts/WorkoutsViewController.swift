@@ -133,8 +133,8 @@ final class WorkoutsViewController: UIViewController {
             likesAndCommentsView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -baseInset*2),
             likesAndCommentsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -baseInset),
             
-            plusButtonView.bottomAnchor.constraint(equalTo: selectedWorkoutView.bottomAnchor, constant: -25),
-            plusButtonView.trailingAnchor.constraint(equalTo: selectedWorkoutView.trailingAnchor, constant: -25),
+            plusButtonView.bottomAnchor.constraint(equalTo: selectedWorkoutView.bottomAnchor, constant: -15),
+            plusButtonView.trailingAnchor.constraint(equalTo: selectedWorkoutView.trailingAnchor, constant: -15),
             plusButtonView.widthAnchor.constraint(equalToConstant: 60),
             plusButtonView.heightAnchor.constraint(equalTo: plusButtonView.widthAnchor)
         ]
@@ -388,7 +388,6 @@ final class WorkoutsViewController: UIViewController {
                 self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
                 if !self.likedWorkouts.contains(selectedWorkout.id) {
                     self.likedWorkouts.append(selectedWorkout.id)
-//                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
                     self.uploadLikedWorkouts()
                 }
             }

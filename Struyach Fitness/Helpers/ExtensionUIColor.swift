@@ -16,4 +16,6 @@ extension UIColor {
     static let customDarkComments = UIColor(named: "darkBackgroundComments")
     static let customTabBar = UIColor(named: "tabbar")
     static let customKeyboard = UIColor(named: "customKeyboardColor" )
+    static let contrastGreen = UIColor(named: "contrastGreen")
+    static let contrastGray = UIColor(red: 75, green: 75, blue: 75, alpha: 1)
 }

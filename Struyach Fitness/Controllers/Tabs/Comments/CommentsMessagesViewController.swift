@@ -48,6 +48,7 @@ class CommentsMessagesViewController: MessagesViewController {
         messageInputBar.rightStackView.isLayoutMarginsRelativeArrangement = true
         messageInputBar.sendButton.setTitle(nil, for: .normal)
         messageInputBar.sendButton.setSize(CGSize(width: 35, height: 35), animated: false)
-        messageInputBar.sendButton.setImage(UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+        let image = UIImage(systemName: "paperplane.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium))?.withTintColor(.contrastGray)
+        messageInputBar.sendButton.setImage(image, for: .normal)
     }
 }
