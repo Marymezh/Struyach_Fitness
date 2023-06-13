@@ -113,51 +113,18 @@ final class PaywallView: UIView {
         return label
     }()
     
-    let termsButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .customDarkComments
-        button.layer.cornerRadius = 8
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowRadius = 8
-        button.clipsToBounds = false
-        button.layer.shadowOffset = CGSize(width: 1, height: 1)
-        button.layer.shadowOpacity = 0.5
-        button.setTitle("Terms of Use".localized(), for: .normal)
-        button.setTitleColor(UIColor.white, for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        button.titleLabel?.numberOfLines = 1
-        button.titleLabel?.textAlignment = .center
-        button.toAutoLayout()
-        return button
-        }()
-
-    let restorePurchasesButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .customDarkComments
-        button.layer.cornerRadius = 8
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowRadius = 8
-        button.layer.shadowOffset = CGSize(width: 1, height: 1)
-        button.clipsToBounds = false
-        button.layer.shadowOpacity = 0.5
-        button.setTitle("Restore purchases".localized(), for: .normal)
-        button.setTitleColor(UIColor.white, for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        button.titleLabel?.numberOfLines = 1
-        button.titleLabel?.textAlignment = .center
-        button.toAutoLayout()
-        return button
+    let termsLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.white
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textAlignment = .justified
+        label.adjustsFontSizeToFitWidth = true
+        label.numberOfLines = 0
+        label.toAutoLayout()
+        return label
     }()
     
-    private let stackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 12
-        stackView.alignment = .fill
-        stackView.toAutoLayout()
-        return stackView
-    }()
-    
+   
     //MARK: - Lifecycle
     
     init() {
@@ -180,10 +147,7 @@ final class PaywallView: UIView {
         
         redeemCodeLabel.attributedText = codeAttributedString
         codeTextField.delegate = self
-        addSubviews(backgroundView, closeButton, titleLabel, descriptionLabel, payButton, priceLabel, codeTextField,  redeemCodeLabel, stackView)
-  
-        stackView.addArrangedSubview(termsButton)
-        stackView.addArrangedSubview(restorePurchasesButton)
+        addSubviews(backgroundView, closeButton, titleLabel, descriptionLabel, payButton, priceLabel, codeTextField, redeemCodeLabel, termsLabel)
         
         let constraints = [
             backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
@@ -222,13 +186,9 @@ final class PaywallView: UIView {
             redeemCodeLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             redeemCodeLabel.heightAnchor.constraint(lessThanOrEqualToConstant: 30),
             
-            stackView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            stackView.widthAnchor.constraint(equalToConstant: 220),
-            stackView.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -bigInset),
-
-            payButton.heightAnchor.constraint(equalToConstant: 60),
-            restorePurchasesButton.heightAnchor.constraint(equalToConstant: 40),
-            termsButton.heightAnchor.constraint(equalToConstant: 40)
+            termsLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
+            termsLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
+            termsLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -bigInset)
         ]
         
         NSLayoutConstraint.activate(constraints)
