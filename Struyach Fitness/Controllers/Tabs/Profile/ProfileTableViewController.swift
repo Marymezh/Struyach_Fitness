@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Photos
 
 final class ProfileTableViewController: UITableViewController {
     
@@ -41,8 +42,6 @@ final class ProfileTableViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchProfileData()
-        
-
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -81,7 +80,7 @@ final class ProfileTableViewController: UITableViewController {
     
     @objc private func userPhotoImageTapped() {
         guard currentUserEmail == email else {return}
-        showImagePickerController()
+        askForPermission()
     }
     
     //MARK: - Fetch and update data methods
@@ -225,23 +224,6 @@ final class ProfileTableViewController: UITableViewController {
                 cell.weightTextField.isHidden = true
                 cell.saveButton.isHidden = true
             }
-                
-            
-//            if email == currentUserEmail {
-//                cell.movementLabel.text = movements[indexPath.row]
-//                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
-//                cell.weightIsSet = { [weak self] text in
-//                    guard let self = self else {return}
-//                    self.weights.remove(at: indexPath.row)
-//                    self.weights.insert(text, at: indexPath.row)
-//    //                self.tableView.reloadData()
-//                }
-//            } else {
-//                cell.movementLabel.text = movements[indexPath.row]
-//                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
-//                cell.weightTextField.isHidden = true
-//                cell.saveButton.isHidden = true
-//            }
             return cell
         }
     }
@@ -261,14 +243,28 @@ final class ProfileTableViewController: UITableViewController {
 
 //MARK: - UIImagePickerControllerDelegate methods
 extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    private func showImagePickerController() {
-        let picker = UIImagePickerController()
-        picker.navigationBar.tintColor = UIColor.systemGreen
-        picker.allowsEditing = true
-        picker.delegate = self
-        picker.sourceType = .photoLibrary
-        navigationController?.present(picker, animated: true)
-    }
+    private func askForPermission() {
+            let status = PHPhotoLibrary.authorizationStatus()
+            switch status {
+            case .authorized:
+                presentImagePicker()
+            case .denied, .restricted:
+                AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the photo library in Phone Settings to choose an avatar.".localized(), cancelAction: "Ok")
+            case .limited:
+                presentImagePicker()
+            default: break
+            }
+        }
+        
+        private func presentImagePicker() {
+            let picker = UIImagePickerController()
+            picker.navigationBar.tintColor = UIColor.systemGreen
+            picker.allowsEditing = true
+            picker.delegate = self
+            picker.sourceType = .photoLibrary
+            navigationItem.backButtonTitle = "Cancel".localized()
+            navigationController?.present(picker, animated: true)
+        }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         navigationController?.dismiss(animated: true)

@@ -12,6 +12,7 @@ import InputBarAccessoryView
 import SDWebImage
 import AVFoundation
 import AVKit
+import Photos
 
 
 final class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate {
@@ -148,7 +149,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         let cameraAction = UIAlertAction(title: "Camera".localized(), style: .default) { [weak self] _ in
             guard let self = self else {return}
             self.activityView.showActivityIndicator()
-            self.showImagePickerController(type: .camera)
+            self.askForPermission(type: .camera)
             self.onFinishPicking = { [weak self] info in
                 guard let image = info[.originalImage] as? UIImage,
                       let imageData = image.jpegData(compressionQuality: 0.2),
@@ -199,7 +200,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         let photoAction = UIAlertAction(title: "Photo".localized(), style: .default) { [weak self] _ in
             guard let self = self else {return}
             self.activityView.showActivityIndicator()
-            self.showImagePickerController(type: .photo)
+            self.askForPermission(type: .photo)
             self.onFinishPicking = {[weak self] info in
                 guard let image = info[.originalImage] as? UIImage,
                       let imageData = image.jpegData(compressionQuality: 0.6),
@@ -251,7 +252,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         let videoAction = UIAlertAction(title: "Video".localized(), style: .default) { [weak self] _ in
             guard let self = self else { return }
             self.activityView.showActivityIndicator()
-            self.showImagePickerController(type: .video)
+            self.askForPermission(type: .video)
             self.onFinishPicking = {  [weak self] info in
                 guard let videoUrl = info[.mediaURL] as? URL,
                 let self = self else {
@@ -539,7 +540,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                         
                     case .photo(_):
-                        self.showImagePickerController(type: .photo)
+                        self.askForPermission(type: .photo)
                         self.onFinishPicking = { [weak self] info in
                             guard let self = self, let image = info[.originalImage] as? UIImage else { return }
                             guard let imageData = image.jpegData(compressionQuality: 0.6) else { return }
@@ -596,7 +597,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                         
                     case .video(_):
-                        self.showImagePickerController(type: .video)
+                        self.askForPermission(type: .video)
                         self.onFinishPicking = { [weak self] info in
                             guard let self = self, let videoUrl = info[.mediaURL] as? URL else {return}
                             let videoData = try! Data(contentsOf: videoUrl)
@@ -839,7 +840,61 @@ extension CommentsViewController: InputBarAccessoryViewDelegate {
 //MARK: - UIImagePickerControllerDelegate methods
 extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-    private func showImagePickerController(type: ImagePickerType) {
+    private func askForPermission(type: ImagePickerType) {
+           switch type {
+           case .camera:
+               let authorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
+               switch authorizationStatus {
+               case .authorized:
+                   presentImagePicker(type: type)
+               case .denied:
+                   AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the camera in Phone Settings to take photos.".localized(), cancelAction: "Cancel".localized())
+               case .notDetermined:
+                   requestCameraPermission(type)
+               default:
+                   AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the camera in Phone Settings to take photos.".localized(), cancelAction: "Cancel".localized())
+               }
+           case .photo, .video:
+               let authorizationStatus = PHPhotoLibrary.authorizationStatus()
+               switch authorizationStatus {
+               case .authorized:
+                   presentImagePicker(type: type)
+               case .denied:
+                   AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the media library in Phone Settings to upload photos and videos.".localized(), cancelAction: "Cancel".localized())
+               case .notDetermined:
+                   requestMediaLibraryPermission(type)
+               default:
+                   AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the media library in Phone Settings to upload photos and videos.".localized(), cancelAction: "Cancel".localized())
+               }
+           }
+       }
+
+       private func requestCameraPermission(_ type: ImagePickerType) {
+           AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+               guard let self = self else {return}
+               DispatchQueue.main.async {
+                   if granted {
+                       self.presentImagePicker(type: type)
+                   } else {
+                       AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the camera in Phone Settings to take photos.".localized(), cancelAction: "Cancel".localized())
+                   }
+               }
+           }
+       }
+
+       private func requestMediaLibraryPermission(_ type: ImagePickerType) {
+           PHPhotoLibrary.requestAuthorization { [weak self] status in
+               guard let self = self else {return}
+               DispatchQueue.main.async {
+                   if status == .authorized {
+                       self.presentImagePicker(type: type)
+                   } else {
+                       AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the media library in Phone Settings to upload photos and videos.".localized(), cancelAction: "Cancel".localized())
+                   }
+               }
+           }
+       }
+    private func presentImagePicker(type: ImagePickerType) {
        let picker = UIImagePickerController()
         picker.navigationController?.navigationBar.barTintColor = .systemGreen
             picker.delegate = self

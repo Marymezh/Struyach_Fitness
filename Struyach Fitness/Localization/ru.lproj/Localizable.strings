@@ -261,3 +261,8 @@
 "Please, allow access to your Media Library to upload photo or video" = "Разрешите доступ к медиа библиотеке, чтобы загрузить фото или видео";
 "Please, allow app to save a photo to your Photo Library" = "Разрешите приложению сохранить фото в вашу библиотеку";
 
+
+"Permission Denied" = "Доступ запрещен";
+"Please allow access to the photo library in Phone Settings to choose an avatar." = "Чтобы поменять фото профиля необходимо разрешить доступ к фото библиотеке в Настройках телефона";
+"Please allow access to the camera in Phone Settings to take photos." = "Чтобы сделать фото необходимо разрешить доступ к камере в Настройках телефона";
+"Please allow access to the media library in Phone Settings to upload photos and videos." = "Чтобы загрузить фото или видео необходимо разрешить доступ к медиа библиотеке в Настройках телефона";

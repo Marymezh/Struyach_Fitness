@@ -25,7 +25,6 @@ final class TabBarController: UITabBarController {
         appearance.configureWithDefaultBackground()
         appearance.backgroundColor = .customTabBar
         tabBar.standardAppearance = appearance
-     //   tabBar.scrollEdgeAppearance = appearance
         tabBar.tintColor = .systemGreen
         tabBar.unselectedItemTintColor = .darkGray
         tabBar.backgroundColor = .customDarkGray
@@ -36,14 +35,12 @@ final class TabBarController: UITabBarController {
         UINavigationBar.appearance().barTintColor = .black
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white]
         UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]
- //       if #available(iOS 15.0, *) {
            let appearance = UINavigationBarAppearance()
            appearance.configureWithDefaultBackground()
            appearance.backgroundColor = .black
            appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
            appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
            UINavigationBar.appearance().standardAppearance = appearance
-      //     UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
 
     private func setupControllers() {
@@ -66,6 +63,7 @@ final class TabBarController: UITabBarController {
         blogVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.fetchUserRecords()
+        profileVC.fetchProfileData()
         
         let nav1 = UINavigationController(rootViewController: programsVC)
         let nav2 = UINavigationController(rootViewController: blogVC)

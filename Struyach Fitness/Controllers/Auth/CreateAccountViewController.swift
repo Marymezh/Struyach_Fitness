@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Photos
 
 final class CreateAccountViewController: UIViewController {
     
@@ -71,7 +72,7 @@ final class CreateAccountViewController: UIViewController {
     @objc private func avatarImageViewTapped() {
         activityView.showActivityIndicator()
         print ("avatar tapped")
-        showImagePickerController()
+        askForPermission()
     }
     
     @objc private func signUpTapped() {
@@ -124,10 +125,6 @@ final class CreateAccountViewController: UIViewController {
                         guard inserted else {
                             print ("cant insert new user")
                             return}
-//                        guard let userUID = AuthManager.shared.userUID else {
-//                            print ("UID is empty")
-//                            return}
-//                        UserDefaults.standard.set(userUID, forKey: "userUID")
                         UserDefaults.standard.set(name, forKey: "userName")
                         UserDefaults.standard.set(email, forKey: "email")
                         
@@ -188,14 +185,40 @@ extension CreateAccountViewController: UITextFieldDelegate {
 //MARK: - UIImagePickerControllerDelegate and UINavigationControllerDelegate 
 
 extension CreateAccountViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    private func showImagePickerController() {
-        let picker = UIImagePickerController()
-        picker.allowsEditing = true
-        picker.delegate = self
-        picker.sourceType = .photoLibrary
-        navigationItem.backButtonTitle = "Cancel".localized()
-        navigationController?.present(picker, animated: true)
+    private func askForPermission() {
+        let status = PHPhotoLibrary.authorizationStatus()
+        switch status {
+        case .authorized:
+            presentImagePicker()
+        case .denied, .restricted:
+            AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the photo library in Phone Settings to choose an avatar.".localized(), cancelAction: "Ok")
+            activityView.hide()
+        case .limited:
+            presentImagePicker()
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization { [weak self] status in
+                DispatchQueue.main.async {
+                    if status == .authorized {
+                        self?.presentImagePicker()
+                    } else {
+                        self?.activityView.hide()
+                    }
+                }
+            }
+        @unknown default:
+            activityView.hide()
+        }
     }
+        
+        private func presentImagePicker() {
+            let picker = UIImagePickerController()
+            picker.navigationBar.tintColor = UIColor.systemGreen
+            picker.allowsEditing = true
+            picker.delegate = self
+            picker.sourceType = .photoLibrary
+            navigationItem.backButtonTitle = "Cancel".localized()
+            navigationController?.present(picker, animated: true)
+        }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         navigationController?.dismiss(animated: true)
