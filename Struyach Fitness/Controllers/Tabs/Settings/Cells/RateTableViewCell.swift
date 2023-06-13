@@ -80,7 +80,7 @@ final class RateTableViewCell: UITableViewCell {
     
     // MARK: - Helper Functions
     
-    func openAppRatingPage(completion: (Bool)->()) {
+    func openAppRatingPage(completion: @escaping (Bool)->()) {
         #if Admin
         let urlString = "itms-apps://itunes.apple.com/app/id6448619309"
         #else
@@ -88,7 +88,13 @@ final class RateTableViewCell: UITableViewCell {
         #endif
         
         if let url = URL(string: urlString ) {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            UIApplication.shared.open(url, options: [:]){ success in
+                if success {
+                    completion(true)
+                } else {
+                    completion(false)
+                }
+            }
             completion(true)
         } else {
             completion(false)

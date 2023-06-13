@@ -12,6 +12,8 @@ final class LoginViewController: UIViewController {
 
     private let loginView = LoginView()
     private let activityView = ActivityView()
+    private let privacyPolicy = K.privacyPolicy.localized()
+    private let hasAgreedToPrivacyPolicy = UserDefaults.standard.bool(forKey: "HasAgreedToPrivacyPolicy")
     
     //MARK: - Lifecycle
 
@@ -19,6 +21,8 @@ final class LoginViewController: UIViewController {
         super.viewDidLoad()
         setupNavBar()
         setupSubviews()
+        showPrivacyPolicy()
+        
     }
     //MARK: - Setup methods
     
@@ -140,6 +144,48 @@ final class LoginViewController: UIViewController {
                 self.activityView.hide()
                 AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: There is no user record corresponding to this email. Check your email".localized(), cancelAction: "Retry".localized())
             }
+        }
+    }
+    
+    private func showPrivacyPolicy() {
+        if !hasAgreedToPrivacyPolicy {
+        let alertController = UIAlertController(title: "Privacy policy".localized(), message: privacyPolicy, preferredStyle: .alert)
+            
+        let agreeAction = UIAlertAction(title: "Agree".localized(), style: .default) { _ in
+                // User has agreed to the privacy policy, so save the agreement status and proceed to the initial view controller
+                UserDefaults.standard.set(true, forKey: "HasAgreedToPrivacyPolicy")
+                self.dismiss(animated: true)
+            }
+            
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .destructive) { _ in
+                // User has chosen to cancel, handle this as needed
+                // For example, you can display an alert or exit the app
+            let cancelAlertController = UIAlertController(title: "Cancellation".localized(), message: "You must agree to the privacy policy to use this app.".localized(), preferredStyle: .alert)
+                
+            let exitAction = UIAlertAction(title: "Exit".localized(), style: .destructive) { _ in
+                    // Exit the app
+                    UserDefaults.standard.set(false, forKey: "HasAgreedToPrivacyPolicy")
+                    exit(0)
+                }
+                
+            let tryAgainAction = UIAlertAction(title: "Try Again".localized(), style: .default) { _ in
+                    // Show the privacy policy again
+                    self.showPrivacyPolicy()
+                }
+                cancelAlertController.addAction(exitAction)
+                cancelAlertController.addAction(tryAgainAction)
+                cancelAlertController.view.tintColor = .customDarkGray
+                
+                self.present(cancelAlertController, animated: true, completion: nil)
+            }
+            
+            alertController.addAction(agreeAction)
+            alertController.addAction(cancelAction)
+        
+        alertController.view.tintColor = .customDarkGray
+        alertController.modalPresentationStyle = .popover
+            
+        present(alertController, animated: true, completion: nil)
         }
     }
 }

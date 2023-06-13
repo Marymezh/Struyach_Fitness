@@ -162,7 +162,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     }
     
     private func toggleDateSelectionViews() {
-        if self.title == "Add new workout" || self.title == "Add new post"{
+        if self.title == "Add new workout".localized() || self.title == "Add new post".localized() {
             isCreatingNewPostOrWorkout = true
             todayButton.isHidden = false
             tomorrowButton.isHidden = false

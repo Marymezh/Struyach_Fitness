@@ -11,9 +11,10 @@ final class AboutViewController: UIViewController {
     
     // MARK: - Properties
     
-    private let imageView: UIImageView = {
+    let text: String?
+    
+    let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "coach")
         imageView.toAutoLayout()
         imageView.contentMode = .scaleAspectFill
         imageView.alpha = 0.3
@@ -31,9 +32,18 @@ final class AboutViewController: UIViewController {
         return textView
     }()
     
-    private let appDescription = K.appDescription.localized()
+   
     
     // MARK: - Lifecycle
+    
+    init(text: String) {
+        self.text = text
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,7 +61,7 @@ final class AboutViewController: UIViewController {
         NSLayoutConstraint.activate(constraints)
         
         view.addSubview(textView)
-        textView.text = appDescription
+        textView.text = text
         textView.backgroundColor = .clear
         textView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         

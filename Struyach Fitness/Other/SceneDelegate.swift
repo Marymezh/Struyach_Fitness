@@ -18,6 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
 
         var vc: UIViewController?
+        let hasAgreedToPrivacyPolicy = UserDefaults.standard.bool(forKey: "HasAgreedToPrivacyPolicy")
         
         if shouldSignOutUser() {
             AuthManager.shared.signOut { success in
@@ -32,7 +33,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 }
             }
         } else {
-            if AuthManager.shared.isSignedIn {
+            if AuthManager.shared.isSignedIn  && hasAgreedToPrivacyPolicy {
                 let userEmail = UserDefaults.standard.string(forKey: "email")
                 if let email = userEmail, !email.isEmpty {
                     print ("there is a current user with data")

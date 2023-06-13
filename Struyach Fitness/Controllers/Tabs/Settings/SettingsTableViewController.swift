@@ -33,7 +33,7 @@ final class SettingsTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        tableView.register(AboutTableViewCell.self, forCellReuseIdentifier: AboutTableViewCell.reuseIdentifier)
+        tableView.register(InfoTableViewCell.self, forCellReuseIdentifier: InfoTableViewCell.reuseIdentifier)
         tableView.register(EmailTableViewCell.self, forCellReuseIdentifier: EmailTableViewCell.reuseIdentifier)
         tableView.register(RateTableViewCell.self, forCellReuseIdentifier: RateTableViewCell.reuseIdentifier)
         tableView.register(LanguageSwitchTableViewCell.self, forCellReuseIdentifier: LanguageSwitchTableViewCell.reuseIdentifier)
@@ -77,10 +77,9 @@ final class SettingsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: 45))
         headerView.backgroundColor = .customDarkGray
-        
         let titleLabel = UILabel(frame: CGRect(x: 15, y: 0, width: headerView.frame.width - 15, height: headerView.frame.height))
         titleLabel.text = self.tableView(tableView, titleForHeaderInSection: section)
-        titleLabel.textColor = UIColor.systemGreen // set the desired title color here
+        titleLabel.textColor = UIColor.systemGreen
         headerView.addSubview(titleLabel)
         
         return headerView
@@ -134,7 +133,7 @@ final class SettingsTableViewController: UITableViewController {
         switch section {
             #if Client
         case 0:
-            return 3
+            return 4
         case 1:
             return 2
         case 2:
@@ -151,7 +150,7 @@ final class SettingsTableViewController: UITableViewController {
             return 0
             #else
         case 0:
-            return 3
+            return 4
         case 1:
             return 2
         case 2:
@@ -170,18 +169,21 @@ final class SettingsTableViewController: UITableViewController {
         switch indexPath.section {
         case 0:
             // App info section
-            if indexPath.row == 0 {
-                let cell = tableView.dequeueReusableCell(withIdentifier: AboutTableViewCell.reuseIdentifier, for: indexPath) as! AboutTableViewCell
+            switch indexPath.row {
+            case 0:
+                let cell = tableView.dequeueReusableCell(withIdentifier: InfoTableViewCell.reuseIdentifier, for: indexPath) as! InfoTableViewCell
+                cell.titleLabel.text = "About this app".localized()
+                cell.imgView.image = UIImage(systemName: "info.circle")
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
                 return cell
-            } else if indexPath.row == 1 {
+            case 1:
                 let cell = tableView.dequeueReusableCell(withIdentifier: EmailTableViewCell.reuseIdentifier, for: indexPath) as! EmailTableViewCell
                 cell.containerView.layer.cornerRadius = 0
                 cell.onClose = { result in
                     switch result {
-                case .sent:
+                    case .sent:
                         AlertManager.shared.showAlert(title: "Success".localized(), message: "Your message is successfully sent! \nThank you for your feedback!".localized(), cancelAction: "Ok")
                     case .saved:
                         AlertManager.shared.showAlert(title: "Done".localized(), message: "Your message is saved to drafts".localized(), cancelAction: "Ok")
@@ -191,12 +193,20 @@ final class SettingsTableViewController: UITableViewController {
                     }
                 }
                 return cell
-            } else if indexPath.row == 2 {
+            case 2:
                 let cell = tableView.dequeueReusableCell(withIdentifier: RateTableViewCell.reuseIdentifier, for: indexPath) as! RateTableViewCell
+                cell.containerView.layer.cornerRadius = 0
+                return cell
+            case 3:
+                let cell = tableView.dequeueReusableCell(withIdentifier: InfoTableViewCell.reuseIdentifier, for: indexPath) as! InfoTableViewCell
+                cell.titleLabel.text = "Privacy Policy".localized()
+                cell.imgView.image = UIImage(systemName: "lock.circle")
+                cell.imgView.tintColor = .systemGreen
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 return cell
+            default: break
             }
         case 1:
             // user profile settings
@@ -373,8 +383,10 @@ final class SettingsTableViewController: UITableViewController {
         case 0:
             switch indexPath.row {
             case 0:
-                let aboutThisAppVC = AboutViewController()
+                let appDescription = K.appDescription.localized()
+                let aboutThisAppVC = AboutViewController(text: appDescription)
                 aboutThisAppVC.title = "About this app".localized()
+                aboutThisAppVC.imageView.image = UIImage(named: "coach")
                 navigationController?.pushViewController(aboutThisAppVC, animated: true)
             case 1:
                 //    sendEmailToDeveloper
@@ -390,12 +402,20 @@ final class SettingsTableViewController: UITableViewController {
                 if let cell = tableView.cellForRow(at: indexPath) as? RateTableViewCell {
                     cell.openAppRatingPage { success in
                         if !success {
+                            print ("Unable to open app rating page")
                             AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to open app rating page".localized(), cancelAction: "Ok")
                         }
                     }
                 }
-            default:
-                break
+            case 3:
+                // go to privacyPolicy
+                let privacyPolicy = K.privacyPolicy.localized()
+                let policyVC = AboutViewController(text: privacyPolicy)
+                policyVC.title = "Privacy Policy".localized()
+                policyVC.imageView.image = UIImage(named: "IMG_2930")
+                navigationController?.pushViewController(policyVC, animated: true)
+                
+            default: break
             }
         case 1:
             switch indexPath.row {

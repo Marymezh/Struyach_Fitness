@@ -180,9 +180,6 @@ final class PaywallView: UIView {
         
         redeemCodeLabel.attributedText = codeAttributedString
         codeTextField.delegate = self
-        
-        termsButton.addTarget(self, action: #selector
-                              (openTermsOfUse), for: .touchUpInside)
         addSubviews(backgroundView, closeButton, titleLabel, descriptionLabel, payButton, priceLabel, codeTextField,  redeemCodeLabel, stackView)
   
         stackView.addArrangedSubview(termsButton)
@@ -288,23 +285,6 @@ final class PaywallView: UIView {
                 print("Failed to sync purchases: \(error)")
             }
         }
-    }
-    
-    
-    @objc private func openTermsOfUse() {
-        let termsText = "This is an auto-renewable subscription. It will be charged to your iTunes Account after the trial and before each pay period. \n\nYou can cancel your subscription or turn off auto-renewal at any time by going into your \n\nSettings -> Apple ID -> Subscriptions. \n\nRestore purchases if previously subscribed."
-        
-        let termsPopupView = TermsPopupView(termsText: termsText.localized())
-        
-        addSubview(termsPopupView)
-        termsPopupView.toAutoLayout()
-        
-        NSLayoutConstraint.activate([
-            termsPopupView.topAnchor.constraint(equalTo: topAnchor),
-            termsPopupView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            termsPopupView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            termsPopupView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
     }
 }
 

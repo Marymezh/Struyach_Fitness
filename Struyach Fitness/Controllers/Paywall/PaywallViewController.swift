@@ -62,7 +62,8 @@ final class PaywallViewController: UIViewController {
         paywallView.payButton.addTarget(self, action: #selector(payButtonPressed), for: .touchUpInside)
         paywallView.restorePurchasesButton.addTarget(self, action: #selector(restoreButtonPressed), for: .touchUpInside)
         paywallView.closeButton.addTarget(self, action: #selector(closeScreen), for: .touchUpInside)
-        
+        paywallView.termsButton.addTarget(self, action: #selector
+                                          (openTermsOfUse), for: .touchUpInside)
         view.addSubview(paywallView)
         view.addSubview(activityView)
         let constraints = [
@@ -109,7 +110,6 @@ final class PaywallViewController: UIViewController {
         case K.pelvicPower:
             paywallView.titleLabel.text = "Pelvic Power Plan".localized()
             paywallView.descriptionLabel.text = K.pelvicDescription.localized()
-            paywallView.termsButton.isHidden = true
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
                 guard let self = self else {return}
                 DispatchQueue.main.async {
@@ -121,7 +121,6 @@ final class PaywallViewController: UIViewController {
         case K.bellyBurner:
             paywallView.titleLabel.text = "Belly Burner Plan".localized()
             paywallView.descriptionLabel.text = K.bellyDescription.localized()
-            paywallView.termsButton.isHidden = true 
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
                 guard let self = self else {return}                
                 DispatchQueue.main.async {
@@ -185,6 +184,28 @@ final class PaywallViewController: UIViewController {
                 }
             }
         }
+    }
+    
+    @objc private func openTermsOfUse() {
+        var termsText: String = ""
+        
+        if self.title == K.bellyBurner || self.title == K.pelvicPower {
+            termsText = "This is a non-consumable in-app purchase. You pay once and get all 10 workouts at the time. This purchase is non-refundable."
+        } else {
+            termsText = "This is an auto-renewable subscription. It will be charged to your iTunes Account after the trial and before each pay period. \n\nYou can cancel your subscription or turn off auto-renewal at any time by going into your \n\nSettings -> Apple ID -> Subscriptions. \n\nRestore purchases if previously subscribed."
+        }
+        
+        let termsPopupView = TermsPopupView(termsText: termsText.localized())
+        
+        view.addSubview(termsPopupView)
+        termsPopupView.toAutoLayout()
+        
+        NSLayoutConstraint.activate([
+            termsPopupView.topAnchor.constraint(equalTo: view.topAnchor),
+            termsPopupView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            termsPopupView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            termsPopupView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
     }
     
     @objc private func closeScreen() {

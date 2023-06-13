@@ -7,11 +7,11 @@
 
 import UIKit
 
-final class AboutTableViewCell: UITableViewCell {
+final class InfoTableViewCell: UITableViewCell {
 
     // MARK: - Properties
       
-      static let reuseIdentifier = "AboutCell"
+      static let reuseIdentifier = "InfoCell"
     
     let containerView: UIView = {
         let containerView = UIView()
@@ -20,18 +20,16 @@ final class AboutTableViewCell: UITableViewCell {
         return containerView
     }()
     
-    private let titleLabel: UILabel = {
+    let titleLabel: UILabel = {
         let label = UILabel()
         label.toAutoLayout()
-        label.text = "About this app".localized()
         label.textColor = .white
         return label
     }()
     
-    private let imgView: UIImageView = {
+    let imgView: UIImageView = {
         let imageView = UIImageView()
         imageView.toAutoLayout()
-        imageView.image = UIImage(systemName: "info.circle")
         imageView.tintColor = .systemGreen
         return imageView
     }()
