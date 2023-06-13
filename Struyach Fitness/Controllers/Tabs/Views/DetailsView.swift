@@ -22,13 +22,13 @@ final class DetailsView: UIView {
         let view = UIView()
         view.toAutoLayout()
         view.backgroundColor = .systemGray6
-//        view.layer.borderWidth = 0.5
-//        view.layer.borderColor = UIColor.black.cgColor
-//        view.layer.cornerRadius = 10
-//        view.layer.shadowColor = UIColor.black.cgColor
-//        view.layer.shadowRadius = 10
-//        view.layer.shadowOffset = CGSize(width: 5, height: 5)
-//        view.layer.shadowOpacity = 0.7
+        view.layer.borderWidth = 0.5
+        view.layer.borderColor = UIColor.black.cgColor
+        view.layer.cornerRadius = 10
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowRadius = 10
+        view.layer.shadowOffset = CGSize(width: 5, height: 5)
+        view.layer.shadowOpacity = 0.7
         view.alpha = 0.8
         return view
     }()
@@ -80,5 +80,4 @@ final class DetailsView: UIView {
         
         NSLayoutConstraint.activate(constraints)
     }
-
 }

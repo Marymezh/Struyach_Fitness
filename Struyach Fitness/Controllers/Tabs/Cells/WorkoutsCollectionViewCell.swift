@@ -83,9 +83,4 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
            let serialNumber = indexPath.item + 1
            workoutDateLabel.text = "\(serialNumber)"
        }
-    
-//    override func prepareForReuse() {
-//        super.prepareForReuse()
-//
-//    }
 }

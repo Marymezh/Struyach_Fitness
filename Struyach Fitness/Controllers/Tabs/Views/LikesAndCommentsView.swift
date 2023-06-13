@@ -42,6 +42,7 @@ class LikesAndCommentsView: UIView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .white
+        label.text = "Counting comments...".localized()
         label.toAutoLayout()
         return label
     }()

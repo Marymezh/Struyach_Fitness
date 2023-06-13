@@ -289,12 +289,6 @@ final class BlogViewController: UIViewController {
             }
         }
         
-//        switch post.comments {
-//        case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
-//        case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
-//        default: cell.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), post.comments)
-//        }
-        
         if likedPosts.contains(post.id) {
             cell.likesAndCommentsView.likeButton.isSelected = true
             cell.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
@@ -323,8 +317,6 @@ final class BlogViewController: UIViewController {
 
                     if !self.likedPosts.contains(post.id) {
                         self.likedPosts.append(post.id)
-//                        UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
-                        //here update likedPosts for storage and database
                         self.uploadLikedPosts()
                 
                     }

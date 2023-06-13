@@ -194,7 +194,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 }
             }
         }
-        let cameraImage = UIImage(systemName: "camera")?.withRenderingMode(.alwaysOriginal)
+        let cameraImage = UIImage(systemName: "camera")?.withTintColor(.systemGreen, renderingMode: .alwaysOriginal)
         cameraAction.setValue(cameraImage, forKey: "image")
         
         let photoAction = UIAlertAction(title: "Photo".localized(), style: .default) { [weak self] _ in
@@ -246,7 +246,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             }
         }
         
-        let photoImage = UIImage(systemName: "photo")?.withRenderingMode(.alwaysOriginal)
+        let photoImage = UIImage(systemName: "photo")?.withTintColor(.systemGreen, renderingMode: .alwaysOriginal)
         photoAction.setValue(photoImage, forKey: "image")
         
         let videoAction = UIAlertAction(title: "Video".localized(), style: .default) { [weak self] _ in
@@ -300,7 +300,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             }
         }
         
-        let videoImage = UIImage(named: "popcorn")?.withTintColor(.black, renderingMode: .alwaysOriginal)
+        let videoImage = UIImage(named: "popcorn")?.withTintColor(.systemGreen, renderingMode: .alwaysOriginal)
         videoAction.setValue(videoImage, forKey: "image")
 
         actionSheet.addAction(cameraAction)

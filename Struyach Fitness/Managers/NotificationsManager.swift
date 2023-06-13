@@ -49,34 +49,4 @@ final class NotificationsManager {
         semaphore.wait()
         return isAllowed
     }
-    
-    
-    
-    
-//    public func sendNotification(for workout: Workout, programName: String) {
-//        // Create the notification content
-//        let content = UNMutableNotificationContent()
-//        content.title = "New Workout Posted"
-//        content.body = "New workout \(workout.timestamp) for training plan \(programName) is posted"
-//
-//        // Create a unique identifier for the notification
-//        let identifier = "NewWorkoutNotification"
-//
-//        // Create the notification trigger (can be immediate or scheduled)
-//        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-//
-//        // Create the notification request
-//        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-//
-//        // Add the notification request to the notification center
-//        UNUserNotificationCenter.current().add(request) { error in
-//            if let error = error {
-//                print("Error adding notification request: \(error)")
-//            } else {
-//                print("Notification request added successfully")
-//            }
-//        }
-//    }
-    
-    
 }

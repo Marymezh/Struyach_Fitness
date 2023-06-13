@@ -12,7 +12,6 @@ class LanguageManager {
     static let shared = LanguageManager()
     public var currentLanguage: Language {
         didSet {
-            // Save the new language preference to UserDefaults
             UserDefaults.standard.setValue(currentLanguage.rawValue, forKey: "language")
             UserDefaults.standard.synchronize()
         }

@@ -412,6 +412,7 @@ final class SettingsTableViewController: UITableViewController {
                 let privacyPolicy = K.privacyPolicy.localized()
                 let policyVC = AboutViewController(text: privacyPolicy)
                 policyVC.title = "Privacy Policy".localized()
+                
                 policyVC.imageView.image = UIImage(named: "IMG_2930")
                 navigationController?.pushViewController(policyVC, animated: true)
                 
@@ -522,7 +523,6 @@ final class SettingsTableViewController: UITableViewController {
                                                 case .failure(let error):
                                                     AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
                                                     print (error.localizedDescription)
-                                                    //                                            AlertManager.shared.showAlert(title: "Warning".localized(), message: error.localizedDescription, cancelAction: "Ok")
                                                 case .success(()):
                                                     AlertManager.shared.showAlert(title: "Done".localized(), message: "Account is successfully deleted".localized(), cancelAction: "Ok"){ [weak self] action in
                                                         guard let self = self else {return}

@@ -209,7 +209,6 @@ final class PaywallView: UIView {
     }
     
     @objc private func openAppStore() {
-        // Add an observer to track when the app becomes inactive
         NotificationCenter.default.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
         
         print("Open App Store to redeem code")
@@ -231,17 +230,15 @@ final class PaywallView: UIView {
     }
 
     @objc private func appWillResignActive() {
-        // Remove the observer when the app becomes inactive
         NotificationCenter.default.removeObserver(self, name: UIApplication.willResignActiveNotification, object: nil)
         print("app active again")
-        // Call syncPurchases when the user returns to the app
         IAPManager.shared.syncPurchases { result in
             switch result {
             case .success:
                 print ("Purchases synchronized")
                 break
             case .failure(let error):
-                // Handle error synchronizing purchases
+    
                 print("Failed to sync purchases: \(error)")
             }
         }

@@ -38,7 +38,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Messaging.messaging().delegate = self
         
  //       setting up Revenue Cat "Purchases"
-        
         var apiKey: String {
           get {
             guard let filePath = Bundle.main.path(forResource: "Purchases-Info", ofType: "plist") else {
