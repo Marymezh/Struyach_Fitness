@@ -75,7 +75,7 @@
 //MARK: - COMMENTS
 "Back" = "Назад";
 "Comments" = "Комментарии";
-"Counting comments..." = "Считаем комментарии..."
+"Counting comments..." = "Считаем комментарии...";
 "Camera" = "Камера";
 "Uploading photo (%d%%)" = "Загрузка фото (%d%%)";
 "Error uploading image" = "Не удалось загрузить фото";
