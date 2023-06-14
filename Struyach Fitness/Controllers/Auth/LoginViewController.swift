@@ -73,7 +73,7 @@ final class LoginViewController: UIViewController {
             self.activityView.hide()
             return}
         #if Admin
-        checkIfAdmin(email: email, password: password)
+        LoginAdminWithCheck(email: email, password: password)
         #else
         logIn(email: email, password: password)
         #endif
@@ -98,36 +98,72 @@ final class LoginViewController: UIViewController {
         navigationController?.present(restorePasswordVC, animated: true, completion: nil)
     }
     
-    private func checkIfAdmin(email: String, password: String) {
-        DatabaseManager.shared.getUser(email: email) {[weak self] user in
+    private func LoginAdminWithCheck(email: String, password: String) {
+        AuthManager.shared.signIn(email: email, password: password) { [weak self] result in
             guard let self = self else {return}
-            if let user = user {
-                if user.isAdmin == true {
-                    self.logIn(email: email, password: password)
-                } else {
-                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "You are not authorized to sign in as an admin!".localized(), cancelAction: "Retry".localized())
-                    self.activityView.hide()
+            switch result {
+            case .success:
+                self.veryfyIsAdmin(email: email) { isAdmin in
+                    if isAdmin {
+                        DispatchQueue.main.async {
+                            self.activityView.hide()
+                            UserDefaults.standard.set(email, forKey: "email")
+                            let vc = TabBarController()
+                            vc.modalPresentationStyle = .fullScreen
+                            self.present(vc, animated: true)
+                        }
+                    } else {
+                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "You are not authorized to sign in as an admin!".localized(), cancelAction: "Retry".localized())
+                        self.activityView.hide()
+                    }
                 }
-            } else {
-                AlertManager.shared.showAlert(title: "Error".localized(), message: "Missing or insufficient permissions".localized(), cancelAction: "Retry".localized())
+            case .failure(let error):
+                print (error.localizedDescription)
                 self.activityView.hide()
-                print("not user")
+                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: There is no user record corresponding to this email. Check your email".localized(), cancelAction: "Retry".localized())
             }
         }
     }
+    
+    private func veryfyIsAdmin(email: String, completion: @escaping (Bool) -> Void) {
+        DatabaseManager.shared.getUser(email: email) {user in
+            if let user = user, user.isAdmin == true {
+                completion(true)
+            } else {
+                completion(false)
+            }
+        }
+    }
+    
+//    private func checkIfAdmin(email: String, password: String) {
+//        DatabaseManager.shared.getUser(email: email) {[weak self] user in
+//            guard let self = self else {return}
+//            if let user = user {
+//                if user.isAdmin == true {
+//                    self.logIn(email: email, password: password)
+//                } else {
+//                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "You are not authorized to sign in as an admin!".localized(), cancelAction: "Retry".localized())
+//                    self.activityView.hide()
+//                }
+//            } else {
+//                AlertManager.shared.showAlert(title: "Error".localized(), message: "Missing or insufficient permissions".localized(), cancelAction: "Retry".localized())
+//                self.activityView.hide()
+//                print("not user")
+//            }
+//        }
+//    }
     
     private func logIn(email: String, password: String) {
         AuthManager.shared.signIn(email: email, password: password) { [weak self] result in
             guard let self = self else {return}
             switch result {
             case .success:
-               
+#if Client
                 let userId = email
-         
-                let safeUserId = userId
                     .replacingOccurrences(of: "@", with: "_")
                     .replacingOccurrences(of: ".", with: "_")
-#if Client
+                let userUID = AuthManager.shared.userUID
+                let safeUserId = ("\(userId)_\(userUID ?? "unknown_uid")")
                 IAPManager.shared.logInRevenueCat(userId: safeUserId) { error in
                     print(error.localizedDescription)
                 }

@@ -109,10 +109,10 @@ final class CreateAccountViewController: UIViewController {
                 self.activityView.showActivityIndicator()
                 #if Client
                 let userId = email
-              //  guard let userUID = AuthManager.shared.userUID else {return}
-                let safeUserId = userId
                     .replacingOccurrences(of: "@", with: "_")
                     .replacingOccurrences(of: ".", with: "_")
+                let userUID = AuthManager.shared.userUID
+                let safeUserId = ("\(userId)_\(userUID ?? "unknown_uid")")
                 IAPManager.shared.logInRevenueCat(userId: safeUserId)  { error in
                     print(error.localizedDescription)
                 }
