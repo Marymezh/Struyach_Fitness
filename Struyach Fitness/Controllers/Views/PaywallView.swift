@@ -155,7 +155,7 @@ final class PaywallView: UIView {
             backgroundView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
-            closeButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 15),
+            closeButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 10),
             closeButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
             closeButton.heightAnchor.constraint(equalToConstant: 40),
             closeButton.widthAnchor.constraint(equalTo: closeButton.heightAnchor),
@@ -164,7 +164,7 @@ final class PaywallView: UIView {
             titleLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: bigInset),
+            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: smallInset),
             descriptionLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             descriptionLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             
@@ -188,7 +188,7 @@ final class PaywallView: UIView {
             
             termsLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             termsLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
-            termsLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -bigInset)
+            termsLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -5)
         ]
         
         NSLayoutConstraint.activate(constraints)

@@ -77,7 +77,6 @@ final class TextViewController: UIViewController, UITextViewDelegate {
         datePicker.layer.borderWidth = 0.5
         datePicker.layer.cornerRadius = 10
         datePicker.clipsToBounds = true
-        datePicker.minimumDate = Date()
         datePicker.tintColor = .systemGreen
         datePicker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
         datePicker.toAutoLayout()
@@ -133,6 +132,12 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     private func setupSubviews() {
         workoutDescriptionTextView.delegate = self
         workoutDescriptionTextView.becomeFirstResponder()
+        
+        let calendar = Calendar(identifier: .gregorian)
+        let components = DateComponents(year: 2023, month: 1, day: 1)
+        let minimumDate = calendar.date(from: components)
+        
+        datePicker.minimumDate = minimumDate
         
         view.addSubviews(workoutDescriptionTextView, stackView, datePicker)
         

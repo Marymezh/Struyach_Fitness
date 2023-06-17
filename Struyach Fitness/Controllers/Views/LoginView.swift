@@ -11,14 +11,6 @@ final class LoginView: UIView {
     
     //MARK: - Properties
     
-    let logoImageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "struyach-eng-black"))
-        imageView.clipsToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        imageView.toAutoLayout()
-        return imageView
-    }()
-    
     let autorizationView: UIView = {
         let autorizationView = UIView()
         autorizationView.backgroundColor = .lightGray
@@ -106,16 +98,11 @@ final class LoginView: UIView {
     
     private func setupSubviews() {
         
-        self.addSubviews(logoImageView, autorizationView, logInButton, createAccountButton, restorePasswordButton)
+        self.addSubviews( autorizationView, logInButton, createAccountButton, restorePasswordButton)
         autorizationView.addSubviews(emailTextField, passwordTextField)
         
         let constraints = [
-            logoImageView.topAnchor.constraint(equalTo: self.topAnchor, constant: 5),
-            logoImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            logoImageView.widthAnchor.constraint(equalToConstant: 274),
-            logoImageView.heightAnchor.constraint(equalToConstant: 261),
-            
-            autorizationView.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 10),
+            autorizationView.topAnchor.constraint(equalTo: self.topAnchor, constant: 100),
             autorizationView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
             autorizationView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             autorizationView.heightAnchor.constraint(equalToConstant: 100),
