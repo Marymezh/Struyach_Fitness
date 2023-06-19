@@ -29,28 +29,32 @@ final class AuthManager {
     private init() {
         lastSignInDate = Date()
     }
-    
+
     public func signUp(email: String, password: String, completion: @escaping (Result<Void, AuthError>) -> ()) {
         auth.fetchSignInMethods(forEmail: email) { signInMethods, error in
-            if error != nil {
+            if let error = error {
+                print (error.localizedDescription)
                 completion(.failure(.unknownError))
                 return
             }
+            
             if let signInMethods = signInMethods, !signInMethods.isEmpty {
                 completion(.failure(.emailAlreadyExists))
                 return
             }
-        }
-        if password.count < 6 {
-            completion(.failure(.passwordTooShort))
-            return
-        }
-        self.auth.createUser(withEmail: email, password: password) { (authResult, error) in
-            if let error = error {
-                print("Failed to sign up user: \(error.localizedDescription)")
-                completion(.failure(.unknownError))
-            } else {
-                completion(.success(()))
+            
+            if password.count < 6 {
+                completion(.failure(.passwordTooShort))
+                return
+            }
+            
+            self.auth.createUser(withEmail: email, password: password) { (authResult, error) in
+                if let error = error {
+                    print("Failed to sign up user: \(error.localizedDescription)")
+                    completion(.failure(.unknownError))
+                } else {
+                    completion(.success(()))
+                }
             }
         }
     }
@@ -59,7 +63,7 @@ final class AuthManager {
         guard !email.trimmingCharacters(in: .whitespaces).isEmpty,
               !password.trimmingCharacters(in: .whitespaces).isEmpty,
               password.count >= 6 else { return }
-        
+
         auth.signIn(withEmail: email, password: password) { result, error in
             if let error = error {
                 completion(.failure(error))
@@ -68,6 +72,7 @@ final class AuthManager {
             }
         }
     }
+
     
     public func signOut(completion: (Bool) -> ()) {
         do {

@@ -29,7 +29,7 @@ final class SettingsTableViewController: UITableViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -511,43 +511,54 @@ final class SettingsTableViewController: UITableViewController {
         AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: K.accountDeleteMessage.localized(), confirmActionTitle: "Delete Account".localized()) { action in
             AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), confirmActionTitle: "Confirm".localized()) { success, text in
                 if let text = text, text == "Confirm" {
-                    StorageManager.shared.deleteUserData(email: self.email) {[weak self] success, error in
-                        guard let self = self else {return}
-                        if success {
-                            DatabaseManager.shared.deleteAllBlogCommentsForUser(userId: self.email) { blogCommentsSuccess in
-                                DatabaseManager.shared.deleteAllWorkoutCommentsForUser(userId: self.email) { workoutCommentsSuccess in
-                                    DatabaseManager.shared.deleteUser(email: self.email) { success in
-                                        if success && blogCommentsSuccess && workoutCommentsSuccess {
-                                            AuthManager.shared.deleteAccount { result in
-                                                switch result {
-                                                case .failure(let error):
-                                                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
-                                                    print (error.localizedDescription)
-                                                case .success(()):
-                                                    AlertManager.shared.showAlert(title: "Done".localized(), message: "Account is successfully deleted".localized(), cancelAction: "Ok"){ [weak self] action in
-                                                        guard let self = self else {return}
-                                                        DispatchQueue.main.async {
-                                                            self.clearUserDefaults()
-                                                            let signInVC = LoginViewController()
-                                                            let window = UIApplication.shared.windows.first
-                                                            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-                                                                let navVC = UINavigationController(rootViewController: signInVC)
-                                                                window?.rootViewController = navVC
-                                                            }, completion: nil)
-                                                        }
-                                                    }
-                                                }
+                    StorageManager.shared.deleteUserData(email: self.email) { storageSuccess, storageError in
+                        guard storageSuccess else {
+                            if let error = storageError {
+                                let message = String(format: "User data cannot be deleted from storage: %@".localized(), error.localizedDescription)
+                                AlertManager.shared.showAlert(title: "Error".localized(), message: message, cancelAction: "Cancel".localized())
+                            }
+                            return
+                        }
+                        DatabaseManager.shared.deleteAllBlogCommentsForUser(userId: self.email) { blogCommentsSuccess in
+                            guard blogCommentsSuccess else {
+                                AlertManager.shared.showAlert(title: "Error".localized(), message: "Blog comments cannot be deleted".localized(), cancelAction: "Cancel".localized())
+                                return
+                            }
+                            DatabaseManager.shared.deleteAllWorkoutCommentsForUser(userId: self.email) { workoutCommentsSuccess in
+                                guard workoutCommentsSuccess else {
+                                    AlertManager.shared.showAlert(title: "Error".localized(), message: "Workout comments cannot be deleted".localized(), cancelAction: "Cancel".localized())
+                                    return
+                                }
+                                DatabaseManager.shared.deleteUser(email: self.email) { deleteUserSuccess in
+                                    guard deleteUserSuccess else {
+                                        AlertManager.shared.showAlert(title: "Error".localized(), message: "User and its data cannot be deleted from the database".localized(), cancelAction: "Cancel".localized())
+                                        return
+                                    }
+                                    AuthManager.shared.deleteAccount { result in
+                                        switch result {
+                                        case .failure(let error):
+                                            #if Admin
+                                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Your account data, including photos, videos, and comments, has been successfully deleted. However, in order to complete the account deletion process, please contact the developer to delete your account from our authentication system.".localized(), cancelAction: "Ok")
+                                            #else
+                                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
+                                            #endif
+                                        case .success:
+                                            print ("user is deleted successfully")
+                                            DispatchQueue.main.async {
+                                                self.clearUserDefaults()
+                                                let signInVC = LoginViewController()
+                                                let window = UIApplication.shared.windows.first
+                                                UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+                                                    let navVC = UINavigationController(rootViewController: signInVC)
+                                                    window?.rootViewController = navVC
+                                                }, completion: nil)
                                             }
-                                        } else {
-                                            AlertManager.shared.showAlert(title: "Error", message: "Can not delete user and its data from the database", cancelAction: "Cancel".localized())
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                                AlertManager.shared.showAlert(title: "Done".localized(), message: "Your account, including photos, videos, and comments, has been successfully deleted. But we hope that you will come back to train with us again!".localized(), cancelAction: "Ok")
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        } else {
-                            if let error = error {
-                                let message = String(format: "User data can not be deleted: %@".localized(), error.localizedDescription)
-                                AlertManager.shared.showAlert(title: "Error".localized(), message: message, cancelAction: "Cancel".localized())
                             }
                         }
                     }

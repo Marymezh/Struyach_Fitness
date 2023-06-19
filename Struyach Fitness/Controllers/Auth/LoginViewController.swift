@@ -135,24 +135,6 @@ final class LoginViewController: UIViewController {
         }
     }
     
-//    private func checkIfAdmin(email: String, password: String) {
-//        DatabaseManager.shared.getUser(email: email) {[weak self] user in
-//            guard let self = self else {return}
-//            if let user = user {
-//                if user.isAdmin == true {
-//                    self.logIn(email: email, password: password)
-//                } else {
-//                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "You are not authorized to sign in as an admin!".localized(), cancelAction: "Retry".localized())
-//                    self.activityView.hide()
-//                }
-//            } else {
-//                AlertManager.shared.showAlert(title: "Error".localized(), message: "Missing or insufficient permissions".localized(), cancelAction: "Retry".localized())
-//                self.activityView.hide()
-//                print("not user")
-//            }
-//        }
-//    }
-    
     private func logIn(email: String, password: String) {
         AuthManager.shared.signIn(email: email, password: password) { [weak self] result in
             guard let self = self else {return}
@@ -162,9 +144,7 @@ final class LoginViewController: UIViewController {
                 let userId = email
                     .replacingOccurrences(of: "@", with: "_")
                     .replacingOccurrences(of: ".", with: "_")
-                let userUID = AuthManager.shared.userUID
-                let safeUserId = ("\(userId)_\(userUID ?? "unknown_uid")")
-                IAPManager.shared.logInRevenueCat(userId: safeUserId) { error in
+                IAPManager.shared.logInRevenueCat(userId: userId) { error in
                     print(error.localizedDescription)
                 }
                 #endif
@@ -178,7 +158,7 @@ final class LoginViewController: UIViewController {
             case .failure(let error):
                 print (error.localizedDescription)
                 self.activityView.hide()
-                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: There is no user record corresponding to this email. Check your email".localized(), cancelAction: "Retry".localized())
+                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: wrong e-mail or password.".localized(), cancelAction: "Retry".localized())
             }
         }
     }

@@ -99,6 +99,7 @@ final class CreateAccountViewController: UIViewController {
         self.createNewUser(name: name, email: email, password: password, imageData: imageData, isAdmin: false)
         #endif
     }
+    
     //create User
     private func createNewUser(name: String, email: String, password: String, imageData: Data, isAdmin: Bool) {
         
@@ -111,9 +112,7 @@ final class CreateAccountViewController: UIViewController {
                 let userId = email
                     .replacingOccurrences(of: "@", with: "_")
                     .replacingOccurrences(of: ".", with: "_")
-                let userUID = AuthManager.shared.userUID
-                let safeUserId = ("\(userId)_\(userUID ?? "unknown_uid")")
-                IAPManager.shared.logInRevenueCat(userId: safeUserId)  { error in
+                IAPManager.shared.logInRevenueCat(userId: userId)  { error in
                     print(error.localizedDescription)
                 }
                 #endif
@@ -209,7 +208,7 @@ extension CreateAccountViewController: UIImagePickerControllerDelegate, UINaviga
             activityView.hide()
         }
     }
-        
+    
         private func presentImagePicker() {
             let picker = UIImagePickerController()
             picker.navigationBar.tintColor = UIColor.systemGreen

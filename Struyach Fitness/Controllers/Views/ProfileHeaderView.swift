@@ -82,7 +82,7 @@ final class ProfileHeaderView: UIView {
         self.stackView.addArrangedSubview(userEmailLabel)
 
         let constraints = [
-            userPhotoImage.topAnchor.constraint(equalTo: self.topAnchor, constant: 5),
+            userPhotoImage.topAnchor.constraint(equalTo: self.topAnchor, constant: 30),
             userPhotoImage.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: baseInset),
             userPhotoImage.heightAnchor.constraint(equalToConstant: 100),
             userPhotoImage.widthAnchor.constraint(equalTo: userPhotoImage.heightAnchor),

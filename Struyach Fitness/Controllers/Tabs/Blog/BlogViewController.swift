@@ -41,7 +41,6 @@ final class BlogViewController: UIViewController {
         super.viewWillAppear(animated)
         setupNavAndTabBar()
         DatabaseManager.shared.allPostsLoaded = false
-        tableView.reloadData()
         postUpdatesListener = DatabaseManager.shared.addBlogPostsListener { [weak self] updatedPosts in
             guard let self = self else {return}
             self.blogPosts = updatedPosts
@@ -157,7 +156,7 @@ final class BlogViewController: UIViewController {
                 self.blogPosts.append(contentsOf: posts)
             }
             self.lastDocumentSnapshot = lastDocumentSnapshot
-            self.tableView.reloadData()
+        //    self.tableView.reloadData()
             self.isFetching = false
         }
     }
@@ -281,7 +280,7 @@ final class BlogViewController: UIViewController {
         DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
             DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak cell] blogPost in
                 guard let cell = cell else {return}
-                print ("number of blog post comments is \(blogPost.comments)")
+                print ("in cell for row method number of blog post comments is \(blogPost.comments)")
                     switch blogPost.comments {
                     case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
                     case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
@@ -354,7 +353,7 @@ final class BlogViewController: UIViewController {
                 DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
                     DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak self, weak cell] blogPost in
                         guard let self = self, let cell = cell else {return}
-                        print ("number of blog post comments is \(blogPost.comments)")
+                        print ("on comment posted - number of blog post comments is \(blogPost.comments)")
                         if let index = self.blogPosts.firstIndex(where: { $0.id == blogPost.id }) {
                             self.blogPosts[index] = blogPost
                             switch blogPost.comments {

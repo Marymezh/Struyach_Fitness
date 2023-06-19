@@ -113,7 +113,7 @@
 "You must agree to the privacy policy to use this app." = "Пользователь должен согласиться с политикой конфиденциальности, чтобы использовать это приложение";
 "Check your email" = "Нет пользователя с указанным адресом электронной почты";
 "Check your password" = "Неправильный пароль";
-"Unable to log in: There is no user record corresponding to this email. Check your email" = "Невозможно выполнить вход: нет зарегистрированных пользователей с таким адресом. Проверьте написание адреса";
+"Unable to log in: wrong e-mail or password." = "Невозможно выполнить вход: неверный адрес или пароль";
 "Retry" = "Пробовать снова";
 "Unable to create new user" = "Не удалось добавить нового пользователя";
 "A user with this email already exists" = "Пользователь с этим адресом уже существует";
@@ -158,11 +158,16 @@
 
 "If you for sure want to permanently delete your account, please type \"Confirm\" below" = "Если вы уверены, что хотите навсегда удалить свою учётную запись, напечатайте \"Confirm\" ниже";
 
-"Account is successfully deleted" = "Учётная запись удалена";
+"Your account, including photos, videos, and comments, has been successfully deleted. But we hope that you will come back to train with us again!" = "Ваша учётная запись и все данные удаленыю Но мы надеемся, что вы ещё вернётесь, чтобы тренироваться с нами снова!";
 "Error occured, account is not deleted" = "Ошибка: не удалось удалить учётную запись";
 "Incorrect confirmation entry, check spelling" = "Подтверждающее слово не верно";
-"This operation is sensitive and requires recent authentication. Log in again before retrying this request" = "Эта операция требует свежую аутентификацию. Чтобы закончить эту операцию необходимо выйти из учётной записи и снова зайти";
+"This operation is sensitive and requires recent authentication. Log in again before retrying this request" = "Все данные успешно удалены, но чтобы удалить учётную запись, необходимо выйти и авторизоваться снова, а затем опять нажать кнопку удаления учётной записи";
+"Your account data, including photos, videos, and comments, has been successfully deleted. However, in order to complete the account deletion process, please contact the developer to delete your account from our authentication system." = "Ваши данные аккаунта, включая фотографии, видео и комментарии, были успешно удалены. Однако, для полного удаления учётной записи из нашей системы аутентификации, пожалуйста, свяжитесь с разработчиком.";
 "User data can not be deleted: %@" = "Данные учётной записи не могут быть удалены";
+"User and its data cannot be deleted from the database" = "Не удалось удалить данные пользователя из базы данных";
+"User data cannot be deleted from storage: %@" = "Не удалось удалить файлы пользователя из хранилища";
+"Workout comments cannot be deleted" = "Не удалось удалить комментарии к тренировкам";
+"Blog comments cannot be deleted" = "Не удалось удалить комментарии к постам";
 
 //MARK: - PROFILE
 "Unknown user" = "Неизвестный пользователь";

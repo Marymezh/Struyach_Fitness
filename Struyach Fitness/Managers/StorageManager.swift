@@ -39,28 +39,6 @@ final class StorageManager {
                 }
     }
     
-//    public func uploadImageForBlogComment(email: String, image: Data?, imageId: String,  progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
-//
-//        let path = email
-//            .replacingOccurrences(of: ".", with: "_")
-//            .replacingOccurrences(of: "@", with: "_")
-//
-//        guard let pngData = image else {return}
-//        let imageRef = "users/\(path)/\(imageId)_photo.png"
-//        let storageRef = container.reference(withPath: imageRef)
-//        let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
-//                guard metadata != nil, error == nil else {
-//                    completion(nil)
-//                    return
-//                }
-//                completion(imageRef)
-//            }
-//        uploadTask.observe(.progress) { snapshot in
-//                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
-//                    progress(Float(percentComplete))
-//                }
-//    }
-    
     public func uploadVideoURLForComment(email: String, videoID: String, videoData: Data, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
         
         let path = email
@@ -83,29 +61,6 @@ final class StorageManager {
                     progress(Float(percentComplete))
                 }
     }
-    
-//    public func uploadVideoURLForBlogComment(email: String, videoID: String, videoData: Data, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
-//        
-//        let path = email
-//            .replacingOccurrences(of: ".", with: "_")
-//            .replacingOccurrences(of: "@", with: "_")
-//
-//        let videoRef = "users/\(path)/\(videoID)"
-//        print(videoData)
-//        let storageRef = container.reference(withPath: videoRef)
-//           let uploadTask = storageRef.putData(videoData, metadata: nil) { metadata, error in
-//               if let error = error {
-//                   print("Error uploading video to Storage: \(error.localizedDescription)")
-//                   completion(nil)
-//                   return
-//               }
-//               completion(videoRef)
-//           }
-//        uploadTask.observe(.progress) { snapshot in
-//                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
-//                    progress(Float(percentComplete))
-//                }
-//    }
   
     public func deleteCommentsPhotoAndVideo(mediaRef: String) {
         
@@ -202,6 +157,36 @@ final class StorageManager {
             }
     }
 
+//    public func deleteUserData(email: String, completion: @escaping (Bool, Error?) -> Void) {
+//        let path = email
+//            .replacingOccurrences(of: ".", with: "_")
+//            .replacingOccurrences(of: "@", with: "_")
+//
+//        let userFolderRef = "users/\(path)"
+//
+//        let storageReference = container.reference().child(userFolderRef)
+//        storageReference.listAll { (result, error) in
+//            if let error = error {
+//                print ("error listing folder contents: \(error.localizedDescription)")
+//            } else if let result = result {
+//                print ("Number of files to delete:\(result.items.count)")
+////                if result.items.count == 0 {
+////                    completion(true, nil)
+////                }
+////
+//                for item in result.items {
+//                    item.delete { error in
+//                        if let error = error {
+//                            print("Error deleting item:", error)
+//                            completion(false, error)
+//                        } else {
+//                            completion(true, nil)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
     public func deleteUserData(email: String, completion: @escaping (Bool, Error?) -> Void) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
@@ -212,22 +197,30 @@ final class StorageManager {
         let storageReference = container.reference().child(userFolderRef)
         storageReference.listAll { (result, error) in
             if let error = error {
-                print ("error listing folder contents: \(error.localizedDescription)")
-            } else if let result = result {
+                print("Error listing folder contents: \(error.localizedDescription)")
+                completion(false, error) // Call the completion block with error if an error occurs
+                return
+            }  else if let result = result {
                 print ("Number of files to delete:\(result.items.count)")
-                if result.items.count == 0 {
-                    completion(true, nil)
-                }
+                
+                
+                let dispatchGroup = DispatchGroup() // Create a dispatch group
                 
                 for item in result.items {
+                    dispatchGroup.enter()
+                    
                     item.delete { error in
                         if let error = error {
                             print("Error deleting item:", error)
-                            completion(false, error)
-                        } else {
-                            completion(true, nil)
+                            completion(false, error) // Call the completion block with error if an error occurs
                         }
+                        dispatchGroup.leave()
                     }
+                }
+                
+                dispatchGroup.notify(queue: .main) {
+                    completion(true, nil) // Call the completion block with success when all items are deleted
+                    print("Deletion of user data completed")
                 }
             }
         }
