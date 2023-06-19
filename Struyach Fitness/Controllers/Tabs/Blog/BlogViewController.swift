@@ -78,6 +78,7 @@ final class BlogViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.toAutoLayout()
+        tableView.separatorStyle = .none
         plusButtonView.toAutoLayout()
         plusButtonView.plusButton.addTarget(self, action: #selector(addNewPost), for: .touchUpInside)
         view.addSubviews(tableView, plusButtonView)

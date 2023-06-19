@@ -64,6 +64,7 @@ final class TabBarController: UITabBarController {
         profileVC.navigationItem.largeTitleDisplayMode = .always
         profileVC.fetchUserRecords()
         profileVC.fetchProfileData()
+        profileVC.fetchUserImage()
         
         let nav1 = UINavigationController(rootViewController: programsVC)
         let nav2 = UINavigationController(rootViewController: blogVC)

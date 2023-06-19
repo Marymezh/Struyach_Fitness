@@ -22,8 +22,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private let workout: Workout?
     private let blogPost: Post?
     var commentsArray: [Comment] = []
+    private var userImage: UIImage?
     
-    private var detailsView = DetailsView()
     private var progressView = ProgressView()
     private var activityView = ActivityView()
 
@@ -33,8 +33,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private let userName = UserDefaults.standard.string(forKey: "userName")
     private let userEmail = UserDefaults.standard.string(forKey: "email")
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
-    private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    
     private let currentDate = Date()
     private let dateFormatter = DateFormatter()
     
@@ -63,6 +61,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         setupMessageCollectionView()
         setupInputBar()
         setupSubviews()
+        getUserImage()
         if let workout = self.workout {
             loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
         } else if let post = self.blogPost {
@@ -71,16 +70,20 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         setupGestureRecognizer()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
     }
-    
+  
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationController?.navigationBar.prefersLargeTitles = false
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.navigationController?.navigationBar.prefersLargeTitles = true 
     }
     
     deinit {
            print ("comments vc is deallocated")
        }
-    
     
     //MARK: - Message Collection View and InputBarView setup
     
@@ -107,24 +110,13 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     //    MARK: - Setup subviews
     
     private func setupSubviews() {
-        
-        if let workout = workout {
-            detailsView.textView.text = workout.description
-        } else if let post = blogPost {
-            detailsView.textView.text = post.description
-        }
-        detailsView.toAutoLayout()
         progressView.toAutoLayout()
         activityView.toAutoLayout()
         progressView.isHidden = true
         activityView.isHidden = true
-        view.addSubviews(detailsView, progressView, activityView)
+        view.addSubviews(progressView, activityView)
         
         let constraints = [
-            detailsView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            detailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            detailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            detailsView.heightAnchor.constraint(equalToConstant: 170),
             
             progressView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             progressView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -176,7 +168,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     }
                 } else if let post = self.blogPost {
                     let imageId =  "comments_blog_post_photo:\(post.id)_\(dateString)"
-                    StorageManager.shared.uploadImageForBlogComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
+                    StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)),
                                           percentComplete: percentComplete)
@@ -227,7 +219,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     }
                 } else if let post = self.blogPost {
                     let imageId =  "comments_blog_post_photo:\(post.id)_\(dateString)"
-                    StorageManager.shared.uploadImageForBlogComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
+                    StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                     }) { [weak self] ref in
@@ -281,7 +273,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     }
                 } else if let post = self.blogPost {
                     let videoId = "comments_blog_post_video:\(post.id)_\(dateString).mov"
-                    StorageManager.shared.uploadVideoURLForBlogComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
+                    StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                     })  { [weak self] ref in
@@ -314,14 +306,39 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
-    private func postComment(text: String, textRef: String) {
+    private func getUserImage() {
+        guard let email = userEmail else {return}
+        DatabaseManager.shared.getUser(email: email) { [weak self] user in
+            guard let self = self, let user = user else { return }
+            let imageRef = user.profilePictureRef
+            StorageManager.shared.downloadUrl(path: imageRef) { url in
+                guard let url = url else { return }
+
+                let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                    guard let data = data, error == nil else {
+                        print("Error downloading image: \(error?.localizedDescription ?? "unknown error".localized())")
+                        return
+                    }
+
+                    if let image = UIImage(data: data) {
+                        self.userImage = image
+                        print ("set user image for the avatar")
+                    } else {
+                        print("Error creating image from data")
+                    }
+                }
+                task.resume()
+            }
+        }
+    }
+    
+    private func postComment(text: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
         let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
-        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
-        let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else { return }
-        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: textRef)
-        
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: "")
+        self.commentsArray.append(newComment)
+        self.messagesCollectionView.reloadData()
         if let workout = self.workout {
             DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
                 guard let self = self else {return}
@@ -338,7 +355,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
-            messageInputBar.inputTextView.text = nil
+                messageInputBar.inputTextView.text = nil
         } else if let post = self.blogPost {
             DatabaseManager.shared.postBlogComment(comment: newComment, post: post) { [weak self] success in
                 guard let self = self else {return}
@@ -348,7 +365,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                             self.onCommentPosted?()
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
-                                
                             }
                         }
                     }
@@ -356,15 +372,13 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
-            messageInputBar.inputTextView.text = nil
+                messageInputBar.inputTextView.text = nil
         }
     }
     
     private func postPhotoComment(photoUrl: URL, photoRef: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
         let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
-        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
-        let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else { return }
         
         guard let placeholder = UIImage(systemName: "photo") else {return}
@@ -408,8 +422,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private func postVideoComment(videoUrl: URL, videoRef: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
         let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
-        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
-        let userImage = UIImage(contentsOfFile: fileURL.path)
         guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else { return }
         
         guard let placeholder = UIImage(systemName: "video.fill") else {return}
@@ -452,14 +464,12 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     }
     
     private func loadComments<T>(for object: T, loadCommentsClosure: @escaping (T, @escaping ([Comment]) -> Void) -> Void, completion: ((Bool) -> Void)? = nil) {
-        self.activityView.showActivityIndicator()
         loadCommentsClosure(object) { [weak self] comments in
             guard let self = self else { return }
             self.commentsArray = comments
             print("loaded \(self.commentsArray.count) comments")
             DispatchQueue.main.async {
                 self.messagesCollectionView.reloadData()
-                self.activityView.hide()
             }
             completion?(true)
         }
@@ -576,7 +586,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
                                 }
                                 let imageId =  "comments_blog_post_photo:\(post.id)_\(dateString)"
-                                StorageManager.shared.uploadImageForBlogComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
+                                StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                                 }) { [weak self] ref in
@@ -631,7 +641,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
                                 }
                                 let videoId = "comments_blog_post_video:\(post.id)_\(dateString).mov"
-                                StorageManager.shared.uploadVideoURLForBlogComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
+                                StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
                                 })  { [weak self] ref in
@@ -801,12 +811,6 @@ extension CommentsViewController: MessageCellDelegate {
             
         }
     }
-    
-    func replyTo(sender: String, message: String) {
-        let replyTo = "Reply to".localized()
-        let modifiedText = "\(replyTo) \(sender): \n \" \(message) \"\n\n"
-        self.messageInputBar.inputTextView.text = modifiedText
-    }
 
     func didTapMessage(in cell: MessageCollectionViewCell) {
         self.messageInputBar.becomeFirstResponder()
@@ -821,20 +825,18 @@ extension CommentsViewController: MessageCellDelegate {
         default: break
         }
     }
+    
+    func replyTo(sender: String, message: String) {
+        let replyTo = "Reply to".localized()
+        let modifiedText = "\(replyTo) \(sender): \n \"\(message) \"\n\n"
+        self.messageInputBar.inputTextView.text = modifiedText
+    }
 }
 
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         inputBar.inputTextView.resignFirstResponder()
-        guard let email = userEmail else {return}
-        let dateString = dateFormatter.string(from: currentDate)
-        let messageId =  "comments_textComment:_\(dateString)"
-        StorageManager.shared.uploadCommentText(email: email, commentID: messageId) { [weak self] ref in
-            guard let self = self else {return}
-            if let safeRef = ref {
-                self.postComment(text: text, textRef: safeRef)
-            }
-        }
+        self.postComment(text: text)
     }
 }
 

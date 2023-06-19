@@ -39,27 +39,27 @@ final class StorageManager {
                 }
     }
     
-    public func uploadImageForBlogComment(email: String, image: Data?, imageId: String,  progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
-        
-        let path = email
-            .replacingOccurrences(of: ".", with: "_")
-            .replacingOccurrences(of: "@", with: "_")
-        
-        guard let pngData = image else {return}
-        let imageRef = "users/\(path)/\(imageId)_photo.png"
-        let storageRef = container.reference(withPath: imageRef)
-        let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
-                guard metadata != nil, error == nil else {
-                    completion(nil)
-                    return
-                }
-                completion(imageRef)
-            }
-        uploadTask.observe(.progress) { snapshot in
-                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
-                    progress(Float(percentComplete))
-                }
-    }
+//    public func uploadImageForBlogComment(email: String, image: Data?, imageId: String,  progressHandler: ((Float) -> Void)?, completion: @escaping (String?)->()) {
+//
+//        let path = email
+//            .replacingOccurrences(of: ".", with: "_")
+//            .replacingOccurrences(of: "@", with: "_")
+//
+//        guard let pngData = image else {return}
+//        let imageRef = "users/\(path)/\(imageId)_photo.png"
+//        let storageRef = container.reference(withPath: imageRef)
+//        let uploadTask = storageRef.putData(pngData, metadata: nil) { metadata, error in
+//                guard metadata != nil, error == nil else {
+//                    completion(nil)
+//                    return
+//                }
+//                completion(imageRef)
+//            }
+//        uploadTask.observe(.progress) { snapshot in
+//                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
+//                    progress(Float(percentComplete))
+//                }
+//    }
     
     public func uploadVideoURLForComment(email: String, videoID: String, videoData: Data, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
         
@@ -84,50 +84,28 @@ final class StorageManager {
                 }
     }
     
-    public func uploadVideoURLForBlogComment(email: String, videoID: String, videoData: Data, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
-        
-        let path = email
-            .replacingOccurrences(of: ".", with: "_")
-            .replacingOccurrences(of: "@", with: "_")
-
-        let videoRef = "users/\(path)/\(videoID)"
-        print(videoData)
-        let storageRef = container.reference(withPath: videoRef)
-           let uploadTask = storageRef.putData(videoData, metadata: nil) { metadata, error in
-               if let error = error {
-                   print("Error uploading video to Storage: \(error.localizedDescription)")
-                   completion(nil)
-                   return
-               }
-               completion(videoRef)
-           }
-        uploadTask.observe(.progress) { snapshot in
-                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
-                    progress(Float(percentComplete))
-                }
-    }
-    
-    public func uploadCommentText(email: String, commentID: String, completion: @escaping (String?) -> ()) {
-        
-        let path = email
-            .replacingOccurrences(of: ".", with: "_")
-            .replacingOccurrences(of: "@", with: "_")
-
-        let data = try! JSONEncoder().encode(commentID)
-        
-        let commentRef = "users/\(path)/\(commentID).json"
-        
-        container
-            .reference(withPath: commentRef)
-            .putData(data, metadata: nil) { metadata, error in
-                guard metadata != nil, error == nil else {
-                    completion(nil)
-                    return
-                }
-               completion(commentRef)
-           }
-     
-    }
+//    public func uploadVideoURLForBlogComment(email: String, videoID: String, videoData: Data, progressHandler: ((Float) -> Void)?, completion: @escaping (String?) -> ()) {
+//        
+//        let path = email
+//            .replacingOccurrences(of: ".", with: "_")
+//            .replacingOccurrences(of: "@", with: "_")
+//
+//        let videoRef = "users/\(path)/\(videoID)"
+//        print(videoData)
+//        let storageRef = container.reference(withPath: videoRef)
+//           let uploadTask = storageRef.putData(videoData, metadata: nil) { metadata, error in
+//               if let error = error {
+//                   print("Error uploading video to Storage: \(error.localizedDescription)")
+//                   completion(nil)
+//                   return
+//               }
+//               completion(videoRef)
+//           }
+//        uploadTask.observe(.progress) { snapshot in
+//                    guard let progress = progressHandler, let percentComplete = snapshot.progress?.fractionCompleted else { return }
+//                    progress(Float(percentComplete))
+//                }
+//    }
   
     public func deleteCommentsPhotoAndVideo(mediaRef: String) {
         

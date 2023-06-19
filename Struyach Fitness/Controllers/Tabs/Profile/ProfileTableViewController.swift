@@ -13,7 +13,6 @@ final class ProfileTableViewController: UITableViewController {
     //MARK: - Properties
     
     private let movements = ["", "Back Squat", "Front Squat", "Squat Clean", "Power Clean", "Clean and Jerk", "Snatch", "Deadlift"]
-    
     private var weights = ["", "00", "00", "00", "00", "00", "00", "00"]
     private let headerView = ProfileHeaderView()
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -36,7 +35,6 @@ final class ProfileTableViewController: UITableViewController {
         super.viewDidLoad()
         setupTableView()
         setupHeaderView()
-       
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -80,6 +78,7 @@ final class ProfileTableViewController: UITableViewController {
     
     @objc private func userPhotoImageTapped() {
         guard currentUserEmail == email else {return}
+        print ("user tapped on the avatar")
         askForPermission()
     }
     
@@ -114,29 +113,34 @@ final class ProfileTableViewController: UITableViewController {
             }
         }
     }
-    
-    func fetchProfileData() {
+    func fetchUserImage() {
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
             let imageRef = user.profilePictureRef
             StorageManager.shared.downloadUrl(path: imageRef) { url in
-                guard let url = url else {return}
-                let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-                    guard let data = data, error == nil else { return }
-                    let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                    let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
-                    do {
-                        try data.write(to: fileURL)
-                        let userImage = UIImage(contentsOfFile: fileURL.path)
+                guard let url = url else { return }
+                let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                    guard let data = data, error == nil else {
+                        print("Error downloading image: \(error?.localizedDescription ?? "unknown error".localized())")
+                        return
+                    }
+                    if let image = UIImage(data: data) {
                         DispatchQueue.main.async {
-                            self.headerView.userPhotoImage.image = userImage
+                            self.headerView.userPhotoImage.image = image
                         }
-                    } catch {
-                        print(error.localizedDescription)
+                        print ("set user image for the avatar")
+                    } else {
+                        print("Error creating image from data")
                     }
                 }
                 task.resume()
             }
+        }
+    }
+    
+    func fetchProfileData() {
+        DatabaseManager.shared.getUser(email: email) { [weak self] user in
+            guard let self = self, let user = user else { return }
             DispatchQueue.main.async {
                 self.headerView.userNameLabel.text = user.name
                 UserDefaults.standard.set(user.name, forKey: "userName")
@@ -147,14 +151,12 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     func fetchUserRecords() {
-        print ("fetching user recods func is running")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user,
                   let self = self,
                   let ref = user.personalRecords else {return}
             StorageManager.shared.downloadUrl(path: ref) { url in
                 guard let url = url else {return}
-                
                 let task = URLSession.shared.dataTask(with: url) { data, _, _ in
                     guard let data = data else {return}
                     self.weights = try! JSONDecoder().decode([String].self, from: data)
@@ -244,17 +246,29 @@ final class ProfileTableViewController: UITableViewController {
 //MARK: - UIImagePickerControllerDelegate methods
 extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     private func askForPermission() {
-            let status = PHPhotoLibrary.authorizationStatus()
-            switch status {
-            case .authorized:
-                presentImagePicker()
-            case .denied, .restricted:
-                AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the photo library in Phone Settings to choose an avatar.".localized(), cancelAction: "Ok")
-            case .limited:
-                presentImagePicker()
-            default: break
+        let status = PHPhotoLibrary.authorizationStatus()
+        switch status {
+        case .authorized:
+            presentImagePicker()
+        case .denied, .restricted:
+            AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the photo library in Phone Settings to choose an avatar.".localized(), cancelAction: "Ok")
+        case .limited:
+            presentImagePicker()
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization { [weak self] status in
+                DispatchQueue.main.async {
+                    if status == .authorized {
+                        self?.presentImagePicker()
+                    } else {
+                        AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the photo library in Phone Settings to choose an avatar.".localized(), cancelAction: "Ok")
+                    }
+                }
             }
+        @unknown default:
+            AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the photo library in Phone Settings to choose an avatar.".localized(), cancelAction: "Ok")
+            
         }
+    }
         
         private func presentImagePicker() {
             let picker = UIImagePickerController()
@@ -283,20 +297,38 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
                 guard success else {return}
                 StorageManager.shared.downloadUrl(path: imageRef) { url in
                     guard let url = url else { return }
-                    
-                    let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-                        guard let data = data, error == nil else { return }
-                        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
-                        do {
-                            try data.write(to: fileURL)
-                            print ("New user image is uploaded to Storage and saved to filemanager")
-                        } catch {
-                            print(error.localizedDescription)
+                    let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                        guard let data = data, error == nil else {
+                            print("Error downloading image: \(error?.localizedDescription ?? "unknown error".localized())")
+                            return
+                        }
+                        if let image = UIImage(data: data) {
+                            DispatchQueue.main.async {
+                                self.headerView.userPhotoImage.image = image
+                            }
+                            print ("set user image for the avatar")
+                        } else {
+                            print("Error creating image from data")
                         }
                     }
                     task.resume()
                 }
+//                StorageManager.shared.downloadUrl(path: imageRef) { url in
+//                    guard let url = url else { return }
+//
+//                    let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+//                        guard let data = data, error == nil else { return }
+//                        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+//                        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
+//                        do {
+//                            try data.write(to: fileURL)
+//                            print ("New user image is uploaded to Storage and saved to filemanager")
+//                        } catch {
+//                            print(error.localizedDescription)
+//                        }
+//                    }
+//                    task.resume()
+//                }
             }
         }
     }
