@@ -22,7 +22,6 @@ final class LoginViewController: UIViewController {
         setupNavBar()
         setupSubviews()
         showPrivacyPolicy()
-        
     }
     //MARK: - Setup methods
     

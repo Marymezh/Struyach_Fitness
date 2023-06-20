@@ -8,9 +8,11 @@
 import UIKit
 import FirebaseCore
 import FirebaseMessaging
+import FirebaseAnalyticsSwift
+import FirebaseCrashlytics
 import UserNotifications
 import RevenueCat
-//import FirebaseAppCheck
+import FirebaseAppCheck
 
 
 @main
@@ -19,10 +21,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         //setting up Firebase and Messaging
-//        let providerFactory = AppCheckDebugProviderFactory()
-//        AppCheck.setAppCheckProviderFactory(providerFactory)
-//
-//
+        let providerFactory = YourAppCheckProviderFactory()
+        AppCheck.setAppCheckProviderFactory(providerFactory)
+
         FirebaseApp.configure()
         
         UNUserNotificationCenter.current().delegate = self
