@@ -35,7 +35,7 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
         button.toAutoLayout()
         button.setTitle(Language.english.rawValue, for: .normal)
         button.addTarget(self, action: #selector(switchLanguage(_:)), for: .touchUpInside)
-        button.tag = Language.english.rawValue.hashValue // assign a tag based on the rawValue hash to distinguish from Russian button
+        button.tag = Language.english.rawValue.hashValue
         return button
     }()
     
@@ -44,7 +44,7 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
         button.toAutoLayout()
         button.setTitle(Language.russian.rawValue, for: .normal)
         button.addTarget(self, action: #selector(switchLanguage(_:)), for: .touchUpInside)
-        button.tag = Language.russian.rawValue.hashValue // assign a tag based on the rawValue hash to distinguish from English button
+        button.tag = Language.russian.rawValue.hashValue
         return button
     }()
     
@@ -91,7 +91,6 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
     
     func configure(language: Language) {
         
-        // Set the default selected language to English
         engButton.isSelected = (language == .english)
         rusButton.isSelected = (language == .russian)
         
@@ -104,11 +103,11 @@ final class LanguageSwitchTableViewCell: UITableViewCell {
     
     @objc func switchLanguage(_ sender: UIButton) {
         let language: Language = sender.tag == Language.english.rawValue.hashValue ? .english : .russian
-        // Check if the selected language is already the current language
+      
         if language == .english && engButton.isSelected {
-            return // Ignore the click if English is already selected
+            return
         } else if language == .russian && rusButton.isSelected {
-            return // Ignore the click if Russian is already selected
+            return
         }
         delegate?.didSwitchLanguage(to: language)
     }

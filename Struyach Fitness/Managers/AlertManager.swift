@@ -52,7 +52,7 @@ final class AlertManager {
         let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
         alert.addAction(confirmAction)
         alert.addAction(cancelAction)
-        alert.view.tintColor = .gray
+        alert.view.tintColor = .contrastGreen
         
         topViewController.present(alert, animated: true, completion: nil)
     }

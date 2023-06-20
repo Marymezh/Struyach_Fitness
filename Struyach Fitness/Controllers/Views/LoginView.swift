@@ -11,6 +11,26 @@ final class LoginView: UIView {
     
     //MARK: - Properties
     
+    weak var delegate: LanguageSwitchDelegate?
+    
+    private lazy var engButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.setTitle(Language.english.rawValue, for: .normal)
+        button.addTarget(self, action: #selector(switchLanguage(_:)), for: .touchUpInside)
+        button.tag = Language.english.rawValue.hashValue
+        return button
+    }()
+    
+    private lazy var rusButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.setTitle(Language.russian.rawValue, for: .normal)
+        button.addTarget(self, action: #selector(switchLanguage(_:)), for: .touchUpInside)
+        button.tag = Language.russian.rawValue.hashValue
+        return button
+    }()
+    
     let autorizationView: UIView = {
         let autorizationView = UIView()
         autorizationView.backgroundColor = .lightGray
@@ -98,10 +118,16 @@ final class LoginView: UIView {
     
     private func setupSubviews() {
         
-        self.addSubviews( autorizationView, logInButton, createAccountButton, restorePasswordButton)
+        self.addSubviews( engButton, rusButton, autorizationView, logInButton, createAccountButton, restorePasswordButton)
         autorizationView.addSubviews(emailTextField, passwordTextField)
         
         let constraints = [
+            engButton.topAnchor.constraint(equalTo: self.topAnchor, constant: 16),
+            engButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            
+            rusButton.trailingAnchor.constraint(equalTo: engButton.leadingAnchor, constant: -5),
+            rusButton.topAnchor.constraint(equalTo: engButton.topAnchor),
+            
             autorizationView.topAnchor.constraint(equalTo: self.topAnchor, constant: 100),
             autorizationView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
             autorizationView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
@@ -133,5 +159,28 @@ final class LoginView: UIView {
             restorePasswordButton.heightAnchor.constraint(equalTo: logInButton.heightAnchor)
         ]
         NSLayoutConstraint.activate(constraints)
+    }
+    
+    func configure(language: Language) {
+
+        engButton.isSelected = (language == .english)
+        rusButton.isSelected = (language == .russian)
+        
+        // Set the button labels based on selected state
+        let normalAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 16), .foregroundColor: UIColor.white    ]
+        let selectedAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.boldSystemFont(ofSize: 16), .foregroundColor: UIColor.systemGreen]
+        engButton.setAttributedTitle(NSAttributedString(string: "en", attributes: engButton.isSelected ? selectedAttributes : normalAttributes), for: .normal)
+        rusButton.setAttributedTitle(NSAttributedString(string: "ru", attributes: rusButton.isSelected ? selectedAttributes : normalAttributes), for: .normal)
+    }
+    
+    @objc func switchLanguage(_ sender: UIButton) {
+        let language: Language = sender.tag == Language.english.rawValue.hashValue ? .english : .russian
+   
+        if language == .english && engButton.isSelected {
+            return
+        } else if language == .russian && rusButton.isSelected {
+            return
+        }
+        delegate?.didSwitchLanguage(to: language)
     }
 }

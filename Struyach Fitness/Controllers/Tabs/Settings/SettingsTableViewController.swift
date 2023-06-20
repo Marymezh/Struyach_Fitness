@@ -536,7 +536,7 @@ final class SettingsTableViewController: UITableViewController {
                                     }
                                     AuthManager.shared.deleteAccount { result in
                                         switch result {
-                                        case .failure(let error):
+                                        case .failure(_):
                                             #if Admin
                                             AlertManager.shared.showAlert(title: "Warning".localized(), message: "Your account data, including photos, videos, and comments, has been successfully deleted. However, in order to complete the account deletion process, please contact the developer to delete your account from our authentication system.".localized(), cancelAction: "Ok")
                                             #else

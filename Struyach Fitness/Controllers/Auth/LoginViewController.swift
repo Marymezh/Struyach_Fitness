@@ -37,6 +37,8 @@ final class LoginViewController: UIViewController {
     private func setupSubviews() {
         view.backgroundColor = .black
         loginView.toAutoLayout()
+        loginView.configure(language: LanguageManager.shared.currentLanguage)
+        loginView.delegate = self
         loginView.logInButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
         loginView.createAccountButton.addTarget(self, action: #selector(createAccountTapped), for: .touchUpInside)
         loginView.restorePasswordButton.addTarget(self, action: #selector(restorePasswordTapped), for: .touchUpInside)
@@ -120,7 +122,7 @@ final class LoginViewController: UIViewController {
             case .failure(let error):
                 print (error.localizedDescription)
                 self.activityView.hide()
-                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: There is no user record corresponding to this email. Check your email".localized(), cancelAction: "Retry".localized())
+                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: wrong e-mail or password.".localized(), cancelAction: "Retry".localized())
             }
         }
     }
@@ -190,7 +192,7 @@ final class LoginViewController: UIViewController {
                 }
                 cancelAlertController.addAction(exitAction)
                 cancelAlertController.addAction(tryAgainAction)
-                cancelAlertController.view.tintColor = .customDarkGray
+                cancelAlertController.view.tintColor = .contrastGreen
                 
                 self.present(cancelAlertController, animated: true, completion: nil)
             }
@@ -198,10 +200,24 @@ final class LoginViewController: UIViewController {
             alertController.addAction(agreeAction)
             alertController.addAction(cancelAction)
         
-        alertController.view.tintColor = .customDarkGray
+        alertController.view.tintColor = .contrastGreen
         alertController.modalPresentationStyle = .popover
             
         present(alertController, animated: true, completion: nil)
+        }
+    }
+}
+
+extension LoginViewController: LanguageSwitchDelegate {
+    func didSwitchLanguage(to language: Language) {
+        LanguageManager.shared.setCurrentLanguage(language)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            let signInVC = LoginViewController()
+            let window = UIApplication.shared.windows.first
+            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+                let navVC = UINavigationController(rootViewController: signInVC)
+                window?.rootViewController = navVC
+            }, completion: nil)
         }
     }
 }
