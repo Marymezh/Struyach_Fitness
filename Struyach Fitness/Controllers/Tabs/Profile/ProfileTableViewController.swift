@@ -42,13 +42,6 @@ final class ProfileTableViewController: UITableViewController {
         fetchProfileData()
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        if currentUserEmail == email {
-            uploadUserRecords()
-        }
-    }
-    
     deinit {
            print ("profile vc is deallocated")
        }
@@ -215,16 +208,10 @@ final class ProfileTableViewController: UITableViewController {
             }
             cell.movementLabel.text = movements[indexPath.row]
             cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
-            cell.weightIsSet = { [weak self] text in
-                guard let self = self else {return}
-                self.weights.remove(at: indexPath.row)
-                self.weights.insert(text, at: indexPath.row)
-                self.tableView.reloadData()
-            }
+            cell.weightTextField.delegate = self
             
             if email != currentUserEmail {
                 cell.weightTextField.isHidden = true
-                cell.saveButton.isHidden = true
             }
             return cell
         }
@@ -276,6 +263,8 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
             picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .photoLibrary
+            picker.view.tintColor = .contrastGreen
+            
             navigationItem.backButtonTitle = "Cancel".localized()
             navigationController?.present(picker, animated: true)
         }
@@ -315,5 +304,24 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
                 }
             }
         }
+    }
+}
+
+extension ProfileTableViewController: UITextFieldDelegate {
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        guard let cell = textField.superview?.superview?.superview as? ProfileTableViewCell,
+              let indexPath = tableView.indexPath(for: cell),
+              let text = textField.text else {
+            return
+        }
+        
+        if !text.isEmpty {
+            weights[indexPath.row] = text
+            tableView.reloadRows(at: [indexPath], with: .none)
+            self.uploadUserRecords()
+        }
+
+        textField.text = nil
+        textField.placeholder = "00 kg".localized()
     }
 }

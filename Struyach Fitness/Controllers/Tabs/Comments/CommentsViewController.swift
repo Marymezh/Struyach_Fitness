@@ -138,7 +138,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         guard let email = userEmail else {return}
         let dateString = dateFormatter.string(from: currentDate)
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        actionSheet.view.tintColor = .darkGray
+        actionSheet.view.tintColor = .contrastGreen
         let cameraAction = UIAlertAction(title: "Camera".localized(), style: .default) { [weak self] _ in
             guard let self = self else {return}
             self.activityView.showActivityIndicator()
@@ -669,7 +669,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 alertController.addAction(editAction)
                 alertController.addAction(deleteAction)
                 alertController.addAction(cancelAction)
-                alertController.view.tintColor = .darkGray
+                alertController.view.tintColor = .contrastGreen
                 present(alertController, animated: true)
             }
         }
@@ -900,6 +900,7 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
     private func presentImagePicker(type: ImagePickerType) {
        let picker = UIImagePickerController()
         picker.navigationController?.navigationBar.barTintColor = .systemGreen
+        picker.view.tintColor = .contrastGreen
             picker.delegate = self
         switch type {
         case .camera:

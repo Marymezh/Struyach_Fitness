@@ -13,8 +13,6 @@ final class ProfileTableViewCell: UITableViewCell {
     
     private var baseInset: CGFloat { return 10 }
     
-    var weightIsSet: ((String) -> Void)?
-    
     let containerView: UIView = {
         let containerView = UIView()
         containerView.toAutoLayout()
@@ -42,8 +40,8 @@ final class ProfileTableViewCell: UITableViewCell {
     let weightTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "00 kg".localized()
-        textField.tintColor = .black
-        textField.backgroundColor = .white
+        textField.tintColor = .systemGray
+        textField.backgroundColor = .systemGray6
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
         textField.leftViewMode = .always
         textField.keyboardType = .decimalPad
@@ -51,15 +49,6 @@ final class ProfileTableViewCell: UITableViewCell {
         textField.layer.borderWidth = 0.5
         textField.layer.cornerRadius = 5
         return textField
-    }()
-    
-    lazy var saveButton: UIButton = {
-        let button = UIButton()
-        button.setBackgroundImage(UIImage(systemName: "checkmark.circle", withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)), for: .normal)
-        button.tintColor = .systemGreen
-        button.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
-        button.toAutoLayout()
-        return button
     }()
     
     private let stackView: UIStackView = {
@@ -81,19 +70,6 @@ final class ProfileTableViewCell: UITableViewCell {
         setupSubviews()
     }
     
-    @objc private func saveTapped () {
-        if let text = weightTextField.text {
-            if text != "" {
-                self.weightIsSet?(text)
-                weightTextField.text = ""
-            } else {
-                self.weightIsSet?("00")
-                weightLabel.text = "00 kg".localized()
-                weightTextField.text = ""
-            }
-        }
-    }
-    
     private func setupSubviews() {
         self.selectionStyle = .none
         self.backgroundColor = .customDarkGray
@@ -102,7 +78,6 @@ final class ProfileTableViewCell: UITableViewCell {
         stackView.addArrangedSubview(movementLabel)
         stackView.addArrangedSubview(weightLabel)
         stackView.addArrangedSubview(weightTextField)
-        stackView.addArrangedSubview(saveButton)
         
         let constraints = [
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -113,9 +88,7 @@ final class ProfileTableViewCell: UITableViewCell {
             movementLabel.widthAnchor.constraint(equalToConstant: 130),
             weightLabel.widthAnchor.constraint(equalToConstant: 70),
             weightTextField.widthAnchor.constraint(equalTo: weightLabel.widthAnchor),
-            saveButton.widthAnchor.constraint(equalToConstant: 20),
-            saveButton.heightAnchor.constraint(equalTo: saveButton.widthAnchor),
-            
+
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: baseInset),
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 25),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -25),

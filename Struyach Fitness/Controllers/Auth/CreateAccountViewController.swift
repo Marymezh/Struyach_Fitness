@@ -215,6 +215,7 @@ extension CreateAccountViewController: UIImagePickerControllerDelegate, UINaviga
             picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .photoLibrary
+            picker.view.tintColor = .contrastGreen
             navigationItem.backButtonTitle = "Cancel".localized()
             navigationController?.present(picker, animated: true)
         }

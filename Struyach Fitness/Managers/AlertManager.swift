@@ -19,7 +19,7 @@ final class AlertManager {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: cancelAction, style: .cancel, handler: completion)
         alert.addAction(cancelAction)
-        alert.view.tintColor = .systemGreen
+        alert.view.tintColor = .contrastGreen
 
         topViewController.present(alert, animated: true, completion: nil)
     }
@@ -41,7 +41,7 @@ final class AlertManager {
         alert.addAction(cancelAction)
         alert.addAction(confirmAction)
 
-        alert.view.tintColor = .gray
+        alert.view.tintColor = .contrastGreen
         topViewController.present(alert, animated: true, completion: nil)
     }
     

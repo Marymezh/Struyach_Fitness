@@ -19,7 +19,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
         let textView = UITextView()
         textView.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         textView.textColor = .black
-        textView.tintColor = .black
+        textView.tintColor = .lightGray
         textView.isScrollEnabled = true
         textView.backgroundColor = .white
         textView.layer.borderWidth = 0.5

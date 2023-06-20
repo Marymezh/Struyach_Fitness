@@ -201,7 +201,7 @@ final class BlogViewController: UIViewController {
             alertController.addAction(editAction)
             alertController.addAction(deleteAction)
             alertController.addAction(cancelAction)
-            alertController.view.tintColor = .darkGray
+            alertController.view.tintColor = .contrastGreen
             present(alertController, animated: true)
         }
     }

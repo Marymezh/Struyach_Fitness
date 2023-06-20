@@ -70,7 +70,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         IQKeyboardManager.shared.enable = true
         IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.disabledToolbarClasses.append(CommentsViewController.self)
-        IQKeyboardManager.shared.toolbarTintColor = .darkGray
+        IQKeyboardManager.shared.toolbarTintColor = .contrastGreen
     }
     
     private func shouldSignOutUser() -> Bool {

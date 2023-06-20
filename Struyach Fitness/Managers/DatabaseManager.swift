@@ -581,65 +581,6 @@ final class DatabaseManager {
         }
     }
     
-//    public func deleteAllBlogCommentsForUser(userId: String, completion: @escaping ((Bool)-> Void)) {
-//
-//        database
-//            .collection("blogPosts")
-//            .getDocuments { [weak self] (snapshot, error) in
-//                guard let self = self else {return}
-//            guard let documents = snapshot?.documents else {
-//                print("Error retrieving blog posts: \(error?.localizedDescription ?? "Unknown error")")
-//                completion(false)
-//                return
-//            }
-//
-//            let dispatchGroup = DispatchGroup()
-//
-//            for document in documents {
-//                let postId = document.documentID
-//
-//                let commentsCollection = self.database.collection("blogPosts").document(postId).collection("comments")
-//                let query = commentsCollection.whereField("senderId", isEqualTo: userId)
-//
-//                dispatchGroup.enter()
-//
-//                query.getDocuments { (snapshot, error) in
-//                    guard let documents = snapshot?.documents else {
-//                        print("Error retrieving comments for post \(postId): \(error?.localizedDescription ?? "Unknown error")")
-//                        dispatchGroup.leave()
-//                        completion(false)
-//                        return
-//                    }
-//
-//                    let batch = self.database.batch()
-//
-//                    for document in documents {
-//                        let commentId = document.documentID
-//                        let commentRef = commentsCollection.document(commentId)
-//
-//                        batch.deleteDocument(commentRef)
-//                    }
-//
-//                    batch.commit { (error) in
-//                        if let error = error {
-//                            print("Error deleting comments for post \(postId): \(error.localizedDescription)")
-//                            completion(false)
-//                        } else {
-//                            print("Comments deleted successfully for post \(postId)")
-//                        }
-//
-//                        dispatchGroup.leave()
-//                    }
-//                }
-//            }
-//
-//            dispatchGroup.notify(queue: .main) {
-//                completion(true)
-//                print("Deletion of comments for user \(userId) completed")
-//            }
-//        }
-//    }
-    
     public func deleteAllBlogCommentsForUser(userId: String, completion: @escaping (Bool) -> Void) {
         database.collection("blogPosts").getDocuments { [weak self] (snapshot, error) in
             guard let self = self else { return }
@@ -651,7 +592,7 @@ final class DatabaseManager {
             }
             
             let dispatchGroup = DispatchGroup()
-            var success = true // Track the overall success
+            var success = true
             
             for document in documents {
                 let postId = document.documentID
@@ -664,7 +605,7 @@ final class DatabaseManager {
                 query.getDocuments { (snapshot, error) in
                     guard let documents = snapshot?.documents else {
                         print("Error retrieving comments for post \(postId): \(error?.localizedDescription ?? "Unknown error")")
-                        success = false // Set success to false if an error occurs
+                        success = false
                         dispatchGroup.leave()
                         return
                     }
@@ -681,9 +622,7 @@ final class DatabaseManager {
                     batch.commit { (error) in
                         if let error = error {
                             print("Error deleting comments for post \(postId): \(error.localizedDescription)")
-                            success = false // Set success to false if an error occurs
-                        } else {
-                            print("Comments deleted successfully for post \(postId)")
+                            success = false
                         }
                         
                         dispatchGroup.leave()
@@ -692,7 +631,7 @@ final class DatabaseManager {
             }
             
             dispatchGroup.notify(queue: .main) {
-                completion(success) // Call the completion block with the overall success value
+                completion(success)
                 print("Deletion of comments for user \(userId) completed")
             }
         }
@@ -916,8 +855,8 @@ final class DatabaseManager {
     
     public func deleteAllWorkoutCommentsForUser(userId: String, completion: @escaping (Bool) -> Void) {
         let programsIDs = ["Belly_Burner_Plan", "Bodyweight", "ECD_Plan", "Pelvic_Power_Plan", "Struyach_Plan"]
-        let dispatchGroup = DispatchGroup() // Create a single dispatch group for all programs
-        var success = true // Track the overall success
+        let dispatchGroup = DispatchGroup()
+        var success = true
         
         for program in programsIDs {
             dispatchGroup.enter()
@@ -926,12 +865,12 @@ final class DatabaseManager {
                 guard let self = self else { return }
                 guard let documents = snapshot?.documents else {
                     print("Error retrieving blog posts: \(error?.localizedDescription ?? "Unknown error")")
-                    success = false // Set success to false if an error occurs
+                    success = false
                     dispatchGroup.leave()
                     return
                 }
                 
-                let workoutDispatchGroup = DispatchGroup() // Create a dispatch group for each workout
+                let workoutDispatchGroup = DispatchGroup()
                 for document in documents {
                     let workoutId = document.documentID
                     print("workoutId: \(workoutId)")
@@ -943,7 +882,7 @@ final class DatabaseManager {
                     query.getDocuments { (snapshot, error) in
                         guard let documents = snapshot?.documents else {
                             print("Error retrieving comments for workout \(workoutId): \(error?.localizedDescription ?? "Unknown error")")
-                            success = false // Set success to false if an error occurs
+                            success = false
                             workoutDispatchGroup.leave()
                             return
                         }
@@ -957,9 +896,7 @@ final class DatabaseManager {
                         batch.commit { (error) in
                             if let error = error {
                                 print("Error deleting comments for workout \(workoutId): \(error.localizedDescription)")
-                                success = false // Set success to false if an error occurs
-                            } else {
-                                print("Comments deleted successfully for workout \(workoutId)")
+                                success = false
                             }
                             workoutDispatchGroup.leave()
                         }
@@ -972,79 +909,10 @@ final class DatabaseManager {
         }
         
         dispatchGroup.notify(queue: .main) {
-            completion(success) // Call the completion block with the overall success value
+            completion(success)
             print("Deletion of all workout comments for user \(userId) completed")
         }
     }
-    
-//    public func deleteAllWorkoutCommentsForUser(userId: String, completion: @escaping (Bool) -> Void) {
-//
-//        let programsIDs = ["Belly_Burner_Plan", "Bodyweight", "ECD_Plan", "Pelvic_Power_Plan", "Struyach_Plan"]
-//
-//        for program in programsIDs {
-//            database.collection("programs")
-//                .document(program)
-//                .collection("workouts")
-//                .getDocuments { [weak self] (snapshot, error) in
-//                    guard let self = self else {return}
-//                    guard let documents = snapshot?.documents else {
-//                        print("Error retrieving blog posts: \(error?.localizedDescription ?? "Unknown error")")
-//                        completion(false)
-//                        return
-//                    }
-//
-//                    let dispatchGroup = DispatchGroup()
-//
-//                    for document in documents {
-//                        let workoutId = document.documentID
-//                        print ("workoutId: \(workoutId)")
-//
-//                        let commentsCollection = self.database.collection("programs")
-//                            .document(program)
-//                            .collection("workouts")
-//                            .document(workoutId)
-//                            .collection("comments")
-//                        let query = commentsCollection.whereField("senderId", isEqualTo: userId)
-//
-//                        dispatchGroup.enter()
-//
-//                        query.getDocuments { (snapshot, error) in
-//                            guard let documents = snapshot?.documents else {
-//                                print("Error retrieving comments for post \(workoutId): \(error?.localizedDescription ?? "Unknown error")")
-//                                dispatchGroup.leave()
-//                                completion(false)
-//                                return
-//                            }
-//
-//                            let batch = self.database.batch()
-//
-//                            for document in documents {
-//                                let commentId = document.documentID
-//                                let commentRef = commentsCollection.document(commentId)
-//
-//                                batch.deleteDocument(commentRef)
-//                            }
-//
-//                            batch.commit { (error) in
-//                                if let error = error {
-//                                    print("Error deleting comments for workout \(workoutId): \(error.localizedDescription)")
-//                                    completion(false)
-//                                } else {
-//                                    print("Comments deleted successfully for workout \(workoutId)")
-//                                }
-//
-//                                dispatchGroup.leave()
-//                            }
-//                        }
-//                    }
-//
-//                    dispatchGroup.notify(queue: .main) {
-//                        completion(true)
-//                        print("Deletion of all workout comments for user \(userId) completed")
-//                    }
-//                }
-//        }
-//    }
     
     public func addNewCommentsListener(workout: Workout, completion: @escaping ([Comment]) -> ()) -> ListenerRegistration? {
         print("Executing function: \(#function)")
