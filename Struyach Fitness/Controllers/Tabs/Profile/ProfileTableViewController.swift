@@ -313,22 +313,6 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
                     }
                     task.resume()
                 }
-//                StorageManager.shared.downloadUrl(path: imageRef) { url in
-//                    guard let url = url else { return }
-//
-//                    let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-//                        guard let data = data, error == nil else { return }
-//                        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-//                        let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
-//                        do {
-//                            try data.write(to: fileURL)
-//                            print ("New user image is uploaded to Storage and saved to filemanager")
-//                        } catch {
-//                            print(error.localizedDescription)
-//                        }
-//                    }
-//                    task.resume()
-//                }
             }
         }
     }
