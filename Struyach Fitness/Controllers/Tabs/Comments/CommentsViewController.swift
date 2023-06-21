@@ -527,7 +527,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     switch selectedMessage.kind {
                     case .text(let textToEdit):
                         let commentVC = TextViewController()
-                        commentVC.title = "Edit comment".localized()
+                        commentVC.title = "Edit".localized()
                         commentVC.text = textToEdit
                         self.navigationController?.pushViewController(commentVC, animated: true)
                         commentVC.onWorkoutSave = { text, _ in

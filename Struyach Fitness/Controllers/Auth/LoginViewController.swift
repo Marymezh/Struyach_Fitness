@@ -21,7 +21,12 @@ final class LoginViewController: UIViewController {
         super.viewDidLoad()
         setupNavBar()
         setupSubviews()
-        showPrivacyPolicy()
+        setupGestureRecognizer() 
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+       
     }
     //MARK: - Setup methods
     
@@ -41,6 +46,17 @@ final class LoginViewController: UIViewController {
         loginView.logInButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
         loginView.createAccountButton.addTarget(self, action: #selector(createAccountTapped), for: .touchUpInside)
         loginView.restorePasswordButton.addTarget(self, action: #selector(restorePasswordTapped), for: .touchUpInside)
+        
+        if hasAgreedToPrivacyPolicy == false {
+            loginView.logInButton.isEnabled = false
+            loginView.logInButton.alpha = 0.5
+            loginView.createAccountButton.isEnabled = false
+            loginView.createAccountButton.alpha = 0.5
+            loginView.restorePasswordButton.isEnabled = false
+            loginView.restorePasswordButton.alpha = 0.5
+        } else {
+            loginView.privacyPolicyLabel.isHidden = true 
+        }
         
         activityView.toAutoLayout()
         view.addSubviews(loginView, activityView)
@@ -141,21 +157,27 @@ final class LoginViewController: UIViewController {
             guard let self = self else {return}
             switch result {
             case .success:
-#if Client
-                let userId = email
-                    .replacingOccurrences(of: "@", with: "_")
-                    .replacingOccurrences(of: ".", with: "_")
-                IAPManager.shared.logInRevenueCat(userId: userId) { error in
-                    print(error.localizedDescription)
+                DatabaseManager.shared.getUser(email: email) { user in
+                    if let user = user {
+                        let userId = user.email
+                            .replacingOccurrences(of: "@", with: "_")
+                            .replacingOccurrences(of: ".", with: "_")
+                        IAPManager.shared.logInRevenueCat(userId: userId) { error in
+                            print(error.localizedDescription)
+                        }
+                        DispatchQueue.main.async {
+                            self.activityView.hide()
+                            UserDefaults.standard.set(email, forKey: "email")
+                            let vc = TabBarController()
+                            vc.modalPresentationStyle = .fullScreen
+                            self.present(vc, animated: true)
+                        }
+                    } else {
+                        self.activityView.hide()
+                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: wrong e-mail or password.".localized(), cancelAction: "Retry".localized())
+                    }
                 }
-                #endif
-                DispatchQueue.main.async {
-                    self.activityView.hide()
-                    UserDefaults.standard.set(email, forKey: "email")
-                    let vc = TabBarController()
-                    vc.modalPresentationStyle = .fullScreen
-                    self.present(vc, animated: true)
-                }
+             
             case .failure(let error):
                 print (error.localizedDescription)
                 self.activityView.hide()
@@ -164,23 +186,32 @@ final class LoginViewController: UIViewController {
         }
     }
     
-    private func showPrivacyPolicy() {
+    private func setupGestureRecognizer() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showPrivacyPolicy))
+        loginView.privacyPolicyLabel.addGestureRecognizer(tapGesture)
+    }
+    
+  @objc private func showPrivacyPolicy() {
         if !hasAgreedToPrivacyPolicy {
         let alertController = UIAlertController(title: "Privacy policy".localized(), message: privacyPolicy, preferredStyle: .alert)
             
-        let agreeAction = UIAlertAction(title: "Agree".localized(), style: .default) { _ in
-                // User has agreed to the privacy policy, so save the agreement status and proceed to the initial view controller
+            let agreeAction = UIAlertAction(title: "Agree".localized(), style: .default) {[weak self] _ in
+                guard let self = self else {return}
                 UserDefaults.standard.set(true, forKey: "HasAgreedToPrivacyPolicy")
                 self.dismiss(animated: true)
+                self.loginView.privacyPolicyLabel.isHidden = true
+                self.loginView.logInButton.isEnabled = true
+                self.loginView.logInButton.alpha = 1
+                self.loginView.createAccountButton.isEnabled = true
+                self.loginView.createAccountButton.alpha = 1
+                self.loginView.restorePasswordButton.isEnabled = true
+                self.loginView.restorePasswordButton.alpha = 1
             }
             
         let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .destructive) { _ in
-                // User has chosen to cancel, handle this as needed
-                // For example, you can display an alert or exit the app
             let cancelAlertController = UIAlertController(title: "Cancellation".localized(), message: "You must agree to the privacy policy to use this app.".localized(), preferredStyle: .alert)
                 
             let exitAction = UIAlertAction(title: "Exit".localized(), style: .destructive) { _ in
-                    // Exit the app
                     UserDefaults.standard.set(false, forKey: "HasAgreedToPrivacyPolicy")
                     exit(0)
                 }

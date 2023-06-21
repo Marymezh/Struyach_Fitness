@@ -107,6 +107,18 @@ final class LoginView: UIView {
         return button
     }()
     
+    let privacyPolicyLabel: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.text = "Please read and agree to our Privacy Policy to proceed".localized()
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = .systemGreen
+        label.textAlignment = .center
+        label.isUserInteractionEnabled = true 
+        label.toAutoLayout()
+        return label
+    }()
+    
     init() {
         super.init(frame: .zero)
         setupSubviews()
@@ -117,8 +129,11 @@ final class LoginView: UIView {
     }
     
     private func setupSubviews() {
+        let underlineAttribute = [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue]
+        let attributedString = NSAttributedString(string: "Please read and agree to our Privacy Policy to proceed".localized(), attributes: underlineAttribute)
+        privacyPolicyLabel.attributedText = attributedString
         
-        self.addSubviews( engButton, rusButton, autorizationView, logInButton, createAccountButton, restorePasswordButton)
+        self.addSubviews( engButton, rusButton, autorizationView, logInButton, createAccountButton, restorePasswordButton, privacyPolicyLabel)
         autorizationView.addSubviews(emailTextField, passwordTextField)
         
         let constraints = [
@@ -156,7 +171,11 @@ final class LoginView: UIView {
             restorePasswordButton.topAnchor.constraint(equalTo: createAccountButton.bottomAnchor, constant: 10),
             restorePasswordButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
             restorePasswordButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
-            restorePasswordButton.heightAnchor.constraint(equalTo: logInButton.heightAnchor)
+            restorePasswordButton.heightAnchor.constraint(equalTo: logInButton.heightAnchor),
+            
+            privacyPolicyLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -16),
+            privacyPolicyLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            privacyPolicyLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16)
         ]
         NSLayoutConstraint.activate(constraints)
     }

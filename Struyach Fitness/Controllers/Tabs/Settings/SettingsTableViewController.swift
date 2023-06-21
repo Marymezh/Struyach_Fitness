@@ -553,7 +553,7 @@ final class SettingsTableViewController: UITableViewController {
                                                     window?.rootViewController = navVC
                                                 }, completion: nil)
                                             }
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                                 AlertManager.shared.showAlert(title: "Done".localized(), message: "Your account, including photos, videos, and comments, has been successfully deleted. But we hope that you will come back to train with us again!".localized(), cancelAction: "Ok")
                                             }
                                         }
@@ -634,13 +634,13 @@ extension SettingsTableViewController: LanguageSwitchDelegate {
     func didSwitchLanguage(to language: Language) {
         LanguageManager.shared.setCurrentLanguage(language)
         tableView.reloadData()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            let tabBarController = TabBarController()
-            let window = UIApplication.shared.windows.first
-            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-            window?.rootViewController = tabBarController
-        }, completion: nil)
-        }
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+//            let tabBarController = TabBarController()
+//            let window = UIApplication.shared.windows.first
+//            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+//            window?.rootViewController = tabBarController
+//        }, completion: nil)
+//        }
     }
 }
 

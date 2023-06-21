@@ -23,6 +23,7 @@
 "Create" = "Создать";
 "Enter secret code to create admin account" = "Введите секретный код администратора";
 
+"Please read and agree to our Privacy Policy to proceed" = "Пожалуйста прочтите и согласитесь с нашей политикой конфиденциальности, чтобы продолжить";
 "Enter your email" = "Введите e-mail";
 "No such user! Check your e-mail" = "Пользователь с таким адресом не найден, проверьте свой e-mail";
 "Send" = "Отправить";
@@ -86,7 +87,7 @@
 "Couldn't get media URL from image picker" = "Не удалось получить адрес видео";
 "Unable to post comment" = "Не удалось добавить комментарий";
 "Unable to delete comment" = "Не удалось удалить комментарий";
-"Edit comment" = "Редактор комментария";
+"Edit" = "Редактировать";
 "Unable to update selected comment" = "Не удалось отредактировать выбранный комментарий";
 "Updating photo (%d%%)" = "Загрузка нового фото (%d%%)";
 "Unable to update selected photo comment" = "Не удалось отредактировать фото";
@@ -158,7 +159,7 @@
 
 "If you for sure want to permanently delete your account, please type \"Confirm\" below" = "Если вы уверены, что хотите навсегда удалить свою учётную запись, напечатайте \"Confirm\" ниже";
 
-"Your account, including photos, videos, and comments, has been successfully deleted. But we hope that you will come back to train with us again!" = "Ваша учётная запись и все данные удаленыю Но мы надеемся, что вы ещё вернётесь, чтобы тренироваться с нами снова!";
+"Your account, including photos, videos, and comments, has been successfully deleted. But we hope that you will come back to train with us again!" = "Ваша учётная запись и все данные удалены. Но мы надеемся, что вы ещё вернётесь, чтобы тренироваться с нами снова!";
 "Error occured, account is not deleted" = "Ошибка: не удалось удалить учётную запись";
 "Incorrect confirmation entry, check spelling" = "Подтверждающее слово не верно";
 "This operation is sensitive and requires recent authentication. Log in again before retrying this request" = "Все данные успешно удалены, но чтобы удалить учётную запись, необходимо выйти и авторизоваться снова, а затем опять нажать кнопку удаления учётной записи";

@@ -28,6 +28,12 @@ final class CreateAccountViewController: UIViewController {
         signUpView.confirmPasswordTextField.delegate = self
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        signUpView.signUpButton.isEnabled = false
+        signUpView.signUpButton.alpha = 0.5
+    }
+    
     //MARK: - Setup methods
     
     private func setupNavbar() {
@@ -41,6 +47,11 @@ final class CreateAccountViewController: UIViewController {
         view.backgroundColor = .black
         signUpView.toAutoLayout()
         signUpView.signUpButton.addTarget(self, action: #selector(signUpTapped), for: .touchUpInside)
+        signUpView.userNameTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        signUpView.emailTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        signUpView.passwordTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+        signUpView.confirmPasswordTextField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
+
         #if Admin
         signUpView.secretCodeTextField.isHidden = false
         #endif
@@ -69,11 +80,29 @@ final class CreateAccountViewController: UIViewController {
     
     //MARK: - Buttons hangling methods
     
+    @objc func textFieldDidChange(_ textField: UITextField) {
+        checkTextFields()
+    }
+    
+    private func checkTextFields() {
+        guard let email = signUpView.emailTextField.text, !email.isEmpty,
+              let password = signUpView.confirmPasswordTextField.text, !password.isEmpty,
+              password == signUpView.passwordTextField.text,
+              let name = signUpView.userNameTextField.text, !name.isEmpty else {
+            signUpView.signUpButton.isEnabled = false
+            signUpView.signUpButton.alpha = 0.5
+            return
+        }
+        signUpView.signUpButton.isEnabled = true
+        signUpView.signUpButton.alpha = 1
+    }
+    
     @objc private func avatarImageViewTapped() {
         activityView.showActivityIndicator()
         print ("avatar tapped")
         askForPermission()
     }
+    
     
     @objc private func signUpTapped() {
         guard let email = signUpView.emailTextField.text, !email.isEmpty,
@@ -81,7 +110,8 @@ final class CreateAccountViewController: UIViewController {
               password == signUpView.passwordTextField.text,
               let name = signUpView.userNameTextField.text, !name.isEmpty,
               let enteredCode = signUpView.secretCodeTextField.text,
-              let imageData = signUpView.avatarImageView.image?.jpegData(compressionQuality: 0.5) else {return
+              let imageData = signUpView.avatarImageView.image?.jpegData(compressionQuality: 0.5) else {
+            return
         }
         
         //check secretCode for admin sign up
@@ -92,6 +122,8 @@ final class CreateAccountViewController: UIViewController {
                 self.createNewUser(name: name, email: email, password: password, imageData: imageData, isAdmin: true)
             } else {
                 AlertManager.shared.showAlert(title: "Error".localized(), message: "The secret code is wrong, you can not be registered as an admin!".localized(), cancelAction: "Retry".localized())
+                signUpView.signUpButton.isEnabled = true
+                signUpView.signUpButton.alpha = 1
             }
         }
         #else
@@ -102,11 +134,14 @@ final class CreateAccountViewController: UIViewController {
     
     //create User
     private func createNewUser(name: String, email: String, password: String, imageData: Data, isAdmin: Bool) {
-        
+        self.signUpView.signUpButton.isEnabled = false
+        self.signUpView.signUpButton.alpha = 0.5
         AuthManager.shared.signUp(email: email, password: password) { [weak self] result in
             guard let self = self else {return}
             switch result {
             case .success:
+                self.signUpView.signUpButton.isEnabled = true
+                self.signUpView.signUpButton.alpha = 1
                 self.activityView.showActivityIndicator()
                 #if Client
                 let userId = email
@@ -152,6 +187,9 @@ final class CreateAccountViewController: UIViewController {
                     }
                 }
             case .failure(let error):
+                self.signUpView.signUpButton.isEnabled = true
+                self.signUpView.signUpButton.alpha = 1
+                
                 var errorMessage = "Unable to create new user".localized()
                 switch error {
                 case .emailAlreadyExists:
@@ -184,6 +222,7 @@ extension CreateAccountViewController: UITextFieldDelegate {
 //MARK: - UIImagePickerControllerDelegate and UINavigationControllerDelegate 
 
 extension CreateAccountViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+       
     private func askForPermission() {
         let status = PHPhotoLibrary.authorizationStatus()
         switch status {
@@ -211,6 +250,7 @@ extension CreateAccountViewController: UIImagePickerControllerDelegate, UINaviga
     
         private func presentImagePicker() {
             let picker = UIImagePickerController()
+            picker.delegate = self
             picker.navigationBar.tintColor = UIColor.systemGreen
             picker.allowsEditing = true
             picker.delegate = self
@@ -232,3 +272,10 @@ extension CreateAccountViewController: UIImagePickerControllerDelegate, UINaviga
         signUpView.avatarImageView.image = image
     }
 }
+
+
+
+
+
+
+
