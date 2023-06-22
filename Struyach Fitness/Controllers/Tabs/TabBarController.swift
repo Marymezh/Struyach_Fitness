@@ -56,7 +56,7 @@ final class TabBarController: UITabBarController {
         let profileVC = ProfileTableViewController(email: currentUserEmail)
         profileVC.title = "Profile".localized()
         
-        let settingsVC = SettingsTableViewController(email: currentUserEmail, style: .grouped)
+        let settingsVC = SettingsTableViewController(email: currentUserEmail)
         settingsVC.title = "Settings".localized()
         
         programsVC.navigationItem.largeTitleDisplayMode = .always

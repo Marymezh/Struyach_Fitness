@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class SettingsTableViewController: UITableViewController {
+final class SettingsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: - Properties
     
@@ -15,15 +15,17 @@ final class SettingsTableViewController: UITableViewController {
     private var messageColors = [UIColor]()
     private var subscriptionStatus = [false, false, false, false]
     private let programsArray = [K.ecd, K.struyach, K.pelvicPower, K.bellyBurner]
+    private let activityView = ActivityView()
+    private var tableView = UITableView(frame: .zero, style: .grouped)
     
     let email: String
     let currentUserEmail = UserDefaults.standard.string(forKey: "email")
 
     // MARK: - Lifecycle
     
-    init(email: String, style: UITableView.Style) {
+    init(email: String) {
         self.email = email
-        super.init(style: style)
+        super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -32,20 +34,7 @@ final class SettingsTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        tableView.register(InfoTableViewCell.self, forCellReuseIdentifier: InfoTableViewCell.reuseIdentifier)
-        tableView.register(EmailTableViewCell.self, forCellReuseIdentifier: EmailTableViewCell.reuseIdentifier)
-        tableView.register(RateTableViewCell.self, forCellReuseIdentifier: RateTableViewCell.reuseIdentifier)
-        tableView.register(LanguageSwitchTableViewCell.self, forCellReuseIdentifier: LanguageSwitchTableViewCell.reuseIdentifier)
-        tableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: NotificationTableViewCell.reuseIdentifier)
-        tableView.register(ManagementTableViewCell.self, forCellReuseIdentifier: ManagementTableViewCell.reuseIdentifier)
-        tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: SubscriptionTableViewCell.reuseIdentifier)
-        tableView.register(HideEmailTableViewCell.self, forCellReuseIdentifier: HideEmailTableViewCell.reuseIdentifier)
-        
-        tableView.backgroundColor = .customDarkGray
-        tableView.separatorStyle = .singleLine
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 30, bottom: 0, right: 30)
-        tableView.separatorColor = .black
+        setupSubviews()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -64,17 +53,53 @@ final class SettingsTableViewController: UITableViewController {
            print ("settings vc is deallocated")
        }
     
+    private func setupSubviews() {
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        tableView.register(InfoTableViewCell.self, forCellReuseIdentifier: InfoTableViewCell.reuseIdentifier)
+        tableView.register(EmailTableViewCell.self, forCellReuseIdentifier: EmailTableViewCell.reuseIdentifier)
+        tableView.register(RateTableViewCell.self, forCellReuseIdentifier: RateTableViewCell.reuseIdentifier)
+        tableView.register(NotificationTableViewCell.self, forCellReuseIdentifier: NotificationTableViewCell.reuseIdentifier)
+        tableView.register(ManagementTableViewCell.self, forCellReuseIdentifier: ManagementTableViewCell.reuseIdentifier)
+        tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: SubscriptionTableViewCell.reuseIdentifier)
+        tableView.register(HideEmailTableViewCell.self, forCellReuseIdentifier: HideEmailTableViewCell.reuseIdentifier)
+        
+        tableView.backgroundColor = .customDarkGray
+        tableView.separatorStyle = .singleLine
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 30, bottom: 0, right: 30)
+        tableView.separatorColor = .black
+        
+        view.addSubviews(tableView, activityView)
+        tableView.toAutoLayout()
+        activityView.toAutoLayout()
+        
+       let constraints = [
+        tableView.topAnchor.constraint(equalTo: view.topAnchor),
+        tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+        tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        
+        activityView.topAnchor.constraint(equalTo: view.topAnchor),
+        activityView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        activityView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+        activityView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+       ]
+       
+       NSLayoutConstraint.activate(constraints)
+    }
+    
     // MARK: - UITableViewDataSource and Delegate
     
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         #if Admin
-        return 5
+        return 4
         #else
-        return 7
+        return 6
         #endif
     }
     
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: 45))
         headerView.backgroundColor = .customDarkGray
         let titleLabel = UILabel(frame: CGRect(x: 15, y: 0, width: headerView.frame.width - 15, height: headerView.frame.height))
@@ -85,11 +110,11 @@ final class SettingsTableViewController: UITableViewController {
         return headerView
     }
     
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 45
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
            switch section {
                #if Client
            case 0:
@@ -103,8 +128,6 @@ final class SettingsTableViewController: UITableViewController {
            case 4:
                return "Manage subscriptions".localized()
            case 5:
-               return "Language settings".localized()
-           case 6:
                return "Log out or delete account".localized()
            default:
                return nil
@@ -116,8 +139,6 @@ final class SettingsTableViewController: UITableViewController {
            case 2:
                return "Notifications settings".localized()
            case 3:
-               return "Language settings".localized()
-           case 4:
                return "Log out or delete account".localized()
            default:
                return nil
@@ -125,11 +146,11 @@ final class SettingsTableViewController: UITableViewController {
            }
        }
     
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 45
     }
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
             #if Client
         case 0:
@@ -143,8 +164,6 @@ final class SettingsTableViewController: UITableViewController {
         case 4:
             return 2
         case 5:
-            return 1
-        case 6:
             return 2
         default:
             return 0
@@ -156,8 +175,6 @@ final class SettingsTableViewController: UITableViewController {
         case 2:
             return 3
         case 3:
-            return 1
-        case 4:
             return 2
         default:
             return 0
@@ -165,7 +182,7 @@ final class SettingsTableViewController: UITableViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0:
             // App info section
@@ -317,12 +334,7 @@ final class SettingsTableViewController: UITableViewController {
                 cell.imgView.tintColor = .systemGreen
             }
             return cell
-        case 5:
-            //language settings
-            let cell = tableView.dequeueReusableCell(withIdentifier: LanguageSwitchTableViewCell.reuseIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
-            cell.delegate = self
-            cell.configure(language: LanguageManager.shared.currentLanguage)
-            return cell
+            #endif
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
             if indexPath.row == 0 {
@@ -333,7 +345,7 @@ final class SettingsTableViewController: UITableViewController {
                 cell.titleLabel.textColor = .systemRed
                 cell.imgView.image = UIImage(systemName: "xmark.square")
                 cell.imgView.tintColor = .systemRed
-                
+
             } else {
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
@@ -344,39 +356,11 @@ final class SettingsTableViewController: UITableViewController {
                 cell.imgView.tintColor = .systemRed
             }
             return cell
-            
-#else
-        case 3:
-            let cell = tableView.dequeueReusableCell(withIdentifier: LanguageSwitchTableViewCell.reuseIdentifier, for: indexPath) as! LanguageSwitchTableViewCell
-            cell.delegate = self
-            cell.configure(language: LanguageManager.shared.currentLanguage)
-            return cell
-        default:
-            let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
-            if indexPath.row == 0 {
-                cell.containerView.layer.cornerRadius = 15
-                cell.containerView.layer.masksToBounds = true
-                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-                cell.titleLabel.text = "Sign out".localized()
-                cell.titleLabel.textColor = .systemRed
-                cell.imgView.image = UIImage(systemName: "trash")
-                cell.imgView.tintColor = .systemRed
-            } else {
-                cell.containerView.layer.cornerRadius = 15
-                cell.containerView.layer.masksToBounds = true
-                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-                cell.titleLabel.text = "Delete account and all data".localized()
-                cell.titleLabel.textColor = .systemRed
-                cell.imgView.image = UIImage(systemName: "xmark.square")
-                cell.imgView.tintColor = .systemRed
-            }
-            return cell
-#endif
         }
         return UITableViewCell()
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
         switch indexPath.section {
@@ -424,7 +408,7 @@ final class SettingsTableViewController: UITableViewController {
             default: break
             }
             #if Admin
-        case 4:
+        case 3:
             switch indexPath.row {
             case 0: signOut()
             default: deleteAccount()
@@ -437,7 +421,7 @@ final class SettingsTableViewController: UITableViewController {
             case 0: restorePurchases()
             default: requestRefund()
             }
-        case 6:
+        case 5:
             switch indexPath.row {
             case 0: signOut()
             default: deleteAccount()
@@ -483,16 +467,12 @@ final class SettingsTableViewController: UITableViewController {
     }
     
     private func signOut() {
+        activityView.showActivityIndicator()
         AlertManager.shared.showActionSheet(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), confirmActionTitle: "Sign Out".localized()) { action in
             AuthManager.shared.signOut { [weak self] success in
                 guard let self = self else {return}
                 if success {
-//                    #if Client
-//                    IAPManager.shared.logOutRevenueCat { error in
-//                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases".localized(), cancelAction: "Cancel".localized())
-//                        print (error.localizedDescription)
-//                    }
-//                    #endif
+                    self.activityView.hide()
                     DispatchQueue.main.async {
                         self.clearUserDefaults()
                         let signInVC = LoginViewController()
@@ -502,47 +482,63 @@ final class SettingsTableViewController: UITableViewController {
                         window?.rootViewController = navVC
                     }, completion: nil)
                     }
+                } else {
+                    self.activityView.hide()
+                    AlertManager.shared.showAlert(title: "Error".lowercased(), message: "Unable to sign out".localized(), cancelAction: "Cancel".localized())
                 }
             }
         }
     }
     
     private func deleteAccount() {
+        activityView.showActivityIndicator()
         AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: K.accountDeleteMessage.localized(), confirmActionTitle: "Delete Account".localized()) { action in
-            AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), confirmActionTitle: "Confirm".localized()) { success, text in
+            AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), confirmActionTitle: "Confirm".localized()) { [weak self] success, text in
+                guard let self = self else {return}
                 if let text = text, text == "Confirm" {
-                    StorageManager.shared.deleteUserData(email: self.email) { storageSuccess, storageError in
+                    StorageManager.shared.deleteUserData(email: self.email) { [weak self] storageSuccess, storageError in
+                        guard let self = self else {return}
                         guard storageSuccess else {
                             if let error = storageError {
+                                self.activityView.hide()
                                 let message = String(format: "User data cannot be deleted from storage: %@".localized(), error.localizedDescription)
                                 AlertManager.shared.showAlert(title: "Error".localized(), message: message, cancelAction: "Cancel".localized())
                             }
                             return
                         }
-                        DatabaseManager.shared.deleteAllBlogCommentsForUser(userId: self.email) { blogCommentsSuccess in
+                        DatabaseManager.shared.deleteAllBlogCommentsForUser(userId: self.email) { [weak self] blogCommentsSuccess in
+                            guard let self = self else {return}
                             guard blogCommentsSuccess else {
+                                self.activityView.hide()
                                 AlertManager.shared.showAlert(title: "Error".localized(), message: "Blog comments cannot be deleted".localized(), cancelAction: "Cancel".localized())
                                 return
                             }
-                            DatabaseManager.shared.deleteAllWorkoutCommentsForUser(userId: self.email) { workoutCommentsSuccess in
+                            DatabaseManager.shared.deleteAllWorkoutCommentsForUser(userId: self.email) { [weak self] workoutCommentsSuccess in
+                                guard let self = self else {return}
                                 guard workoutCommentsSuccess else {
+                                    self.activityView.hide()
                                     AlertManager.shared.showAlert(title: "Error".localized(), message: "Workout comments cannot be deleted".localized(), cancelAction: "Cancel".localized())
                                     return
                                 }
-                                DatabaseManager.shared.deleteUser(email: self.email) { deleteUserSuccess in
+                                DatabaseManager.shared.deleteUser(email: self.email) {[weak self] deleteUserSuccess in
+                                    guard let self = self else {return}
                                     guard deleteUserSuccess else {
+                                        self.activityView.hide()
                                         AlertManager.shared.showAlert(title: "Error".localized(), message: "User and its data cannot be deleted from the database".localized(), cancelAction: "Cancel".localized())
                                         return
                                     }
-                                    AuthManager.shared.deleteAccount { result in
+                                    AuthManager.shared.deleteAccount { [weak self] result in
+                                        guard let self = self else {return}
                                         switch result {
                                         case .failure(_):
+                                            self.activityView.hide()
                                             #if Admin
                                             AlertManager.shared.showAlert(title: "Warning".localized(), message: "Your account data, including photos, videos, and comments, has been successfully deleted. However, in order to complete the account deletion process, please contact the developer to delete your account from our authentication system.".localized(), cancelAction: "Ok")
                                             #else
                                             AlertManager.shared.showAlert(title: "Warning".localized(), message: "This operation is sensitive and requires recent authentication. Log in again before retrying this request".localized(), cancelAction: "Ok")
                                             #endif
                                         case .success:
+                                            self.activityView.hide()
                                             print ("user is deleted successfully")
                                             DispatchQueue.main.async {
                                                 self.clearUserDefaults()
@@ -563,6 +559,7 @@ final class SettingsTableViewController: UITableViewController {
                         }
                     }
                 } else {
+                    self.activityView.hide()
                     AlertManager.shared.showAlert(title: "Warning".localized(), message: "Incorrect confirmation entry, check spelling".localized(), cancelAction: "Retry")
                 }
             }
@@ -627,20 +624,6 @@ final class SettingsTableViewController: UITableViewController {
         } else {
             NotificationsManager.shared.unsubscribe(from: program)
         }
-    }
-}
-
-extension SettingsTableViewController: LanguageSwitchDelegate {
-    func didSwitchLanguage(to language: Language) {
-        LanguageManager.shared.setCurrentLanguage(language)
-        tableView.reloadData()
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-//            let tabBarController = TabBarController()
-//            let window = UIApplication.shared.windows.first
-//            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
-//            window?.rootViewController = tabBarController
-//        }, completion: nil)
-//        }
     }
 }
 

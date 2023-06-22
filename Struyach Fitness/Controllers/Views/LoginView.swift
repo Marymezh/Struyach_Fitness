@@ -108,29 +108,29 @@ final class LoginView: UIView {
         return button
     }()
     
-    let appleSignInButton: ASAuthorizationAppleIDButton = {
-        let button = ASAuthorizationAppleIDButton(authorizationButtonType: .continue, authorizationButtonStyle: .whiteOutline)
-        button.layer.cornerRadius = 10
-        button.clipsToBounds = true
-        button.toAutoLayout()
-        return button
-    }()
-    
-//    let appleSignInButton: UIButton = {
-//        let button = UIButton()
+//    let appleSignInButton: ASAuthorizationAppleIDButton = {
+//        let button = ASAuthorizationAppleIDButton(authorizationButtonType: .continue, authorizationButtonStyle: .whiteOutline)
 //        button.layer.cornerRadius = 10
 //        button.clipsToBounds = true
-//        button.setTitle("Sign Up with Apple".localized(), for: .normal)
-//        button.setTitleColor(.black, for: .normal)
-//        button.backgroundColor = .white
-//        let appleLogoImage = UIImage(named: "apple.logo")
-//        button.setImage(appleLogoImage, for: .normal)
-//        let padding: CGFloat = 10
-//        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -padding, bottom: 0, right: padding)
-//        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: padding, bottom: 0, right: -padding)
 //        button.toAutoLayout()
 //        return button
 //    }()
+    
+    let appleSignInButton: UIButton = {
+        let button = UIButton()
+        button.layer.cornerRadius = 10
+        button.clipsToBounds = true
+        button.setTitle("Continue with Apple".localized(), for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.backgroundColor = .white
+        let appleLogoImage = UIImage(named: "apple.logo")
+        button.setImage(appleLogoImage, for: .normal)
+        let padding: CGFloat = 10
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -padding, bottom: 0, right: padding)
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: padding, bottom: 0, right: -padding)
+        button.toAutoLayout()
+        return button
+    }()
     
     let privacyPolicyLabel: UILabel = {
         let label = UILabel()

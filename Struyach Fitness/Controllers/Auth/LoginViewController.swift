@@ -57,9 +57,9 @@ final class LoginViewController: UIViewController {
         if hasAgreedToPrivacyPolicy == false {
  disableButtons()
         }
-//        else {
-//            loginView.privacyPolicyLabel.isHidden = true
-//        }
+        else {
+            loginView.privacyPolicyLabel.isHidden = true
+        }
         
         activityView.toAutoLayout()
         view.addSubviews(loginView, activityView)
@@ -86,16 +86,20 @@ final class LoginViewController: UIViewController {
         loginView.createAccountButton.alpha = 0.5
         loginView.restorePasswordButton.isEnabled = false
         loginView.restorePasswordButton.alpha = 0.5
+        loginView.appleSignInButton.isEnabled = false
+        loginView.appleSignInButton.alpha = 0.5
     }
     
     private func enableButtons() {
-        self.loginView.privacyPolicyLabel.isHidden = true
-        self.loginView.logInButton.isEnabled = true
-        self.loginView.logInButton.alpha = 1
-        self.loginView.createAccountButton.isEnabled = true
-        self.loginView.createAccountButton.alpha = 1
-        self.loginView.restorePasswordButton.isEnabled = true
-        self.loginView.restorePasswordButton.alpha = 1
+        loginView.privacyPolicyLabel.isHidden = true
+        loginView.logInButton.isEnabled = true
+        loginView.logInButton.alpha = 1
+        loginView.createAccountButton.isEnabled = true
+        loginView.createAccountButton.alpha = 1
+        loginView.restorePasswordButton.isEnabled = true
+        loginView.restorePasswordButton.alpha = 1
+        loginView.appleSignInButton.isEnabled = true
+        loginView.appleSignInButton.alpha = 1
     }
     
     
@@ -217,7 +221,7 @@ final class LoginViewController: UIViewController {
                 guard let self = self else {return}
                 UserDefaults.standard.set(true, forKey: "HasAgreedToPrivacyPolicy")
                 self.dismiss(animated: true)
-              enableButtons()
+                self.enableButtons()
             }
             
             let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .destructive) { _ in
