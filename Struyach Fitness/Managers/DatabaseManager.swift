@@ -1006,7 +1006,6 @@ final class DatabaseManager {
             .getDocument { snapshot, error in
                 guard let data = snapshot?.data(),
                       let name = data["name"] as? String,
-                      let imageRef = data["profile_photo"] as? String,
                       let hideEmail = data["hideEmail"] as? Bool,
                       let isAdmin = data["isAdmin"] as? Bool,
                       error == nil else {
@@ -1015,6 +1014,7 @@ final class DatabaseManager {
                 }
                 let token = data["fcmToken"] as? String
                 let personalRecords = data["personal_records"] as? String
+                let imageRef = data["profile_photo"] as? String
                 let likedWorkouts = data["liked_workouts"] as? String
                 let likedPosts = data["liked_posts"] as? String
                 let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail, likedWorkouts: likedWorkouts, likedPosts: likedPosts)

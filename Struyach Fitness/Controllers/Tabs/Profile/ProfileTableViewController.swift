@@ -80,7 +80,7 @@ final class ProfileTableViewController: UITableViewController {
     func fetchOtherUserData(completion: @escaping (Bool)->()) {
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
-            let imageRef = user.profilePictureRef
+            guard let imageRef = user.profilePictureRef else {return}
             StorageManager.shared.downloadUrl(path: imageRef) { url in
                 guard let url = url else { return }
 
@@ -107,9 +107,10 @@ final class ProfileTableViewController: UITableViewController {
         }
     }
     func fetchUserImage() {
+        print ("fetching user image")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
-            let imageRef = user.profilePictureRef
+            guard let imageRef = user.profilePictureRef else {return}
             StorageManager.shared.downloadUrl(path: imageRef) { url in
                 guard let url = url else { return }
                 let task = URLSession.shared.dataTask(with: url) { data, response, error in
@@ -132,6 +133,7 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     func fetchProfileData() {
+        print ("fetching profile data for user")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
             DispatchQueue.main.async {
@@ -144,6 +146,7 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     func fetchUserRecords() {
+        print ("fetching user records")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user,
                   let self = self,

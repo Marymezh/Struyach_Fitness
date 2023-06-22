@@ -11,12 +11,15 @@
 
 //MARK: - LOG IN AND SIGN UP
 
-"Log In" = "Войти";
+"Log In with email and password" = "Войти по почте и паролю";
 "Create Account" = "Создать учётную запись";
 "Create new account" = "Новая учётная запись";
 "Restore Password" = "Восстанoвить пароль";
 "Forgot password" = "Восстановить пароль";
+"Sign Up with Apple" = "Подписаться с Apple";
+"Unable to sign in with Apple: %@" = "Не удалось войти с Apple: %@";
 "Password" = "Пароль";
+"Anonymous" = "Анонимный пользователь";
 "Full name (how other users will see you)" = "Имя (как вас будут видеть другие)";
 "Password (minimum 6 symbols)" = "Пароль (минимум 6 символов)";
 "Confirm password" = "Подтвердите пароль";

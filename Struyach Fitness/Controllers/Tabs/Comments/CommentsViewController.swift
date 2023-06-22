@@ -310,7 +310,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         guard let email = userEmail else {return}
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
-            let imageRef = user.profilePictureRef
+            guard let imageRef = user.profilePictureRef else {return}
             StorageManager.shared.downloadUrl(path: imageRef) { url in
                 guard let url = url else { return }
 

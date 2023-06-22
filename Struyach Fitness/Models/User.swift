@@ -10,7 +10,7 @@ import Foundation
 struct User: Codable {
     let name: String
     let email: String
-    let profilePictureRef: String
+    let profilePictureRef: String?
     let personalRecords: String?
     let isAdmin: Bool
     let fcmToken: String?

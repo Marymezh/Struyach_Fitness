@@ -487,12 +487,12 @@ final class SettingsTableViewController: UITableViewController {
             AuthManager.shared.signOut { [weak self] success in
                 guard let self = self else {return}
                 if success {
-                    #if Client
-                    IAPManager.shared.logOutRevenueCat { error in
-                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases".localized(), cancelAction: "Cancel".localized())
-                        print (error.localizedDescription)
-                    }
-                    #endif
+//                    #if Client
+//                    IAPManager.shared.logOutRevenueCat { error in
+//                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to log out from purchases".localized(), cancelAction: "Cancel".localized())
+//                        print (error.localizedDescription)
+//                    }
+//                    #endif
                     DispatchQueue.main.async {
                         self.clearUserDefaults()
                         let signInVC = LoginViewController()

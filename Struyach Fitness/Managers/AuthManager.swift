@@ -8,6 +8,8 @@
 import Foundation
 import FirebaseAuth
 import UIKit
+import AuthenticationServices
+import CryptoKit
 
 enum AuthError: Error {
     case emailAlreadyExists
@@ -15,7 +17,12 @@ enum AuthError: Error {
     case unknownError
 }
 
-final class AuthManager {
+protocol AuthManagerDelegate: AnyObject {
+    func didCompleteAppleSignIn(with result: AuthDataResult)
+}
+
+final class AuthManager: NSObject {
+    
     
     static let shared = AuthManager()
     private let auth = Auth.auth()
@@ -24,11 +31,9 @@ final class AuthManager {
     public var isSignedIn: Bool {
         return auth.currentUser != nil
     }
-    public var lastSignInDate: Date?
+    fileprivate var currentNonce: String?
     
-    private init() {
-        lastSignInDate = Date()
-    }
+    weak var delegate: AuthManagerDelegate?
 
     public func signUp(email: String, password: String, completion: @escaping (Result<Void, AuthError>) -> ()) {
         auth.fetchSignInMethods(forEmail: email) { signInMethods, error in
@@ -104,5 +109,155 @@ final class AuthManager {
                 completion(.success(()))
             }
         }
+    }
+    // MARK: - Sign-up with Apple
+    
+//    public func signUpWithApple(completion: @escaping (Result<Void, Error>) -> ()) {
+    public func signUpWithApple() {
+        let nonce = randomNonceString()
+         currentNonce = nonce
+         let appleIDProvider = ASAuthorizationAppleIDProvider()
+         let request = appleIDProvider.createRequest()
+         request.requestedScopes = [.fullName, .email]
+         request.nonce = sha256(nonce)
+
+         let authorizationController = ASAuthorizationController(authorizationRequests: [request])
+         authorizationController.delegate = self
+         authorizationController.presentationContextProvider = self
+         authorizationController.performRequests()
+    }
+    
+    // MARK: - Utility Methods
+    
+    private func randomNonceString(length: Int = 32) -> String {
+      precondition(length > 0)
+      var randomBytes = [UInt8](repeating: 0, count: length)
+      let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+      if errorCode != errSecSuccess {
+        fatalError(
+          "Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)"
+        )
+      }
+
+      let charset: [Character] =
+        Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+
+      let nonce = randomBytes.map { byte in
+        // Pick a random character from the set, wrapping around if needed.
+        charset[Int(byte) % charset.count]
+      }
+
+      return String(nonce)
+    }
+
+    @available(iOS 13, *)
+    private func sha256(_ input: String) -> String {
+      let inputData = Data(input.utf8)
+      let hashedData = SHA256.hash(data: inputData)
+      let hashString = hashedData.compactMap {
+        String(format: "%02x", $0)
+      }.joined()
+
+      return hashString
+    }
+}
+
+extension AuthManager: ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        // Return the presentation anchor for the sign-in controller
+        // This should be the window or view controller where the sign-in controller will be presented
+        // Example: return UIApplication.shared.windows.first!
+        // You may need to adjust this based on your app's UI structure
+        // Make sure to return a valid presentation anchor to avoid crashes
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            return window
+        }
+        
+        fatalError("Unable to find a valid presentation anchor.")
+    }
+}
+
+extension AuthManager: ASAuthorizationControllerDelegate {
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            UserDefaults.standard.set(appleIDCredential.user, forKey: "appleAuthorizedUserIdKey")
+                guard let nonce = currentNonce else {
+                    fatalError("Invalid state: A login callback was received, but no login request was sent.")
+                }
+                guard let appleIDToken = appleIDCredential.identityToken else {
+                    print("Unable to fetch identity token")
+                    return
+                }
+                guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+                    print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
+                    return
+                }
+                let credential = OAuthProvider.credential(withProviderID: "apple.com",
+                                                          idToken: idTokenString,
+                                                          rawNonce: nonce)
+          auth.signIn(with: credential) { (authResult, error) in
+            if let error = error {
+              // Error. If error.code == .MissingOrInvalidNonce, make sure
+              // you're sending the SHA256-hashed nonce as a hex string with
+              // your request to Apple.
+              print(error.localizedDescription)
+              return
+            }
+              guard let authResult = authResult else {return}
+              self.delegate?.didCompleteAppleSignIn(with: authResult)
+            // User is signed in to Firebase with Apple.
+            // ...
+          }
+        }
+      }
+
+//    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+//        print ("authorizationController did Complete With Authorization")
+//        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+//            print("Unable to retrieve Apple ID credential")
+//            return
+//        }
+//
+//        guard let idToken = appleIDCredential.identityToken,
+//              let idTokenString = String(data: idToken, encoding: .utf8) else {
+//            print("Unable to fetch identity token from Apple ID credential")
+//            return
+//        }
+//
+//        guard let nonce = currentNonce else {
+//            print("Invalid state: A login callback was received, but no login request was sent.")
+//            return
+//        }
+////
+////        guard let appleIDTokenData = appleIDCredential.identityToken,
+////              let appleIDToken = String(data: appleIDTokenData, encoding: .utf8) else {
+////            print("Unable to fetch identity token from Apple ID credential")
+////            return
+////        }
+//
+//
+//        // Authenticate user with Firebase using Apple credential
+//        let credential = OAuthProvider.credential(withProviderID: "apple.com", idToken: idTokenString, rawNonce: nonce)
+//
+//        auth.signIn(with: credential) { [weak self] (authResult, error) in
+//            print ("auth sign in with credential")
+//            guard let self = self else {return}
+//
+//            if let error = error {
+//                print("Failed to sign in user with Apple credential: \(error.localizedDescription)")
+//                let message = String(format: "Unable to sign in with Apple: %@", error.localizedDescription)
+//                AlertManager.shared.showAlert(title: "Error".localized(), message: message.localized(), cancelAction: "Ok")
+//            } else {
+//                // Sign-in successful
+//                self.delegate?.didCompleteAppleSignIn(with: appleIDCredential)
+//            }
+//        }
+//    }
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        print("Sign in with Apple errored: \(error.localizedDescription)")
+        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to sign in with Apple".localized(), cancelAction: "Ok")
     }
 }

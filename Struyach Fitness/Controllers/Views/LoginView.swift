@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AuthenticationServices
 
 final class LoginView: UIView {
     
@@ -80,7 +81,7 @@ final class LoginView: UIView {
         button.layer.cornerRadius = 10
         button.clipsToBounds = true
         button.backgroundColor = .systemGreen
-        button.setTitle("Log In".localized(), for: .normal)
+        button.setTitle("Log In with email and password".localized(), for: .normal)
         button.setTitleColor(.white, for: .normal)
         return button
     }()
@@ -106,6 +107,30 @@ final class LoginView: UIView {
         button.setTitleColor(.white, for: .normal)
         return button
     }()
+    
+    let appleSignInButton: ASAuthorizationAppleIDButton = {
+        let button = ASAuthorizationAppleIDButton(authorizationButtonType: .continue, authorizationButtonStyle: .whiteOutline)
+        button.layer.cornerRadius = 10
+        button.clipsToBounds = true
+        button.toAutoLayout()
+        return button
+    }()
+    
+//    let appleSignInButton: UIButton = {
+//        let button = UIButton()
+//        button.layer.cornerRadius = 10
+//        button.clipsToBounds = true
+//        button.setTitle("Sign Up with Apple".localized(), for: .normal)
+//        button.setTitleColor(.black, for: .normal)
+//        button.backgroundColor = .white
+//        let appleLogoImage = UIImage(named: "apple.logo")
+//        button.setImage(appleLogoImage, for: .normal)
+//        let padding: CGFloat = 10
+//        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -padding, bottom: 0, right: padding)
+//        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: padding, bottom: 0, right: -padding)
+//        button.toAutoLayout()
+//        return button
+//    }()
     
     let privacyPolicyLabel: UILabel = {
         let label = UILabel()
@@ -133,7 +158,7 @@ final class LoginView: UIView {
         let attributedString = NSAttributedString(string: "Please read and agree to our Privacy Policy to proceed".localized(), attributes: underlineAttribute)
         privacyPolicyLabel.attributedText = attributedString
         
-        self.addSubviews( engButton, rusButton, autorizationView, logInButton, createAccountButton, restorePasswordButton, privacyPolicyLabel)
+        self.addSubviews( engButton, rusButton, autorizationView, logInButton, createAccountButton, restorePasswordButton, appleSignInButton, privacyPolicyLabel)
         autorizationView.addSubviews(emailTextField, passwordTextField)
         
         let constraints = [
@@ -172,6 +197,11 @@ final class LoginView: UIView {
             restorePasswordButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
             restorePasswordButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             restorePasswordButton.heightAnchor.constraint(equalTo: logInButton.heightAnchor),
+            
+            appleSignInButton.topAnchor.constraint(equalTo: restorePasswordButton.bottomAnchor, constant: 30),
+            appleSignInButton.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            appleSignInButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            appleSignInButton.heightAnchor.constraint(equalTo: logInButton.heightAnchor),
             
             privacyPolicyLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -16),
             privacyPolicyLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),

@@ -110,7 +110,7 @@ final class CreateAccountViewController: UIViewController {
               password == signUpView.passwordTextField.text,
               let name = signUpView.userNameTextField.text, !name.isEmpty,
               let enteredCode = signUpView.secretCodeTextField.text,
-              let imageData = signUpView.avatarImageView.image?.jpegData(compressionQuality: 0.5) else {
+              let imageData = signUpView.avatarImageView.image?.jpegData(compressionQuality: 1) else {
             return
         }
         
@@ -161,22 +161,6 @@ final class CreateAccountViewController: UIViewController {
                             return}
                         UserDefaults.standard.set(name, forKey: "userName")
                         UserDefaults.standard.set(email, forKey: "email")
-                        
-                        
-                        StorageManager.shared.downloadUrl(path: imageRef) { url in
-                            guard let url = url else {return}
-                            let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
-                                guard let data = data, error == nil else { return }
-                                let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                                let fileURL = documentsDirectory.appendingPathComponent("userImage.jpg")
-                                do {
-                                    try data.write(to: fileURL)
-                                } catch {
-                                    AlertManager.shared.showAlert(title: "Error".localized(), message: error.localizedDescription, cancelAction: "Cancel".localized())
-                                }
-                            }
-                            task.resume()
-                        }
                         
                         DispatchQueue.main.async {
                             let vc = TabBarController()

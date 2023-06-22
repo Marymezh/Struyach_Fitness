@@ -6,27 +6,29 @@
 //
 
 import UIKit
-import Contacts
+import AuthenticationServices
+import FirebaseAuth
 
 final class LoginViewController: UIViewController {
-
+    
     private let loginView = LoginView()
     private let activityView = ActivityView()
     private let privacyPolicy = K.privacyPolicy.localized()
     private let hasAgreedToPrivacyPolicy = UserDefaults.standard.bool(forKey: "HasAgreedToPrivacyPolicy")
     
     //MARK: - Lifecycle
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavBar()
         setupSubviews()
-        setupGestureRecognizer() 
+        setupGestureRecognizer()
+        AuthManager.shared.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-       
+        
     }
     //MARK: - Setup methods
     
@@ -37,7 +39,7 @@ final class LoginViewController: UIViewController {
         navigationController?.navigationBar.alpha = 0.9
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
     }
-
+    
     private func setupSubviews() {
         view.backgroundColor = .black
         loginView.toAutoLayout()
@@ -46,17 +48,18 @@ final class LoginViewController: UIViewController {
         loginView.logInButton.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
         loginView.createAccountButton.addTarget(self, action: #selector(createAccountTapped), for: .touchUpInside)
         loginView.restorePasswordButton.addTarget(self, action: #selector(restorePasswordTapped), for: .touchUpInside)
+        loginView.appleSignInButton.addTarget(self, action: #selector(appleSignInButtonTapped), for: .touchUpInside)
+        
+        #if Admin
+        loginView.appleSignInButton.isHidden = true
+        #endif
         
         if hasAgreedToPrivacyPolicy == false {
-            loginView.logInButton.isEnabled = false
-            loginView.logInButton.alpha = 0.5
-            loginView.createAccountButton.isEnabled = false
-            loginView.createAccountButton.alpha = 0.5
-            loginView.restorePasswordButton.isEnabled = false
-            loginView.restorePasswordButton.alpha = 0.5
-        } else {
-            loginView.privacyPolicyLabel.isHidden = true 
+ disableButtons()
         }
+//        else {
+//            loginView.privacyPolicyLabel.isHidden = true
+//        }
         
         activityView.toAutoLayout()
         view.addSubviews(loginView, activityView)
@@ -76,7 +79,26 @@ final class LoginViewController: UIViewController {
         NSLayoutConstraint.activate(constraints)
     }
     
-   
+    private func disableButtons() {
+        loginView.logInButton.isEnabled = false
+        loginView.logInButton.alpha = 0.5
+        loginView.createAccountButton.isEnabled = false
+        loginView.createAccountButton.alpha = 0.5
+        loginView.restorePasswordButton.isEnabled = false
+        loginView.restorePasswordButton.alpha = 0.5
+    }
+    
+    private func enableButtons() {
+        self.loginView.privacyPolicyLabel.isHidden = true
+        self.loginView.logInButton.isEnabled = true
+        self.loginView.logInButton.alpha = 1
+        self.loginView.createAccountButton.isEnabled = true
+        self.loginView.createAccountButton.alpha = 1
+        self.loginView.restorePasswordButton.isEnabled = true
+        self.loginView.restorePasswordButton.alpha = 1
+    }
+    
+    
     //MARK: - Buttons handling methods
     
     @objc private func loginTapped() {
@@ -89,11 +111,11 @@ final class LoginViewController: UIViewController {
             AlertManager.shared.showAlert(title: "Warning".localized(), message: "Check your password".localized(), cancelAction: "Retry".localized())
             self.activityView.hide()
             return}
-        #if Admin
+#if Admin
         LoginAdminWithCheck(email: email, password: password)
-        #else
+#else
         logIn(email: email, password: password)
-        #endif
+#endif
     }
     
     @objc private func createAccountTapped() {
@@ -107,12 +129,16 @@ final class LoginViewController: UIViewController {
     @objc private func restorePasswordTapped() {
         let restorePasswordVC: UIViewController
         if let email = loginView.emailTextField.text, !email.isEmpty {
-        restorePasswordVC = RestorePasswordViewController(email: email)
+            restorePasswordVC = RestorePasswordViewController(email: email)
         } else {
             restorePasswordVC = RestorePasswordViewController(email: nil)
         }
         restorePasswordVC.title = "Restore Password".localized()
         navigationController?.present(restorePasswordVC, animated: true, completion: nil)
+    }
+    
+    @objc private func appleSignInButtonTapped() {
+        AuthManager.shared.signUpWithApple()
     }
     
     private func LoginAdminWithCheck(email: String, password: String) {
@@ -157,27 +183,19 @@ final class LoginViewController: UIViewController {
             guard let self = self else {return}
             switch result {
             case .success:
-                DatabaseManager.shared.getUser(email: email) { user in
-                    if let user = user {
-                        let userId = user.email
-                            .replacingOccurrences(of: "@", with: "_")
-                            .replacingOccurrences(of: ".", with: "_")
-                        IAPManager.shared.logInRevenueCat(userId: userId) { error in
-                            print(error.localizedDescription)
-                        }
-                        DispatchQueue.main.async {
-                            self.activityView.hide()
-                            UserDefaults.standard.set(email, forKey: "email")
-                            let vc = TabBarController()
-                            vc.modalPresentationStyle = .fullScreen
-                            self.present(vc, animated: true)
-                        }
-                    } else {
-                        self.activityView.hide()
-                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to log in: wrong e-mail or password.".localized(), cancelAction: "Retry".localized())
-                    }
+                let userId = email
+                    .replacingOccurrences(of: "@", with: "_")
+                    .replacingOccurrences(of: ".", with: "_")
+                IAPManager.shared.logInRevenueCat(userId: userId) { error in
+                    print(error.localizedDescription)
                 }
-             
+                DispatchQueue.main.async {
+                    self.activityView.hide()
+                    UserDefaults.standard.set(email, forKey: "email")
+                    let vc = TabBarController()
+                    vc.modalPresentationStyle = .fullScreen
+                    self.present(vc, animated: true)
+                }
             case .failure(let error):
                 print (error.localizedDescription)
                 self.activityView.hide()
@@ -191,32 +209,26 @@ final class LoginViewController: UIViewController {
         loginView.privacyPolicyLabel.addGestureRecognizer(tapGesture)
     }
     
-  @objc private func showPrivacyPolicy() {
+    @objc private func showPrivacyPolicy() {
         if !hasAgreedToPrivacyPolicy {
-        let alertController = UIAlertController(title: "Privacy policy".localized(), message: privacyPolicy, preferredStyle: .alert)
+            let alertController = UIAlertController(title: "Privacy policy".localized(), message: privacyPolicy, preferredStyle: .alert)
             
             let agreeAction = UIAlertAction(title: "Agree".localized(), style: .default) {[weak self] _ in
                 guard let self = self else {return}
                 UserDefaults.standard.set(true, forKey: "HasAgreedToPrivacyPolicy")
                 self.dismiss(animated: true)
-                self.loginView.privacyPolicyLabel.isHidden = true
-                self.loginView.logInButton.isEnabled = true
-                self.loginView.logInButton.alpha = 1
-                self.loginView.createAccountButton.isEnabled = true
-                self.loginView.createAccountButton.alpha = 1
-                self.loginView.restorePasswordButton.isEnabled = true
-                self.loginView.restorePasswordButton.alpha = 1
+              enableButtons()
             }
             
-        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .destructive) { _ in
-            let cancelAlertController = UIAlertController(title: "Cancellation".localized(), message: "You must agree to the privacy policy to use this app.".localized(), preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .destructive) { _ in
+                let cancelAlertController = UIAlertController(title: "Cancellation".localized(), message: "You must agree to the privacy policy to use this app.".localized(), preferredStyle: .alert)
                 
-            let exitAction = UIAlertAction(title: "Exit".localized(), style: .destructive) { _ in
+                let exitAction = UIAlertAction(title: "Exit".localized(), style: .destructive) { _ in
                     UserDefaults.standard.set(false, forKey: "HasAgreedToPrivacyPolicy")
                     exit(0)
                 }
                 
-            let tryAgainAction = UIAlertAction(title: "Try Again".localized(), style: .default) { _ in
+                let tryAgainAction = UIAlertAction(title: "Try Again".localized(), style: .default) { _ in
                     // Show the privacy policy again
                     self.showPrivacyPolicy()
                 }
@@ -229,11 +241,11 @@ final class LoginViewController: UIViewController {
             
             alertController.addAction(agreeAction)
             alertController.addAction(cancelAction)
-        
-        alertController.view.tintColor = .contrastGreen
-        alertController.modalPresentationStyle = .popover
             
-        present(alertController, animated: true, completion: nil)
+            alertController.view.tintColor = .contrastGreen
+            alertController.modalPresentationStyle = .popover
+            
+            present(alertController, animated: true, completion: nil)
         }
     }
 }
@@ -241,13 +253,74 @@ final class LoginViewController: UIViewController {
 extension LoginViewController: LanguageSwitchDelegate {
     func didSwitchLanguage(to language: Language) {
         LanguageManager.shared.setCurrentLanguage(language)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        DispatchQueue.main.async {
             let signInVC = LoginViewController()
             let window = UIApplication.shared.windows.first
-            UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
+            UIView.transition(with: window!, duration: 0.5, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
                 let navVC = UINavigationController(rootViewController: signInVC)
                 window?.rootViewController = navVC
             }, completion: nil)
         }
     }
 }
+
+extension LoginViewController: AuthManagerDelegate {
+    func didCompleteAppleSignIn(with result: AuthDataResult) {
+        activityView.showActivityIndicator()
+        print ("running did complete app sign in with result")
+        let user = result.user
+        let name = "Anonymous user".localized()
+        guard let email = user.email  else {
+            print ("no data from auth result")
+            return}
+        print ("userName: \(name), userEmail: \(email) ")
+        DatabaseManager.shared.getUser(email: email) { user in
+            print("get user when sighning with apple id")
+            print (email)
+            if let user = user {
+                // user with this email exists
+                print("logging in with existing apple id user")
+                let userId = user.email
+                    .replacingOccurrences(of: "@", with: "_")
+                    .replacingOccurrences(of: ".", with: "_")
+                IAPManager.shared.logInRevenueCat(userId: userId) { error in
+                    print(error.localizedDescription)
+                }
+                DispatchQueue.main.async {
+                    self.activityView.hide()
+                    UserDefaults.standard.set(name, forKey: "userName")
+                    UserDefaults.standard.set(email, forKey: "email")
+                    let vc = TabBarController()
+                    vc.modalPresentationStyle = .fullScreen
+                    self.present(vc, animated: true)
+                }
+            } else {
+                // there is no user with this email in the database
+                print("creating new user and logging in")
+                let userId = email
+                    .replacingOccurrences(of: "@", with: "_")
+                    .replacingOccurrences(of: ".", with: "_")
+                IAPManager.shared.logInRevenueCat(userId: userId)  { error in
+                    print(error.localizedDescription)
+                }
+                let newUser = User(name: name, email: email, profilePictureRef: nil, personalRecords: nil, isAdmin: false, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
+                DatabaseManager.shared.insertUser(user: newUser) { inserted in
+                    guard inserted else {
+                        print ("cant insert new user")
+                        return}
+                    UserDefaults.standard.set(name, forKey: "userName")
+                    UserDefaults.standard.set(email, forKey: "email")
+                    
+                    DispatchQueue.main.async {
+                        let vc = TabBarController()
+                        vc.modalPresentationStyle = .fullScreen
+                        self.present(vc, animated: true)
+                        self.activityView.hide()
+                    }
+                }
+            }
+        }
+    }
+}
+    
+
