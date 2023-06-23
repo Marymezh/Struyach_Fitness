@@ -19,7 +19,6 @@ final class CreateAccountViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavbar()
         setupSubviews()
         setupGuestureRecognizer()
         signUpView.userNameTextField.delegate = self
@@ -35,13 +34,6 @@ final class CreateAccountViewController: UIViewController {
     }
     
     //MARK: - Setup methods
-    
-    private func setupNavbar() {
-        navigationController?.navigationBar.backgroundColor = .black
-        navigationController?.navigationBar.barTintColor = .black
-        navigationController?.navigationBar.alpha = 0.9
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
-    }
     
     private func setupSubviews() {
         view.backgroundColor = .black
@@ -154,7 +146,7 @@ final class CreateAccountViewController: UIViewController {
                 
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
-                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: nil, isAdmin: isAdmin, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
+                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, weightliftingRecords: nil, gymnasticRecords: nil, isAdmin: isAdmin, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
                     DatabaseManager.shared.insertUser(user: newUser) { inserted in
                         guard inserted else {
                             print ("cant insert new user")

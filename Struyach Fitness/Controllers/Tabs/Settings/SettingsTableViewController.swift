@@ -468,7 +468,11 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     
     private func signOut() {
         activityView.showActivityIndicator()
-        AlertManager.shared.showActionSheet(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), confirmActionTitle: "Sign Out".localized()) { action in
+        AlertManager.shared.showActionSheet(title: "Sign Out".localized(), message: "Are you sure you would like to sign out?".localized(), cancelHandler: { [weak self] _ in
+            guard let self = self else {return}
+            print("cancelled signing out")
+            self.activityView.hide()
+        }, confirmActionTitle: "Sign Out".localized()) { action in
             AuthManager.shared.signOut { [weak self] success in
                 guard let self = self else {return}
                 if success {
@@ -492,8 +496,16 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     
     private func deleteAccount() {
         activityView.showActivityIndicator()
-        AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: K.accountDeleteMessage.localized(), confirmActionTitle: "Delete Account".localized()) { action in
-            AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), confirmActionTitle: "Confirm".localized()) { [weak self] success, text in
+        AlertManager.shared.showActionSheet(title: "Delete Account".localized(), message: K.accountDeleteMessage.localized(), cancelHandler: { [weak self] _ in
+            guard let self = self else {return}
+            print("cancelled account deletion")
+            self.activityView.hide()
+        }, confirmActionTitle: "Delete Account".localized()) { action in
+            AlertManager.shared.showAlert(title: "Confirm".localized(), message: "If you for sure want to permanently delete your account, please type \"Confirm\" below".localized(), placeholderText: "Confirm", cancelAction: "Cancel".localized(), cancelCompletion: { [weak self] _ in
+                guard let self = self else {return}
+                print("cancelled account deletion")
+                self.activityView.hide()
+            }, confirmActionTitle: "Confirm".localized()) { [weak self] success, text in
                 guard let self = self else {return}
                 if let text = text, text == "Confirm" {
                     StorageManager.shared.deleteUserData(email: self.email) { [weak self] storageSuccess, storageError in

@@ -11,7 +11,8 @@ struct User: Codable {
     let name: String
     let email: String
     let profilePictureRef: String?
-    let personalRecords: String?
+    let weightliftingRecords: String?
+    let gymnasticRecords: String?
     let isAdmin: Bool
     let fcmToken: String?
     let emailIsHidden: Bool

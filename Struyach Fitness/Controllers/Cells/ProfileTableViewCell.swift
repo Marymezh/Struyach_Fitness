@@ -24,7 +24,8 @@ final class ProfileTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         label.textColor = .white
-        label.numberOfLines = 0
+        label.numberOfLines = 1
+        label.adjustsFontSizeToFitWidth = true
         label.toAutoLayout()
         return label
     }()
@@ -39,7 +40,6 @@ final class ProfileTableViewCell: UITableViewCell {
     
     let weightTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "00 kg".localized()
         textField.tintColor = .systemGray
         textField.backgroundColor = .systemGray6
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: textField .frame.height))
@@ -85,7 +85,7 @@ final class ProfileTableViewCell: UITableViewCell {
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -baseInset),
             containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
-            movementLabel.widthAnchor.constraint(equalToConstant: 130),
+            movementLabel.widthAnchor.constraint(equalToConstant: 150),
             weightLabel.widthAnchor.constraint(equalToConstant: 70),
             weightTextField.widthAnchor.constraint(equalTo: weightLabel.widthAnchor),
 

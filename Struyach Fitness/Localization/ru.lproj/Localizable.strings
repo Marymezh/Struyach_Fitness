@@ -182,6 +182,25 @@
 "Personal Records" = "Личные рекорды";
 "%@ kg" = "%@ кг";
 "00 kg" = "00 кг";
+"0 reps" = "0 раз";
+"%@ reps" = "%@ раз";
+
+"Back Squat" = "Присед на спине";
+"Front Squat" = "Присед на груди";
+"Squat Clean" = "Взятие в сед";
+"Power Clean" = "Взятие в стойку";
+"Clean and Jerk" = "Взятие и толчок";
+"Squat Snatch" = "Рывок в сед";
+"Power Snatch" = "Рывок в стойку";
+"Deadlift" = "Становая тяга";
+
+"Max reps in 1 minute" = "Максимум повторов за 1 минуту";
+"Push-ups" = "Отжимания";
+"Pull-ups" = "Подтягивания";
+"Muscle-ups" = "Выход силой";
+"Ring muscle-ups" = "Выход на кольцах";
+"Toes-to-bars" = "Носки к перекладине";
+"Double-unders" = "Двойные прыжки";
 
 //MARK: - Settings
 

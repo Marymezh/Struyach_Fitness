@@ -982,7 +982,7 @@ final class DatabaseManager {
         let data: [String : Any] = [
             "email": user.email,
             "name": user.name,
-            "profile_photo": user.profilePictureRef,
+            "profile_photo": user.profilePictureRef ?? "",
             "isAdmin": user.isAdmin,
             "hideEmail": user.emailIsHidden
         ]
@@ -1013,11 +1013,12 @@ final class DatabaseManager {
                     return
                 }
                 let token = data["fcmToken"] as? String
-                let personalRecords = data["personal_records"] as? String
+                let weightliftingRecords = data["weightlifting_records"] as? String
+                let gymnasticRecords = data["gymnastic_records"] as? String
                 let imageRef = data["profile_photo"] as? String
                 let likedWorkouts = data["liked_workouts"] as? String
                 let likedPosts = data["liked_posts"] as? String
-                let user = User(name: name, email: email, profilePictureRef: imageRef, personalRecords: personalRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail, likedWorkouts: likedWorkouts, likedPosts: likedPosts)
+                let user = User(name: name, email: email, profilePictureRef: imageRef, weightliftingRecords: weightliftingRecords, gymnasticRecords: gymnasticRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail, likedWorkouts: likedWorkouts, likedPosts: likedPosts)
                         completion(user)
                     }
                 }
@@ -1152,12 +1153,12 @@ final class DatabaseManager {
         }
     }
     
-    public func updateUserPersonalRecords(email: String, completion: @escaping (Bool) ->()){
+    public func updateUserWeightliftingRecords(email: String, completion: @escaping (Bool) ->()){
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
         
-        let recordsReference = "users/\(path)/personal_records.json"
+        let recordsReference = "users/\(path)/weightlifting_records.json"
         
         let dbRef = database
             .collection("users")
@@ -1166,7 +1167,27 @@ final class DatabaseManager {
         dbRef.getDocument { snapshot, error in
             guard var data = snapshot?.data(), error == nil else {return}
             
-            data["personal_records"] = recordsReference
+            data["weightlifting_records"] = recordsReference
+            dbRef.setData(data) { error in
+                completion(error == nil)
+            }
+        }
+    }
+    public func updateUserGymnasticRecords(email: String, completion: @escaping (Bool) ->()){
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let recordsReference = "users/\(path)/gymnastic_records.json"
+        
+        let dbRef = database
+            .collection("users")
+            .document(path)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            
+            data["gymnastic_records"] = recordsReference
             dbRef.setData(data) { error in
                 completion(error == nil)
             }

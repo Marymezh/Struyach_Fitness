@@ -37,7 +37,7 @@ final class TabBarController: UITabBarController {
         UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]
            let appearance = UINavigationBarAppearance()
            appearance.configureWithDefaultBackground()
-           appearance.backgroundColor = .black
+           appearance.backgroundColor = .customDarkGray
            appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
            appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
            UINavigationBar.appearance().standardAppearance = appearance

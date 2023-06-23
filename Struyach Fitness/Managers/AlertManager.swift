@@ -45,11 +45,11 @@ final class AlertManager {
         topViewController.present(alert, animated: true, completion: nil)
     }
     
-    func showActionSheet(title: String, message: String, confirmActionTitle: String, confirmHandler: @escaping ((UIAlertAction) -> Void)) {
+    func showActionSheet(title: String, message: String, cancelHandler: ((UIAlertAction) -> Void)?, confirmActionTitle: String, confirmHandler: @escaping ((UIAlertAction) -> Void)) {
         guard let topViewController = UIApplication.shared.topViewController else {return}
         let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
         let confirmAction = UIAlertAction(title: confirmActionTitle, style: .destructive, handler: confirmHandler)
-        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel)
+        let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .cancel, handler: cancelHandler)
         alert.addAction(confirmAction)
         alert.addAction(cancelAction)
         alert.view.tintColor = .contrastGreen

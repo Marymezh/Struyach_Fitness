@@ -12,8 +12,10 @@ final class ProfileTableViewController: UITableViewController {
     
     //MARK: - Properties
     
-    private let movements = ["", "Back Squat", "Front Squat", "Squat Clean", "Power Clean", "Clean and Jerk", "Snatch", "Deadlift"]
-    private var weights = ["", "00", "00", "00", "00", "00", "00", "00"]
+    private let movements = ["", "Back Squat".localized(), "Front Squat".localized(), "Squat Clean".localized(), "Power Clean".localized(), "Clean and Jerk".localized(), "Squat Snatch".localized(), "Power Snatch".localized(), "Deadlift".localized()]
+    private let gymnastics = ["", "Push-ups".localized(), "Pull-ups".localized(), "Muscle-ups".localized(), "Ring muscle-ups".localized(), "Toes-to-bars".localized(), "Double-unders".localized()]
+    private var weights = ["", "00", "00", "00", "00", "00", "00", "00", "00"]
+    private var reps = ["", "0", "0", "0", "0", "0", "0"]
     private let headerView = ProfileHeaderView()
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     
@@ -146,31 +148,83 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     func fetchUserRecords() {
-        print ("fetching user records")
+        print("Fetching user records")
+        
+        let dispatchGroup = DispatchGroup()
+        
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user,
-                  let self = self,
-                  let ref = user.personalRecords else {return}
-            StorageManager.shared.downloadUrl(path: ref) { url in
-                guard let url = url else {return}
-                let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-                    guard let data = data else {return}
-                    self.weights = try! JSONDecoder().decode([String].self, from: data)
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
+                  let self = self else {
+                return
+            }
+            dispatchGroup.enter()
+            
+            if let weightliftingRef = user.weightliftingRecords {
+                StorageManager.shared.downloadUrl(path: weightliftingRef) { url in
+                    guard let url = url else {
+                        dispatchGroup.leave()
+                        return
                     }
+                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+                        guard let data = data else {
+                            dispatchGroup.leave()
+                            return
+                        }
+                        self.weights = try! JSONDecoder().decode([String].self, from: data)
+                        dispatchGroup.leave()
+                    }
+                    
+                    task.resume()
                 }
-                task.resume()
+            } else {
+                dispatchGroup.leave()
+            }
+            dispatchGroup.enter()
+            
+            if let gymnasticRef = user.gymnasticRecords {
+                StorageManager.shared.downloadUrl(path: gymnasticRef) { url in
+                    guard let url = url else {
+                        dispatchGroup.leave()
+                        return
+                    }
+                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+                        guard let data = data else {
+                            dispatchGroup.leave()
+                            return
+                        }
+                        self.reps = try! JSONDecoder().decode([String].self, from: data)
+                        dispatchGroup.leave()
+                    }
+                    task.resume()
+                }
+            } else {
+                dispatchGroup.leave()
+            }
+            dispatchGroup.notify(queue: .main) {
+                self.tableView.reloadData()
+            }
+        }
+    }
+   
+    private func uploadWeightliftingRecords() {
+        // upload saved weights array to Firebase Storage
+        StorageManager.shared.uploadUserWeightliftingRecords(email: self.email, weights: self.weights) { [weak self] success in
+            guard let self = self else {return}
+            if success {
+                DatabaseManager.shared.updateUserWeightliftingRecords(email: self.email) { success in
+                    guard success else {return}
+                    print ("Records are updated")
+                }
             }
         }
     }
     
-    private func uploadUserRecords() {
+    private func uploadGymnasticRecords() {
         // upload saved weights array to Firebase Storage
-        StorageManager.shared.uploadUserPersonalRecords(email: self.email, weights: self.weights) { [weak self] success in
+        StorageManager.shared.uploadUserGymnasticRecords(email: self.email, reps: self.reps) { [weak self] success in
             guard let self = self else {return}
             if success {
-                DatabaseManager.shared.updateUserPersonalRecords(email: self.email) { success in
+                DatabaseManager.shared.updateUserGymnasticRecords(email: self.email) { success in
                     guard success else {return}
                     print ("Records are updated")
                 }
@@ -178,46 +232,93 @@ final class ProfileTableViewController: UITableViewController {
         }
     }
 
-    // MARK: - Table view data source
+    // MARK: - Table view delegate and data source
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
     
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return movements.count
+        switch section {
+        case 0: return movements.count
+        default: return gymnastics.count
+        }
+    
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.row {
+        switch indexPath.section {
         case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
-            cell.backgroundColor = .customDarkGray
-            cell.selectionStyle = .none
-            cell.textLabel?.text = "Personal Records".localized()
-            cell.textLabel?.textColor = .white
-            cell.textLabel?.textAlignment = .center
-            cell.textLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-            return cell
+            switch indexPath.row {
+            case 0:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
+                cell.backgroundColor = .customDarkGray
+                cell.selectionStyle = .none
+                cell.textLabel?.text = "Personal Records".localized()
+                cell.textLabel?.textColor = .white
+                cell.textLabel?.textAlignment = .center
+                cell.textLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+                return cell
+            default:
+                let cell: ProfileTableViewCell = tableView.dequeueReusableCell(withIdentifier: ProfileTableViewCell.reuseIdentifier, for: indexPath) as! ProfileTableViewCell
+                if indexPath.row == 1 {
+                    cell.containerView.layer.cornerRadius = 15
+                    cell.containerView.layer.masksToBounds = true
+                    cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+                } else if indexPath.row == tableView.numberOfRows(inSection: indexPath.section)-1 {
+                    cell.containerView.layer.cornerRadius = 15
+                    cell.containerView.layer.masksToBounds = true
+                    cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                } else {
+                    cell.containerView.layer.cornerRadius = 0
+                }
+                cell.movementLabel.text = movements[indexPath.row]
+                cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
+                cell.weightTextField.placeholder = "00 kg".localized()
+                cell.weightTextField.delegate = self
+                
+                if email != currentUserEmail {
+                    cell.weightTextField.isHidden = true
+                }
+                return cell
+            }
         default:
-            let cell: ProfileTableViewCell = tableView.dequeueReusableCell(withIdentifier: ProfileTableViewCell.reuseIdentifier, for: indexPath) as! ProfileTableViewCell
-            if indexPath.row == 1 {
-                cell.containerView.layer.cornerRadius = 15
-                cell.containerView.layer.masksToBounds = true
-                cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-            } else if indexPath.row == tableView.numberOfRows(inSection: indexPath.section)-1 {
-                cell.containerView.layer.cornerRadius = 15
-                cell.containerView.layer.masksToBounds = true
-                cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            } else {
-                cell.containerView.layer.cornerRadius = 0
+            switch indexPath.row {
+            case 0:
+                let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
+                cell.backgroundColor = .customDarkGray
+                cell.selectionStyle = .none
+                cell.textLabel?.text = "Max reps in 1 minute".localized()
+                cell.textLabel?.textColor = .white
+                cell.textLabel?.textAlignment = .center
+                cell.textLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+                return cell
+            default:
+                let cell: ProfileTableViewCell = tableView.dequeueReusableCell(withIdentifier: ProfileTableViewCell.reuseIdentifier, for: indexPath) as! ProfileTableViewCell
+                if indexPath.row == 1 {
+                    cell.containerView.layer.cornerRadius = 15
+                    cell.containerView.layer.masksToBounds = true
+                    cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+                } else if indexPath.row == tableView.numberOfRows(inSection: indexPath.section)-1 {
+                    cell.containerView.layer.cornerRadius = 15
+                    cell.containerView.layer.masksToBounds = true
+                    cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                } else {
+                    cell.containerView.layer.cornerRadius = 0
+                }
+                cell.movementLabel.text = gymnastics[indexPath.row]
+                cell.weightLabel.text = String(format: "%@ reps".localized(), reps[indexPath.row])
+                cell.weightTextField.delegate = self
+                cell.weightTextField.placeholder = "0 reps".localized()
+                if email != currentUserEmail {
+                    cell.weightTextField.isHidden = true
+                }
+                return cell
             }
-            cell.movementLabel.text = movements[indexPath.row]
-            cell.weightLabel.text = String(format: "%@ kg".localized(), weights[indexPath.row])
-            cell.weightTextField.delegate = self
             
-            if email != currentUserEmail {
-                cell.weightTextField.isHidden = true
-            }
-            return cell
         }
+      
     }
     
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
@@ -225,12 +326,34 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return headerView
+        switch section {
+        case 0: return headerView
+        default: return nil
+        }
     }
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        switch section {
+        case 0: return UITableView.automaticDimension
+        default: return 0
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let footerView = UIView()
-        return footerView
+        switch section {
+        case 0: return nil
+        default:  let footerView = UIView()
+            return footerView
+        }
     }
+    
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        switch section {
+        case 0: return 0
+        default: return UITableView.automaticDimension
+        }
+    }
+    
 }
 
 //MARK: - UIImagePickerControllerDelegate methods
@@ -319,12 +442,38 @@ extension ProfileTableViewController: UITextFieldDelegate {
         }
         
         if !text.isEmpty {
-            weights[indexPath.row] = text
-            tableView.reloadRows(at: [indexPath], with: .none)
-            self.uploadUserRecords()
+            switch indexPath.section {
+            case 0:
+                weights[indexPath.row] = text
+                textField.text = ""
+                tableView.reloadRows(at: [indexPath], with: .none)
+                uploadWeightliftingRecords()
+            case 1:
+                reps[indexPath.row] = text
+                textField.text = ""
+                tableView.reloadRows(at: [indexPath], with: .none)
+                uploadGymnasticRecords()
+            default:
+                break
+            }
         }
-
-        textField.text = nil
-        textField.placeholder = "00 kg".localized()
     }
 }
+
+//extension ProfileTableViewController: UITextFieldDelegate {
+//    func textFieldDidEndEditing(_ textField: UITextField) {
+//        guard let cell = textField.superview?.superview?.superview as? ProfileTableViewCell,
+//              let indexPath = tableView.indexPath(for: cell),
+//              let text = textField.text else {
+//            return
+//        }
+//
+//        if !text.isEmpty {
+//            weights[indexPath.row] = text
+//            tableView.reloadRows(at: [indexPath], with: .none)
+//            self.uploadUserRecords()
+//        }
+//
+//        textField.text = nil
+//    }
+//}

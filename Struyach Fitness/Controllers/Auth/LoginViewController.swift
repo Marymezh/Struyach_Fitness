@@ -35,8 +35,6 @@ final class LoginViewController: UIViewController {
     private func setupNavBar () {
         title = "Log In".localized()
         navigationController?.navigationBar.backgroundColor = .black
-        navigationController?.navigationBar.barTintColor = .black
-        navigationController?.navigationBar.alpha = 0.9
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
     }
     
@@ -307,7 +305,7 @@ extension LoginViewController: AuthManagerDelegate {
                 IAPManager.shared.logInRevenueCat(userId: userId)  { error in
                     print(error.localizedDescription)
                 }
-                let newUser = User(name: name, email: email, profilePictureRef: nil, personalRecords: nil, isAdmin: false, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
+                let newUser = User(name: name, email: email, profilePictureRef: nil, weightliftingRecords: nil, gymnasticRecords: nil, isAdmin: false, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
                 DatabaseManager.shared.insertUser(user: newUser) { inserted in
                     guard inserted else {
                         print ("cant insert new user")

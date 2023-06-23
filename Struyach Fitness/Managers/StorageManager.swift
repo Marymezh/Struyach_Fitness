@@ -96,7 +96,7 @@ final class StorageManager {
             }
     }
     
-    public func uploadUserPersonalRecords(email: String, weights: [String]?, completion: @escaping (Bool)->()) {
+    public func uploadUserWeightliftingRecords(email: String, weights: [String]?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
@@ -104,7 +104,25 @@ final class StorageManager {
         let data = try! JSONEncoder().encode(weights)
         
         container
-            .reference(withPath: "users/\(path)/personal_records.json")
+            .reference(withPath: "users/\(path)/weightlifting_records.json")
+            .putData(data, metadata: nil) { metadata, error in
+                guard metadata != nil, error == nil else {
+                    completion(false)
+                    return
+                }
+                completion(true)
+            }
+    }
+    
+    public func uploadUserGymnasticRecords(email: String, reps: [String]?, completion: @escaping (Bool)->()) {
+        let path = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+ 
+        let data = try! JSONEncoder().encode(reps)
+        
+        container
+            .reference(withPath: "users/\(path)/gymnastic_records.json")
             .putData(data, metadata: nil) { metadata, error in
                 guard metadata != nil, error == nil else {
                     completion(false)
@@ -157,36 +175,6 @@ final class StorageManager {
             }
     }
 
-//    public func deleteUserData(email: String, completion: @escaping (Bool, Error?) -> Void) {
-//        let path = email
-//            .replacingOccurrences(of: ".", with: "_")
-//            .replacingOccurrences(of: "@", with: "_")
-//
-//        let userFolderRef = "users/\(path)"
-//
-//        let storageReference = container.reference().child(userFolderRef)
-//        storageReference.listAll { (result, error) in
-//            if let error = error {
-//                print ("error listing folder contents: \(error.localizedDescription)")
-//            } else if let result = result {
-//                print ("Number of files to delete:\(result.items.count)")
-////                if result.items.count == 0 {
-////                    completion(true, nil)
-////                }
-////
-//                for item in result.items {
-//                    item.delete { error in
-//                        if let error = error {
-//                            print("Error deleting item:", error)
-//                            completion(false, error)
-//                        } else {
-//                            completion(true, nil)
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
     public func deleteUserData(email: String, completion: @escaping (Bool, Error?) -> Void) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
