@@ -204,9 +204,12 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                         AlertManager.shared.showAlert(title: "Success".localized(), message: "Your message is successfully sent! \nThank you for your feedback!".localized(), cancelAction: "Ok")
                     case .saved:
                         AlertManager.shared.showAlert(title: "Done".localized(), message: "Your message is saved to drafts".localized(), cancelAction: "Ok")
+                    case .cancelled:
+                        AlertManager.shared.showAlert(title: "Done".localized(), message: "Cancelled sending message to the developer".localized(), cancelAction: "Ok")
                     case .failed:
                         AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error sending message".localized(), cancelAction: "Cancel".localized())
-                    default: break
+                    @unknown default:
+                        print ("unknown error")
                     }
                 }
                 return cell
@@ -375,9 +378,9 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             case 1:
                 //    sendEmailToDeveloper
                 if let cell = tableView.cellForRow(at: indexPath) as? EmailTableViewCell {
-                    cell.sendEmail { error in
-                        if let error = error {
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: error.localizedDescription, cancelAction: "Ok")
+                    cell.showMailComposer { error in
+                        if let _ = error {
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "You can't send email, check if Mail app is installed and set to send emails. Or you can sand your email manually to feedback.struyach@gmail.com".localized(), cancelAction: "Ok")
                         }
                     }
                 }

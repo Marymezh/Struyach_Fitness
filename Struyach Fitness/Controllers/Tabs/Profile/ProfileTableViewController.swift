@@ -42,13 +42,6 @@ final class ProfileTableViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         updateUserData()
-        if let name = UserDefaults.standard.string(forKey: "userName"), let email = UserDefaults.standard.string(forKey: "email") {
-            print ("user name is: \(name), user email is: \(email)")
-            
-        
-        } else {
-            print ("userDefaults userName or email is empty")
-        }
     }
     
     deinit {

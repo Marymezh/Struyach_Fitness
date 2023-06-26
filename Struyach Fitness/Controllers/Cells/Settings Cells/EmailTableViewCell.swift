@@ -13,7 +13,6 @@ final class EmailTableViewCell: UITableViewCell {
     // MARK: - Properties
     
     static let reuseIdentifier = "EmailCell"
-    private let mailComposer = MFMailComposeViewController()
     var onClose: ((MFMailComposeResult)->())?
     
     let containerView: UIView = {
@@ -45,7 +44,6 @@ final class EmailTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         setupSubviews()
-        mailComposer.mailComposeDelegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -82,19 +80,22 @@ final class EmailTableViewCell: UITableViewCell {
         NSLayoutConstraint.activate(constraints)
     }
     
-    func sendEmail(completion: ((Error?)->())?) {
-        if MFMailComposeViewController.canSendMail() {
-            mailComposer.setToRecipients(["maria.mezhova@yahoo.com"])
-            mailComposer.setSubject("App Feedback".localized())
-            mailComposer.setMessageBody("Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]".localized(), isHTML: false)
-            mailComposer.navigationBar.setAppearanceForMailComposer()
-            mailComposer.view.backgroundColor = .customDarkGray
-            if let viewController = UIApplication.shared.windows.first?.rootViewController {
-                viewController.present(mailComposer, animated: true, completion: nil)
-            }
-        } else {
+    func showMailComposer(completion: ((Error?)->())?) {
+        guard MFMailComposeViewController.canSendMail() else {
             let error = NSError(domain: "Can't send email", code: 0, userInfo: nil)
-                completion?(error)
+            completion?(error)
+            return
+        }
+
+        let mailComposer = MFMailComposeViewController()
+        mailComposer.mailComposeDelegate = self
+        mailComposer.setToRecipients(["feedback.struyach@gmail.com"])
+        mailComposer.setSubject("App Feedback".localized())
+        mailComposer.setMessageBody("Dear Developer,\n\nI have some feedback about the app...\n\nSincerely,\n[Your Name]".localized(), isHTML: false)
+        mailComposer.navigationBar.setAppearanceForMailComposer()
+        mailComposer.view.backgroundColor = .customDarkGray
+        if let viewController = UIApplication.shared.windows.first?.rootViewController {
+            viewController.present(mailComposer, animated: true, completion: nil)
         }
     }
 }
@@ -105,7 +106,18 @@ extension EmailTableViewCell: MFMailComposeViewControllerDelegate {
     
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
         
+//        if let error = error {
+//            let message = String(format: "Error sending email: %@", error.localizedDescription)
+//            controller.dismiss(animated: true) {
+//                self.onClose?(error)
+//            }
+//        }
+        
         switch result {
+        case .sent:
+            controller.dismiss(animated: true) {
+                self.onClose?(result)
+            }
         case .cancelled:
             controller.dismiss(animated: true) {
                 self.onClose?(result)
@@ -114,10 +126,12 @@ extension EmailTableViewCell: MFMailComposeViewControllerDelegate {
             controller.dismiss(animated: true) {
                 self.onClose?(result)
             }
-        default: break
-        }
-        controller.dismiss(animated: true) {
-            self.onClose?(result)
+        case .failed:
+            controller.dismiss(animated: true) {
+                self.onClose?(result)
+            }
+        @unknown default:
+            controller.dismiss(animated: true)
         }
     }
 }

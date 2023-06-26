@@ -310,7 +310,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         guard let email = userEmail else {
             print ("no email")
             return}
-        print("userEmail: \(userEmail)), userName: \(userName)")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
             guard let imageRef = user.profilePictureRef, !imageRef.isEmpty else {
