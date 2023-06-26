@@ -28,14 +28,22 @@ final class LoginViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
     }
+    
     //MARK: - Setup methods
     
-    private func setupNavBar () {
+    private func setupNavBar() {
         title = "Log In".localized()
-        navigationController?.navigationBar.backgroundColor = .black
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.barTintColor = .black
+        navigationController?.navigationBar.titleTextAttributes = [
+            NSAttributedString.Key.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.tintColor = .systemGreen
+        navigationItem.largeTitleDisplayMode = .never
+        
+        let infoIconImage = UIImage(systemName: "info.circle")
+        let infoButton = UIBarButtonItem(image: infoIconImage, style: .plain, target: self, action: #selector(infoButtonTapped))
+        infoButton.tintColor = .systemGreen
+        navigationItem.rightBarButtonItem = infoButton
     }
     
     private func setupSubviews() {
@@ -249,6 +257,14 @@ final class LoginViewController: UIViewController {
             
             present(alertController, animated: true, completion: nil)
         }
+    }
+    
+    @objc private func infoButtonTapped() {
+        let appDescription = K.appDescription.localized()
+        let aboutThisAppVC = AboutViewController(text: appDescription)
+        aboutThisAppVC.title = "About this app".localized()
+        aboutThisAppVC.imageView.image = UIImage(named: "coach")
+        navigationController?.pushViewController(aboutThisAppVC, animated: true)
     }
 }
 

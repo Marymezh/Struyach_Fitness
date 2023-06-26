@@ -14,7 +14,6 @@ import AVFoundation
 import AVKit
 import Photos
 
-
 final class CommentsViewController: CommentsMessagesViewController, UITextViewDelegate {
     
     //    MARK: - Properties
@@ -61,7 +60,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         setupMessageCollectionView()
         setupInputBar()
         setupSubviews()
-        getUserImage()
         if let workout = self.workout {
             loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
         } else if let post = self.blogPost {
@@ -73,6 +71,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
   
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        getUserImage()
         self.navigationController?.navigationBar.prefersLargeTitles = false
     }
     
@@ -307,10 +306,17 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     //MARK: - Methods for saving new comments to Firestore and loading them to the local commentsArray
     
     private func getUserImage() {
-        guard let email = userEmail else {return}
+        print ("get user image")
+        guard let email = userEmail else {
+            print ("no email")
+            return}
+        print("userEmail: \(userEmail)), userName: \(userName)")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
-            guard let imageRef = user.profilePictureRef else {return}
+            guard let imageRef = user.profilePictureRef, !imageRef.isEmpty else {
+                self.userImage = UIImage(systemName: "person.circle")
+                print("no image ref, setting default user image")
+                return}
             StorageManager.shared.downloadUrl(path: imageRef) { url in
                 guard let url = url else { return }
 
@@ -334,11 +340,16 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     private func postComment(text: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
+        print (sender.displayName)
         let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
-        guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else { return }
+        guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else {
+            print ("no user image data")
+            return }
         let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: "")
+        //this will show new post immediately, without waitind for database update
         self.commentsArray.append(newComment)
         self.messagesCollectionView.reloadData()
+        
         if let workout = self.workout {
             DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
                 guard let self = self else {return}
@@ -778,7 +789,7 @@ extension CommentsViewController: MessageCellDelegate {
         let otherUserEmail = comment.sender.senderId
         let profileVC = ProfileTableViewController(email: otherUserEmail)
         profileVC.fetchUserRecords()
-        profileVC.fetchOtherUserData { [weak self] success in
+        profileVC.fetchProfileData { [weak self] success in
             guard let self = self else {return}
             if success {
                 self.activityView.hide()
@@ -828,7 +839,7 @@ extension CommentsViewController: MessageCellDelegate {
     
     func replyTo(sender: String, message: String) {
         let replyTo = "Reply to".localized()
-        let modifiedText = "\(replyTo) \(sender): \n \"\(message) \"\n\n"
+        let modifiedText = "\(replyTo) \(sender): \n\"\(message)\"\n\n"
         self.messageInputBar.inputTextView.text = modifiedText
     }
 }

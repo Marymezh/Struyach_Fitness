@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class SettingsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+final class SettingsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
     
     // MARK: - Properties
     
@@ -579,25 +579,32 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     }
     
     private func changeUserName() {
-        AlertManager.shared.showAlert(title: "Change user name".localized(), message: nil, placeholderText: "Enter new name here".localized(), cancelAction: "Cancel".localized(), confirmActionTitle: "Save".localized()) { success, text in
+        AlertManager.shared.showAlert(title: "Change user name".localized(), message: nil, placeholderText: "Enter new name here".localized(), cancelAction: "Cancel".localized(), confirmActionTitle: "Save".localized()) { [weak self] success, text in
+            guard let self = self else {return}
             if success {
                 if let text = text, text != "" {
                     DatabaseManager.shared.updateUserName(email: self.email, newUserName: text) { success in
                         if success {
                             UserDefaults.standard.set(text, forKey: "userName")
                             AlertManager.shared.showAlert(title: "Done".localized(), message: "User name is successfully changed".localized(), cancelAction: "Ok")
+                        } else {
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to change user's name".localized(), cancelAction: "Ok")
                         }
                     }
                 }
-            } else {
-                AlertManager.shared.showAlert(title: "Error".localized(), message: "User name can not be blank!".localized(), cancelAction: "Cancel".localized())
+                } else {
+                    AlertManager.shared.showAlert(title: "Error".localized(), message: "User name can not be blank!".localized(), cancelAction: "Cancel".localized())
             }
         }
     }
     
     @objc private func hideEmailSwitchChanged(_ sender: UISwitch) {
         DatabaseManager.shared.hideOrShowEmail(email: self.email, isHidden: sender.isOn) { success in
-            UserDefaults.standard.set(sender.isOn, forKey: "hideEmail")
+            if success {
+                UserDefaults.standard.set(sender.isOn, forKey: "hideEmail")
+            } else {
+                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable hide/show email".localized(), cancelAction: "Ok")
+            }
         }
     }
 

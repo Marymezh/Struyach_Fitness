@@ -17,22 +17,20 @@ final class AboutViewController: UIViewController {
         let imageView = UIImageView()
         imageView.toAutoLayout()
         imageView.contentMode = .scaleAspectFill
-        imageView.alpha = 0.3
+        imageView.alpha = 0.2
         return imageView
     }()
     
     private let textView: UITextView = {
         let textView = UITextView()
         textView.toAutoLayout()
-        textView.textColor = .white
+        textView.textColor = .lightGray
         textView.isEditable = false
         textView.isSelectable = false
         textView.font = UIFont.systemFont(ofSize: 16)
-        textView.textAlignment = .justified
+        textView.textAlignment = .natural
         return textView
     }()
-    
-   
     
     // MARK: - Lifecycle
     

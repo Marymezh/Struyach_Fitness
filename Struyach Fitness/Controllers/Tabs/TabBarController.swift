@@ -45,7 +45,7 @@ final class TabBarController: UITabBarController {
 
     private func setupControllers() {
         guard let currentUserEmail = UserDefaults.standard.string(forKey: "email") else {return}
-        
+        print (currentUserEmail)
         updateUserToken(email: currentUserEmail)
         let programsVC = ProgramsViewController()
         programsVC.title = "Training Plans".localized()
@@ -55,16 +55,22 @@ final class TabBarController: UITabBarController {
         
         let profileVC = ProfileTableViewController(email: currentUserEmail)
         profileVC.title = "Profile".localized()
+        profileVC.navigationItem.largeTitleDisplayMode = .always
+        profileVC.fetchUserRecords()
+        profileVC.fetchProfileData { success in
+            if success {
+                print ("fetched user data successfully")
+            } else {
+                print ("error fetching user data")
+            }
+        }
         
         let settingsVC = SettingsTableViewController(email: currentUserEmail)
         settingsVC.title = "Settings".localized()
         
         programsVC.navigationItem.largeTitleDisplayMode = .always
         blogVC.navigationItem.largeTitleDisplayMode = .always
-        profileVC.navigationItem.largeTitleDisplayMode = .always
-        profileVC.fetchUserRecords()
-        profileVC.fetchProfileData()
-        profileVC.fetchUserImage()
+      
         
         let nav1 = UINavigationController(rootViewController: programsVC)
         let nav2 = UINavigationController(rootViewController: blogVC)

@@ -18,7 +18,7 @@ final class SelectedWorkoutView: UIView, UITextViewDelegate {
         let view = UIImageView()
         view.contentMode = .top
         view.clipsToBounds = true
-        view.alpha = 0.8
+        view.alpha = 0.7
         view.toAutoLayout()
         return view
     }()

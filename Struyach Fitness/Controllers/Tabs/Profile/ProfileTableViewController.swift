@@ -41,7 +41,14 @@ final class ProfileTableViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        fetchProfileData()
+        updateUserData()
+        if let name = UserDefaults.standard.string(forKey: "userName"), let email = UserDefaults.standard.string(forKey: "email") {
+            print ("user name is: \(name), user email is: \(email)")
+            
+        
+        } else {
+            print ("userDefaults userName or email is empty")
+        }
     }
     
     deinit {
@@ -79,16 +86,27 @@ final class ProfileTableViewController: UITableViewController {
     
     //MARK: - Fetch and update data methods
     
-    func fetchOtherUserData(completion: @escaping (Bool)->()) {
+    func fetchProfileData(completion: @escaping (Bool)->()) {
+        print ("fetching user data")
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
-            guard let imageRef = user.profilePictureRef else {return}
+            if email == currentUserEmail {
+                UserDefaults.standard.set(user.name, forKey: "userName")
+            }
+            guard let imageRef = user.profilePictureRef, !imageRef.isEmpty else {
+                self.headerView.userPhotoImage.contentMode = .scaleAspectFill
+                self.headerView.userPhotoImage.image = UIImage(systemName: "person.fill")
+                self.headerView.userNameLabel.text = user.name
+                self.headerView.userEmailLabel.text = user.email
+                self.headerView.userEmailLabel.isHidden = user.emailIsHidden ? true : false
+                return}
             StorageManager.shared.downloadUrl(path: imageRef) { url in
                 guard let url = url else { return }
 
                 let task = URLSession.shared.dataTask(with: url) { data, response, error in
                     guard let data = data, error == nil else {
                         print("Error downloading image: \(error?.localizedDescription ?? "unknown error".localized())")
+                        completion(false)
                         return
                     }
 
@@ -102,31 +120,7 @@ final class ProfileTableViewController: UITableViewController {
                         }
                     } else {
                         print("Error creating image from data")
-                    }
-                }
-                task.resume()
-            }
-        }
-    }
-    func fetchUserImage() {
-        print ("fetching user image")
-        DatabaseManager.shared.getUser(email: email) { [weak self] user in
-            guard let self = self, let user = user else { return }
-            guard let imageRef = user.profilePictureRef else {return}
-            StorageManager.shared.downloadUrl(path: imageRef) { url in
-                guard let url = url else { return }
-                let task = URLSession.shared.dataTask(with: url) { data, response, error in
-                    guard let data = data, error == nil else {
-                        print("Error downloading image: \(error?.localizedDescription ?? "unknown error".localized())")
-                        return
-                    }
-                    if let image = UIImage(data: data) {
-                        DispatchQueue.main.async {
-                            self.headerView.userPhotoImage.image = image
-                        }
-                        print ("set user image for the avatar")
-                    } else {
-                        print("Error creating image from data")
+                        completion(false)
                     }
                 }
                 task.resume()
@@ -134,16 +128,13 @@ final class ProfileTableViewController: UITableViewController {
         }
     }
     
-    func fetchProfileData() {
-        print ("fetching profile data for user")
-        DatabaseManager.shared.getUser(email: email) { [weak self] user in
-            guard let self = self, let user = user else { return }
-            DispatchQueue.main.async {
-                self.headerView.userNameLabel.text = user.name
-                UserDefaults.standard.set(user.name, forKey: "userName")
-                self.headerView.userEmailLabel.text = user.email
-                self.headerView.userEmailLabel.isHidden = user.emailIsHidden ? true : false
-            }
+    private func updateUserData() {
+        guard currentUserEmail == email,
+              let userName = UserDefaults.standard.string(forKey: "userName") else {return}
+        let emailIsHidden = UserDefaults.standard.bool(forKey: "hideEmail")
+        DispatchQueue.main.async {
+            self.headerView.userNameLabel.text = userName
+            self.headerView.userEmailLabel.isHidden = emailIsHidden
         }
     }
     
@@ -207,26 +198,24 @@ final class ProfileTableViewController: UITableViewController {
     }
    
     private func uploadWeightliftingRecords() {
-        // upload saved weights array to Firebase Storage
         StorageManager.shared.uploadUserWeightliftingRecords(email: self.email, weights: self.weights) { [weak self] success in
             guard let self = self else {return}
             if success {
                 DatabaseManager.shared.updateUserWeightliftingRecords(email: self.email) { success in
                     guard success else {return}
-                    print ("Records are updated")
+                    print ("weightlifting records are updated")
                 }
             }
         }
     }
     
     private func uploadGymnasticRecords() {
-        // upload saved weights array to Firebase Storage
         StorageManager.shared.uploadUserGymnasticRecords(email: self.email, reps: self.reps) { [weak self] success in
             guard let self = self else {return}
             if success {
                 DatabaseManager.shared.updateUserGymnasticRecords(email: self.email) { success in
                     guard success else {return}
-                    print ("Records are updated")
+                    print ("gymnastic records are updated")
                 }
             }
         }
@@ -255,7 +244,7 @@ final class ProfileTableViewController: UITableViewController {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "CellID", for: indexPath)
                 cell.backgroundColor = .customDarkGray
                 cell.selectionStyle = .none
-                cell.textLabel?.text = "Personal Records".localized()
+                cell.textLabel?.text = "Weightlifting records".localized()
                 cell.textLabel?.textColor = .white
                 cell.textLabel?.textAlignment = .center
                 cell.textLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
@@ -460,20 +449,3 @@ extension ProfileTableViewController: UITextFieldDelegate {
     }
 }
 
-//extension ProfileTableViewController: UITextFieldDelegate {
-//    func textFieldDidEndEditing(_ textField: UITextField) {
-//        guard let cell = textField.superview?.superview?.superview as? ProfileTableViewCell,
-//              let indexPath = tableView.indexPath(for: cell),
-//              let text = textField.text else {
-//            return
-//        }
-//
-//        if !text.isEmpty {
-//            weights[indexPath.row] = text
-//            tableView.reloadRows(at: [indexPath], with: .none)
-//            self.uploadUserRecords()
-//        }
-//
-//        textField.text = nil
-//    }
-//}

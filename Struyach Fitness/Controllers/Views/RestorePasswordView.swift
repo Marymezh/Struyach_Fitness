@@ -37,9 +37,9 @@ final class RestorePasswordView: UIView {
         label.backgroundColor = .black
         label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         label.textColor = .white
-        label.textAlignment = .justified
+        label.textAlignment = .natural
         label.numberOfLines = 0
-        label.text = "To restore your forgotten password please enter the email address of the registered user. You will receive an email with further instructions.".localized()
+        label.text = "To restore your forgotten password please enter the email address of the registered user. \n\nYou will receive an email with further instructions.".localized()
         return label
     }()
     

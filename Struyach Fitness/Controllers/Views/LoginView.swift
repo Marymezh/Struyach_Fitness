@@ -8,6 +8,15 @@
 import UIKit
 import AuthenticationServices
 
+enum Language: String {
+    case english = "en"
+    case russian = "ru"
+}
+
+protocol LanguageSwitchDelegate: AnyObject {
+    func didSwitchLanguage(to language: Language)
+}
+
 final class LoginView: UIView {
     
     //MARK: - Properties
@@ -31,7 +40,7 @@ final class LoginView: UIView {
         button.tag = Language.russian.rawValue.hashValue
         return button
     }()
-    
+ 
     let autorizationView: UIView = {
         let autorizationView = UIView()
         autorizationView.backgroundColor = .lightGray
@@ -158,7 +167,7 @@ final class LoginView: UIView {
         let attributedString = NSAttributedString(string: "Please read and agree to our Privacy Policy to proceed".localized(), attributes: underlineAttribute)
         privacyPolicyLabel.attributedText = attributedString
         
-        self.addSubviews( engButton, rusButton, autorizationView, logInButton, createAccountButton, restorePasswordButton, appleSignInButton, privacyPolicyLabel)
+        self.addSubviews(engButton, rusButton, autorizationView, logInButton, createAccountButton, restorePasswordButton, appleSignInButton, privacyPolicyLabel)
         autorizationView.addSubviews(emailTextField, passwordTextField)
         
         let constraints = [
