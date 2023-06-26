@@ -25,10 +25,11 @@ final class DatabaseManager {
     
     public func postWorkout(with workout: Workout, completion: @escaping(Bool) ->()){
         print("Executing function: \(#function)")
+       
         let program = workout.programID
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
-        
+        print ("posting workout for \(program)")
         do {
             let workoutData = try Firestore.Encoder().encode(workout)
             database

@@ -44,6 +44,12 @@
 "Plans" = "Планы";
 "Blog" = "Блог";
 
+"Bodyweight" = "Тренинг дома";
+"ECD Plan" = "План ECD";
+"Struyach Plan" = "План Струяч";
+"Pelvic Power Plan" = "Упругие ягодицы";
+"Belly Burner Plan" = "Плоский живот";
+
 //MARK: - TRAINING PLANS DESCRIPTION
 
 "Get fit and toned with our Bodyweight Training Plan - no equipment needed, perfect for on-the-go workouts!" = "Тренировки с собственным весом, без дополнительного оборудования. В любое время, в любом месте!";
@@ -257,12 +263,12 @@
 "Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes \n\nSubscribing to Struyach Plan also gives you a free access to the ECD Plan! Join now!" = "Тренировочный план для соревнующихся атлетов. Присоединяйся, если хочешь достичь большего! \n\nПодписываясь на план Струяч, вы также получаете бесплатный доступ к плану ECD! Подпишись сегодня!";
 
 "799 RUB/month after trial" = "Затем 799 РУБ/месяц";
-"Pelvic Power Plan" = "Купить Pelvic Power Plan";
+"Buy Pelvic Power Plan" = "Купить план Крепкие ягодицы";
 "Tone and strengthen your pelvic muscles with our 10 high-intensity workouts. \n\nJoin today for a stronger, healthier you!" = "10 высокоинтенсивных тренировок, направленных на укрепление мышц ног, бёдер и таза. \n\nПрисоединяйся, чтобы получить лучшую версию себя!";
 "Buy now for 199 RUB" = "Купить за 199 РУБ";
 "Buy now for %@" = "Купить за %@";
 "Pay once and get life-time access" = "Заплати один раз и пользуйся";
-"Belly Burner Plan" = "Купить Belly Burner Plan";
+"Buy Belly Burner Plan" = "Купить план Плоский живот";
 "Get rid of stubborn belly fat and achieve a leaner, fitter body with our 10 high-intensity workouts. \n\nJoin today!" = "10 высокоинтенсивных тренировок, направленных на то, чтобы уничтожить упрямый жирок на животе, прокачать мышцы кора и получить более подтянутое и тренированное тело!";
 
 "Subscribe now for %@/month" = "Подпишись за %@ в месяц";

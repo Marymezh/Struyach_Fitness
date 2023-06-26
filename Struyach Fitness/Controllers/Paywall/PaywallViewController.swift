@@ -107,7 +107,7 @@ final class PaywallViewController: UIViewController {
             }
       
         case K.pelvicPower:
-            paywallView.titleLabel.text = "Pelvic Power Plan".localized()
+            paywallView.titleLabel.text = "Buy Pelvic Power Plan".localized()
             paywallView.descriptionLabel.text = K.pelvicDescription.localized()
             paywallView.termsLabel.text = K.purchaseTerms.localized()
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in
@@ -119,7 +119,7 @@ final class PaywallViewController: UIViewController {
             }
            
         case K.bellyBurner:
-            paywallView.titleLabel.text = "Belly Burner Plan".localized()
+            paywallView.titleLabel.text = "Buy Belly Burner Plan".localized()
             paywallView.descriptionLabel.text = K.bellyDescription.localized()
             paywallView.termsLabel.text = K.purchaseTerms.localized()
             IAPManager.shared.getOfferingDetails(identifier: packageId) { [weak self] (priceText, termsText) in

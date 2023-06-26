@@ -31,7 +31,17 @@ final class WorkoutsViewController: UIViewController {
     private let likesAndCommentsView = LikesAndCommentsView()
     private let searchBarView = SearchBarView()
     private let plusButtonView = PlusButtonView()
-
+    private lazy var programName: String = {
+        switch title {
+        case K.bodyweight: return "Bodyweight"
+        case K.ecd: return "ECD Plan"
+        case K.struyach: return "Struyach Plan"
+        case K.bellyBurner: return "Belly Burner Plan"
+        case K.pelvicPower: return "Pelvic Power Plan"
+        default: return "Unknown Program"
+        }
+    }()
+    
     //MARK: Lifecycle
     
     override func viewDidLoad() {
@@ -45,8 +55,7 @@ final class WorkoutsViewController: UIViewController {
         setupAdminFunctionality()
 #endif
         setupSearchBarCancelButton()
-        guard let title = title else {return}
-        self.loadWorkoutsWithPagination(program: title, pageSize: self.pageSize)
+        self.loadWorkoutsWithPagination(program: programName, pageSize: self.pageSize)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -54,12 +63,11 @@ final class WorkoutsViewController: UIViewController {
         print("Executing function: \(#function)")
         navigationController?.navigationBar.prefersLargeTitles = true
         DatabaseManager.shared.allWorkoutsLoaded = false
-        guard let title = title else {return}
         fetchLikedWorkouts()
         if let selectedWorkout = selectedWorkout {
             self.updateUI(workout: selectedWorkout)
         }
-        workoutsListener = DatabaseManager.shared.addWorkoutsListener(for: title) { [weak self] updatedWorkouts in
+        workoutsListener = DatabaseManager.shared.addWorkoutsListener(for: programName) { [weak self] updatedWorkouts in
             guard let self = self else {return}
             self.listOfWorkouts = updatedWorkouts
             self.filteredWorkouts = self.listOfWorkouts
@@ -196,7 +204,7 @@ final class WorkoutsViewController: UIViewController {
         newWorkoutVC.title = "Add new workout".localized()
         navigationController?.pushViewController(newWorkoutVC, animated: true)
         newWorkoutVC.onWorkoutSave = {[weak self] text, selectedDate in
-            guard let title = self?.title else {return}
+            guard let self = self else {return}
             guard let selectedDate = selectedDate else {
                 return
             }
@@ -206,8 +214,8 @@ final class WorkoutsViewController: UIViewController {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
             let dateString = formatter.string(from: date)
-            let workoutID = "\(title)_\(dateString.replacingOccurrences(of: " ", with: "_"))"
-            let newWorkout = Workout(id: workoutID, programID: title, description: text, timestamp: selectedDate, likes: 0)
+            let workoutID = "\(self.programName)_\(dateString.replacingOccurrences(of: " ", with: "_"))"
+            let newWorkout = Workout(id: workoutID, programID: self.programName, description: text, timestamp: selectedDate, likes: 0)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 print("Executing function: \(#function)")
                 guard let self = self else {return}
@@ -434,7 +442,7 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
         
         cell.workout = workout
         
-        if workout.programID == K.bellyBurner || workout.programID == K.pelvicPower {
+        if workout.programID == "Belly Burner Plan" || workout.programID == "Pelvic Power Plan" {
             cell.configure(with: indexPath)
         }
         updateCellColor(cell, isSelected: indexPath == selectedIndexPath)
@@ -489,7 +497,7 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
          let scrollOffset = scrollView.contentOffset.x
          if (scrollOffset + scrollViewWidth) >= (scrollContentSizeWidth - 50) && !isFetching && shouldLoadMorePosts {
              if !DatabaseManager.shared.allWorkoutsLoaded {
-                 self.loadWorkoutsWithPagination(program: title!, pageSize: pageSize)
+                 self.loadWorkoutsWithPagination(program: self.programName, pageSize: pageSize)
              } else {
                  shouldLoadMorePosts = false
                  self.workoutsCollection.reloadData()
@@ -532,7 +540,7 @@ extension WorkoutsViewController: UISearchBarDelegate {
             selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout?.description
             workoutsCollection.reloadData()
         } else {
-            DatabaseManager.shared.searchWorkoutsByDescription(program: title!, searchText: searchQuery) { [weak self] workouts in
+            DatabaseManager.shared.searchWorkoutsByDescription(program: self.programName, searchText: searchQuery) { [weak self] workouts in
                 guard let self = self else {return}
                 self.filteredWorkouts = workouts.sorted(by: { $0.timestamp > $1.timestamp })
                 if self.filteredWorkouts.isEmpty {

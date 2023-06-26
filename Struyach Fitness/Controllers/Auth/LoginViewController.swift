@@ -55,16 +55,18 @@ final class LoginViewController: UIViewController {
         loginView.createAccountButton.addTarget(self, action: #selector(createAccountTapped), for: .touchUpInside)
         loginView.restorePasswordButton.addTarget(self, action: #selector(restorePasswordTapped), for: .touchUpInside)
         loginView.appleSignInButton.addTarget(self, action: #selector(appleSignInButtonTapped), for: .touchUpInside)
+        loginView.privacyPolicyCheckbox.addTarget(self, action: #selector(privacyPolicyCheckboxTapped), for: .touchUpInside)
         
-        #if Admin
+#if Admin
         loginView.appleSignInButton.isHidden = true
-        #endif
+#endif
         
         if hasAgreedToPrivacyPolicy == false {
- disableButtons()
-        }
-        else {
+            disableButtons()
+        } else {
+            enableButtons()
             loginView.privacyPolicyLabel.isHidden = true
+            loginView.privacyPolicyCheckbox.isHidden = true
         }
         
         activityView.toAutoLayout()
@@ -97,7 +99,6 @@ final class LoginViewController: UIViewController {
     }
     
     private func enableButtons() {
-        loginView.privacyPolicyLabel.isHidden = true
         loginView.logInButton.isEnabled = true
         loginView.logInButton.alpha = 1
         loginView.createAccountButton.isEnabled = true
@@ -219,39 +220,27 @@ final class LoginViewController: UIViewController {
         loginView.privacyPolicyLabel.addGestureRecognizer(tapGesture)
     }
     
+    @objc private func privacyPolicyCheckboxTapped() {
+        loginView.privacyPolicyCheckbox.isSelected.toggle()
+        UserDefaults.standard.set(loginView.privacyPolicyCheckbox.isSelected, forKey: "HasAgreedToPrivacyPolicy")
+        if loginView.privacyPolicyCheckbox.isSelected {
+            enableButtons()
+        } else {
+            disableButtons()
+        }
+    }
+    
     @objc private func showPrivacyPolicy() {
         if !hasAgreedToPrivacyPolicy {
             let alertController = UIAlertController(title: "Privacy policy".localized(), message: privacyPolicy, preferredStyle: .alert)
             
-            let agreeAction = UIAlertAction(title: "Agree".localized(), style: .default) {[weak self] _ in
+            let agreeAction = UIAlertAction(title: "Ok", style: .default) {[weak self] _ in
                 guard let self = self else {return}
-                UserDefaults.standard.set(true, forKey: "HasAgreedToPrivacyPolicy")
+                
                 self.dismiss(animated: true)
-                self.enableButtons()
+                
             }
-            
-            let cancelAction = UIAlertAction(title: "Cancel".localized(), style: .destructive) { _ in
-                let cancelAlertController = UIAlertController(title: "Cancellation".localized(), message: "You must agree to the privacy policy to use this app.".localized(), preferredStyle: .alert)
-                
-                let exitAction = UIAlertAction(title: "Exit".localized(), style: .destructive) { _ in
-                    UserDefaults.standard.set(false, forKey: "HasAgreedToPrivacyPolicy")
-                    exit(0)
-                }
-                
-                let tryAgainAction = UIAlertAction(title: "Try Again".localized(), style: .default) { _ in
-                    // Show the privacy policy again
-                    self.showPrivacyPolicy()
-                }
-                cancelAlertController.addAction(exitAction)
-                cancelAlertController.addAction(tryAgainAction)
-                cancelAlertController.view.tintColor = .contrastGreen
-                
-                self.present(cancelAlertController, animated: true, completion: nil)
-            }
-            
             alertController.addAction(agreeAction)
-            alertController.addAction(cancelAction)
-            
             alertController.view.tintColor = .contrastGreen
             alertController.modalPresentationStyle = .popover
             

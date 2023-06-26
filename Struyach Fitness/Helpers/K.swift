@@ -10,11 +10,11 @@ import UIKit
 
 
 struct K {
-    static let ecd = "ECD Plan"
-    static let bodyweight = "Bodyweight"
-    static let struyach = "Struyach Plan"
-    static let pelvicPower = "Pelvic Power Plan"
-    static let bellyBurner = "Belly Burner Plan"
+    static let ecd = "ECD Plan".localized()
+    static let bodyweight = "Bodyweight".localized()
+    static let struyach = "Struyach Plan".localized()
+    static let pelvicPower = "Pelvic Power Plan".localized()
+    static let bellyBurner = "Belly Burner Plan".localized()
     
     static var ecdDescription = "Transform your body with our ECD Plan - designed for gym or CrossFit box training. \n\nJoin today and start your fitness journey with us!"
     static var struyachDescription = "Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes \n\nSubscribing to Struyach Plan also gives you a free access to the ECD Plan! Join now!"

@@ -467,6 +467,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
         UserDefaults.standard.set(nil, forKey: "hideEmail")
         UserDefaults.standard.set(nil, forKey: "fcmToken")
         UserDefaults.standard.set(false, forKey: "program")
+        UserDefaults.standard.set(false, forKey: "HasAgreedToPrivacyPolicy")
     }
     
     private func signOut() {
