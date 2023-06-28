@@ -112,7 +112,6 @@ final class AuthManager: NSObject {
     }
     // MARK: - Sign-up with Apple
     
-//    public func signUpWithApple(completion: @escaping (Result<Void, Error>) -> ()) {
     public func signUpWithApple() {
         let nonce = randomNonceString()
          currentNonce = nonce
@@ -143,7 +142,6 @@ final class AuthManager: NSObject {
         Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
 
       let nonce = randomBytes.map { byte in
-        // Pick a random character from the set, wrapping around if needed.
         charset[Int(byte) % charset.count]
       }
 
@@ -164,12 +162,6 @@ final class AuthManager: NSObject {
 
 extension AuthManager: ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        // Return the presentation anchor for the sign-in controller
-        // This should be the window or view controller where the sign-in controller will be presented
-        // Example: return UIApplication.shared.windows.first!
-        // You may need to adjust this based on your app's UI structure
-        // Make sure to return a valid presentation anchor to avoid crashes
-        
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
             return window
@@ -199,65 +191,18 @@ extension AuthManager: ASAuthorizationControllerDelegate {
                                                           rawNonce: nonce)
           auth.signIn(with: credential) { (authResult, error) in
             if let error = error {
-              // Error. If error.code == .MissingOrInvalidNonce, make sure
-              // you're sending the SHA256-hashed nonce as a hex string with
-              // your request to Apple.
               print(error.localizedDescription)
               return
             }
               guard let authResult = authResult else {return}
               self.delegate?.didCompleteAppleSignIn(with: authResult)
-            // User is signed in to Firebase with Apple.
-            // ...
           }
         }
       }
-
-//    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-//        print ("authorizationController did Complete With Authorization")
-//        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-//            print("Unable to retrieve Apple ID credential")
-//            return
-//        }
-//
-//        guard let idToken = appleIDCredential.identityToken,
-//              let idTokenString = String(data: idToken, encoding: .utf8) else {
-//            print("Unable to fetch identity token from Apple ID credential")
-//            return
-//        }
-//
-//        guard let nonce = currentNonce else {
-//            print("Invalid state: A login callback was received, but no login request was sent.")
-//            return
-//        }
-////
-////        guard let appleIDTokenData = appleIDCredential.identityToken,
-////              let appleIDToken = String(data: appleIDTokenData, encoding: .utf8) else {
-////            print("Unable to fetch identity token from Apple ID credential")
-////            return
-////        }
-//
-//
-//        // Authenticate user with Firebase using Apple credential
-//        let credential = OAuthProvider.credential(withProviderID: "apple.com", idToken: idTokenString, rawNonce: nonce)
-//
-//        auth.signIn(with: credential) { [weak self] (authResult, error) in
-//            print ("auth sign in with credential")
-//            guard let self = self else {return}
-//
-//            if let error = error {
-//                print("Failed to sign in user with Apple credential: \(error.localizedDescription)")
-//                let message = String(format: "Unable to sign in with Apple: %@", error.localizedDescription)
-//                AlertManager.shared.showAlert(title: "Error".localized(), message: message.localized(), cancelAction: "Ok")
-//            } else {
-//                // Sign-in successful
-//                self.delegate?.didCompleteAppleSignIn(with: appleIDCredential)
-//            }
-//        }
-//    }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
         print("Sign in with Apple errored: \(error.localizedDescription)")
-        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to sign in with Apple".localized(), cancelAction: "Ok")
+        let message = String(format: "Unable to sign in with Apple: %@".localized(), error.localizedDescription)
+        AlertManager.shared.showAlert(title: "Error".localized(), message: message, cancelAction: "Ok")
     }
 }

@@ -285,7 +285,6 @@ extension LoginViewController: AuthManagerDelegate {
             print("get user when sighning with apple id")
             print (email)
             if let user = user {
-                // user with this email exists
                 print("logging in with existing apple id user")
                 let userId = user.email
                     .replacingOccurrences(of: "@", with: "_")

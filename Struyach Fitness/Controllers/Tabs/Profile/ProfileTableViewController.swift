@@ -87,8 +87,6 @@ final class ProfileTableViewController: UITableViewController {
                 UserDefaults.standard.set(user.name, forKey: "userName")
             }
             guard let imageRef = user.profilePictureRef, !imageRef.isEmpty else {
-                self.headerView.userPhotoImage.contentMode = .scaleAspectFill
-                self.headerView.userPhotoImage.image = UIImage(systemName: "person.fill")
                 self.headerView.userNameLabel.text = user.name
                 self.headerView.userEmailLabel.text = user.email
                 self.headerView.userEmailLabel.isHidden = user.emailIsHidden ? true : false
@@ -298,9 +296,7 @@ final class ProfileTableViewController: UITableViewController {
                 }
                 return cell
             }
-            
         }
-      
     }
     
     override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
@@ -335,7 +331,6 @@ final class ProfileTableViewController: UITableViewController {
         default: return UITableView.automaticDimension
         }
     }
-    
 }
 
 //MARK: - UIImagePickerControllerDelegate methods
