@@ -467,7 +467,6 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
         UserDefaults.standard.set(nil, forKey: "hideEmail")
         UserDefaults.standard.set(nil, forKey: "fcmToken")
         UserDefaults.standard.set(false, forKey: "program")
-        UserDefaults.standard.set(false, forKey: "HasAgreedToPrivacyPolicy")
     }
     
     private func signOut() {
@@ -558,6 +557,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                                             print ("user is deleted successfully")
                                             DispatchQueue.main.async {
                                                 self.clearUserDefaults()
+                                                UserDefaults.standard.set(false, forKey: "HasAgreedToPrivacyPolicy")
                                                 let signInVC = LoginViewController()
                                                 let window = UIApplication.shared.windows.first
                                                 UIView.transition(with: window!, duration: 1, options: [.transitionCrossDissolve, .allowAnimatedContent], animations: {
