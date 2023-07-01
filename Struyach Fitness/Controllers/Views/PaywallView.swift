@@ -190,10 +190,10 @@ final class PaywallView: UIView {
             priceLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             priceLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
             
-            codeTextField.topAnchor.constraint(equalTo: priceLabel.bottomAnchor, constant: bigInset),
+            codeTextField.topAnchor.constraint(equalTo: priceLabel.bottomAnchor, constant: smallInset),
             codeTextField.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             codeTextField.widthAnchor.constraint(equalToConstant: 220),
-            codeTextField.heightAnchor.constraint(equalToConstant: 40),
+            codeTextField.heightAnchor.constraint(equalToConstant: 35),
             
             redeemCodeLabel.topAnchor.constraint(equalTo: codeTextField.bottomAnchor, constant: smallInset),
             redeemCodeLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),

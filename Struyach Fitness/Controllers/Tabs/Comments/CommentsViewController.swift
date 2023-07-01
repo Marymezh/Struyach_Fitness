@@ -714,6 +714,19 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 alertController.addAction(cancelAction)
                 alertController.view.tintColor = .contrastGreen
                 present(alertController, animated: true)
+            } else {
+                print("reply to other user")
+                self.messageInputBar.becomeFirstResponder()
+                self.messageInputBar.inputTextView.becomeFirstResponder()
+                switch selectedMessage.kind {
+                case .text(let text):
+                    self.replyTo(sender: selectedMessage.sender.displayName, message: text)
+                case .photo(_):
+                    self.replyTo(sender: selectedMessage.sender.displayName, message: nil)
+                case .video(_):
+                    self.replyTo(sender: selectedMessage.sender.displayName, message: nil)
+                default: break
+                }
             }
         }
     }
@@ -869,20 +882,23 @@ extension CommentsViewController: MessageCellDelegate {
         }
     }
     
-    func replyTo(sender: String, message: String) {
+    func replyTo(sender: String, message: String?) {
         let replyTo = "Reply to".localized()
-        let modifiedText = "\(replyTo) \(sender): \n\"\(message)\"\n\n"
-        self.messageInputBar.inputTextView.text = modifiedText
+        if let message = message {
+            let modifiedText = "\(replyTo) \(sender): \n\"\(message)\"\n\n"
+            self.messageInputBar.inputTextView.text = modifiedText
+        } else {
+            let modifiedText = "\(replyTo) \(sender)\n\n"
+            self.messageInputBar.inputTextView.text = modifiedText
+        }
     }
 }
 
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         inputBar.inputTextView.resignFirstResponder()
-        print (self.userName)
         if self.userName == "unknown user" || self.userName ==  "Anonymous user" || self.userName == "Анонимный пользователь" {
             changeUserName()
-            
         } else {
             postComment(text: text)
         }
