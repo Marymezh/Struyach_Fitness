@@ -974,13 +974,12 @@ final class DatabaseManager {
     
     //MARK: - Adding, fetching and editing users
     
-    public func insertUser(user: User, completion: @escaping(Bool) ->()){
-        
+    public func insertUser(user: User, completion: @escaping (Bool, Error?) -> Void) {
         let documentID = user.email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
         
-        let data: [String : Any] = [
+        let data: [String: Any] = [
             "email": user.email,
             "name": user.name,
             "profile_photo": user.profilePictureRef ?? "",
@@ -992,7 +991,7 @@ final class DatabaseManager {
             .collection("users")
             .document(documentID)
             .setData(data) { error in
-                completion(error == nil)
+                completion(error == nil, error)
             }
     }
     

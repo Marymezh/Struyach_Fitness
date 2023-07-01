@@ -278,9 +278,10 @@ extension LoginViewController: AuthManagerDelegate {
         let user = result.user
         let name = "Anonymous user".localized()
         guard let email = user.email  else {
-            print ("no data from auth result")
+            self.activityView.hide()
+            AlertManager.shared.showAlert(title: "Error".localized(), message: "Can't fetch user email from Apple ID. Please try to sign up with email and password".localized(), cancelAction: "Cancel".localized())
             return}
-        print ("userName: \(name), userEmail: \(email) ")
+        print ("user: \(result.user), userName: \(name), userEmail: \(email) ")
         DatabaseManager.shared.getUser(email: email) { user in
             print("get user when sighning with apple id")
             print (email)
@@ -290,11 +291,11 @@ extension LoginViewController: AuthManagerDelegate {
                     .replacingOccurrences(of: "@", with: "_")
                     .replacingOccurrences(of: ".", with: "_")
                 IAPManager.shared.logInRevenueCat(userId: userId) { error in
-                    print(error.localizedDescription)
+                    self.activityView.hide()
+                    AlertManager.shared.showAlert(title: "Error".localized(), message: "Can't register user for in-app purchases".localized(), cancelAction: "Cancel".localized())
                 }
                 DispatchQueue.main.async {
                     self.activityView.hide()
-                    UserDefaults.standard.set(name, forKey: "userName")
                     UserDefaults.standard.set(email, forKey: "email")
                     let vc = TabBarController()
                     vc.modalPresentationStyle = .fullScreen
@@ -307,21 +308,32 @@ extension LoginViewController: AuthManagerDelegate {
                     .replacingOccurrences(of: "@", with: "_")
                     .replacingOccurrences(of: ".", with: "_")
                 IAPManager.shared.logInRevenueCat(userId: userId)  { error in
-                    print(error.localizedDescription)
+                    self.activityView.hide()
+                    AlertManager.shared.showAlert(title: "Error".localized(), message: "Can't register user for in-app purchases".localized(), cancelAction: "Cancel".localized())
                 }
                 let newUser = User(name: name, email: email, profilePictureRef: nil, weightliftingRecords: nil, gymnasticRecords: nil, isAdmin: false, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
-                DatabaseManager.shared.insertUser(user: newUser) { inserted in
-                    guard inserted else {
-                        print ("cant insert new user")
+                DatabaseManager.shared.insertUser(user: newUser) { [weak self] success, error in
+                    guard let self = self else {return}
+                    print ("inserting new user in the Firestore Database")
+                    guard success, error == nil else {
+                        if let error = error {
+                            self.activityView.hide()
+                            let message = String(format: "Unable to create new user: %@".localized(), error.localizedDescription)
+                            AlertManager.shared.showActionSheet(title: "Error".localized(), message: message, cancelHandler: nil, confirmActionTitle: "Retry".localized()) { action in
+                                self.didCompleteAppleSignIn(with: result)
+                            }
+                        }
                         return}
-                    UserDefaults.standard.set(name, forKey: "userName")
+                    
+                    // User insertion succeeded, continue with the login flow
                     UserDefaults.standard.set(email, forKey: "email")
                     
                     DispatchQueue.main.async {
+                        self.activityView.hide()
                         let vc = TabBarController()
                         vc.modalPresentationStyle = .fullScreen
                         self.present(vc, animated: true)
-                        self.activityView.hide()
+                        
                     }
                 }
             }

@@ -124,6 +124,17 @@ final class PaywallView: UIView {
         return label
     }()
     
+    let termsLinkLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.systemGreen
+        label.font = UIFont.systemFont(ofSize: 16)
+        label.textAlignment = .center
+        label.isUserInteractionEnabled = true
+        label.adjustsFontSizeToFitWidth = true
+        label.numberOfLines = 1
+        label.toAutoLayout()
+        return label
+    }()
    
     //MARK: - Lifecycle
     
@@ -144,10 +155,13 @@ final class PaywallView: UIView {
         backgroundColor = .black
         let underlineAttribute = [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue]
         let codeAttributedString = NSAttributedString(string: "Redeem promo code".localized(), attributes: underlineAttribute)
+        let termsAttributedString = NSAttributedString(string: "Terms of Use".localized(), attributes: underlineAttribute)
+        
         
         redeemCodeLabel.attributedText = codeAttributedString
+        termsLinkLabel.attributedText = termsAttributedString
         codeTextField.delegate = self
-        addSubviews(backgroundView, closeButton, titleLabel, descriptionLabel, payButton, priceLabel, codeTextField, redeemCodeLabel, termsLabel)
+        addSubviews(backgroundView, closeButton, titleLabel, descriptionLabel, payButton, priceLabel, codeTextField, redeemCodeLabel, termsLabel, termsLinkLabel)
         
         let constraints = [
             backgroundView.topAnchor.constraint(equalTo: self.topAnchor),
@@ -188,7 +202,11 @@ final class PaywallView: UIView {
             
             termsLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
             termsLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
-            termsLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -5)
+            termsLabel.bottomAnchor.constraint(equalTo: termsLinkLabel.topAnchor, constant: -15),
+            
+            termsLinkLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: smallInset),
+            termsLinkLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -smallInset),
+            termsLinkLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -5)
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -206,6 +224,14 @@ final class PaywallView: UIView {
     private func setupGestureRecognizer() {
         let redeemGesture = UITapGestureRecognizer(target: self, action: #selector(openAppStore))
         redeemCodeLabel.addGestureRecognizer(redeemGesture)
+        let termsLinkTapGesture = UITapGestureRecognizer(target: self, action: #selector(openTermsOfUse))
+        termsLinkLabel.addGestureRecognizer(termsLinkTapGesture)
+    }
+    
+    @objc func openTermsOfUse() {
+        if let url = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") {
+            UIApplication.shared.open(url)
+        }
     }
     
     @objc private func openAppStore() {

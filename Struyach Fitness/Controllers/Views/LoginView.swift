@@ -222,12 +222,12 @@ final class LoginView: UIView {
             appleSignInButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             appleSignInButton.heightAnchor.constraint(equalTo: logInButton.heightAnchor),
             
-            privacyPolicyLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -16),
-            privacyPolicyLabel.leadingAnchor.constraint(equalTo: privacyPolicyCheckbox.trailingAnchor, constant: 16),
-            privacyPolicyLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            privacyPolicyLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -30),
+            privacyPolicyLabel.widthAnchor.constraint(equalToConstant: 250),
+            privacyPolicyLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             
             privacyPolicyCheckbox.centerYAnchor.constraint(equalTo: privacyPolicyLabel.centerYAnchor),
-            privacyPolicyCheckbox.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16)
+            privacyPolicyCheckbox.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20)
         ]
         NSLayoutConstraint.activate(constraints)
     }

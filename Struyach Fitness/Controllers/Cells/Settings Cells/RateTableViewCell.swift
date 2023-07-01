@@ -82,9 +82,9 @@ final class RateTableViewCell: UITableViewCell {
     
     func openAppRatingPage(completion: @escaping (Bool)->()) {
         #if Admin
-        let urlString = "itms-apps://itunes.apple.com/app/id6448619309"
-        #else
         let urlString = "itms-apps://itunes.apple.com/app/id6449380820"
+        #else
+        let urlString = "itms-apps://itunes.apple.com/app/id6448619309"
         #endif
         
         if let url = URL(string: urlString ) {

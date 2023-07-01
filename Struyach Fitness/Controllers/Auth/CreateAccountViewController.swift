@@ -147,11 +147,20 @@ final class CreateAccountViewController: UIViewController {
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
                     let newUser = User(name: name, email: email, profilePictureRef: imageRef, weightliftingRecords: nil, gymnasticRecords: nil, isAdmin: isAdmin, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
-                    DatabaseManager.shared.insertUser(user: newUser) { inserted in
-                        guard inserted else {
-                            print ("cant insert new user")
+                    DatabaseManager.shared.insertUser(user: newUser) { [weak self] success, error in
+                        guard let self = self else {return}
+                        print ("inserting new user in the Firestore Database")
+                        guard success, error == nil else {
+                            if let error = error {
+                                self.activityView.hide()
+                                let message = String(format: "Unable to create new user: %@".localized(), error.localizedDescription)
+                                AlertManager.shared.showActionSheet(title: "Error".localized(), message: message, cancelHandler: nil, confirmActionTitle: "Retry".localized()) { action in
+                                    self.signUpTapped()
+                                }
+                            }
                             return}
-                        UserDefaults.standard.set(name, forKey: "userName")
+                        
+                        // User insertion succeeded, continue with the login flow
                         UserDefaults.standard.set(email, forKey: "email")
                         
                         DispatchQueue.main.async {

@@ -44,7 +44,7 @@ final class ProfileHeaderView: UIView {
         label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         label.textAlignment = .center
         label.textColor = .white
-        label.numberOfLines = 0
+        label.numberOfLines = 1
         label.adjustsFontSizeToFitWidth = true
         label.sizeToFit()
         label.toAutoLayout()

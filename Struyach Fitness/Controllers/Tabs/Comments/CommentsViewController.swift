@@ -74,9 +74,9 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         super.viewWillAppear(animated)
         getUserImage()
         self.navigationController?.navigationBar.prefersLargeTitles = false
-        if sender.displayName == "unknown user" || sender.displayName ==  "Anonymous user" || sender.displayName == "Анонимный пользователь" {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
-        }
+//        if sender.displayName == "unknown user" || sender.displayName ==  "Anonymous user" || sender.displayName == "Анонимный пользователь" {
+//            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
+//        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -105,7 +105,12 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         let image = UIImage(systemName: "paperclip", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium))?.withTintColor(.contrastGray)
         attachButton.setImage(image, for: .normal)
         attachButton.onTouchUpInside { [weak self]_ in
-            self?.presentInputOptions()
+            guard let self = self else {return}
+            if self.sender.displayName == "unknown user" || self.sender.displayName ==  "Anonymous user" || self.sender.displayName == "Анонимный пользователь" {
+                AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
+            } else {
+                self.presentInputOptions()
+            }
         }
         messageInputBar.setStackViewItems([attachButton], forStack: .left, animated: false)
     }
@@ -862,7 +867,11 @@ extension CommentsViewController: MessageCellDelegate {
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         inputBar.inputTextView.resignFirstResponder()
-        self.postComment(text: text)
+        if sender.displayName == "unknown user" || sender.displayName ==  "Anonymous user" || sender.displayName == "Анонимный пользователь" {
+            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
+        } else {
+            postComment(text: text)
+        }
     }
 }
 

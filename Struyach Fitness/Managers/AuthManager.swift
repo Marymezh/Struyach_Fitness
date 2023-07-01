@@ -194,7 +194,9 @@ extension AuthManager: ASAuthorizationControllerDelegate {
               print(error.localizedDescription)
               return
             }
-              guard let authResult = authResult else {return}
+              guard let authResult = authResult else {
+                  print ("no auth result")
+                  return}
               self.delegate?.didCompleteAppleSignIn(with: authResult)
           }
         }
@@ -202,7 +204,6 @@ extension AuthManager: ASAuthorizationControllerDelegate {
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
         print("Sign in with Apple errored: \(error.localizedDescription)")
-        let message = String(format: "Unable to sign in with Apple: %@".localized(), error.localizedDescription)
-        AlertManager.shared.showAlert(title: "Error".localized(), message: message, cancelAction: "Ok")
+        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to sign in with Apple".localized(), cancelAction: "Ok")
     }
 }
