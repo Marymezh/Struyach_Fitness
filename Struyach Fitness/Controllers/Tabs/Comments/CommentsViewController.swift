@@ -29,7 +29,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     var onFinishPicking:(([UIImagePickerController.InfoKey : Any])-> Void)?
     var onCommentPosted: (() -> ())?
     
-    private let userName = UserDefaults.standard.string(forKey: "userName")
+    private var userName: String?
     private let userEmail = UserDefaults.standard.string(forKey: "email")
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
     private let currentDate = Date()
@@ -58,8 +58,9 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         super.viewDidLoad()
         self.view.backgroundColor = .customDarkComments
         setupMessageCollectionView()
-  //      setupInputBar()
+        setupInputBar()
         setupSubviews()
+        self.userName = UserDefaults.standard.string(forKey: "userName")
      
         if let workout = self.workout {
             loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
@@ -73,8 +74,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         getUserImage()
-        setupInputBar()
-        print("userName: \(userName!)")
         self.navigationController?.navigationBar.prefersLargeTitles = false
     }
     
@@ -96,6 +95,32 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         messagesCollectionView.messagesDisplayDelegate = self
     }
     
+    private func changeUserName() {
+        AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name. You can do it right now or later in Settings tab".localized(), placeholderText: "Enter new name here".localized(), cancelAction: "Cancel".localized(), confirmActionTitle: "Save".localized()) { [weak self] success, text in
+            guard let self = self,
+                  let email = self.userEmail else {return}
+            if success {
+                if let text = text, text != "" {
+                    DatabaseManager.shared.updateUserName(email: email, newUserName: text) { success in
+                        if success {
+                            UserDefaults.standard.set(text, forKey: "userName")
+                            self.userName = UserDefaults.standard.string(forKey: "userName")
+                            self.sender = Sender(senderId: self.userEmail ?? "unknown email", displayName: self.userName ?? "unknown user")
+                            print (self.sender.displayName)
+                            AlertManager.shared.showAlert(title: "Done".localized(), message: "User name is successfully changed".localized(), cancelAction: "Ok")
+                            
+                            print("userName: \(self.userName!)")
+                        } else {
+                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to change user's name".localized(), cancelAction: "Ok")
+                        }
+                    }
+                }
+                } else {
+                    AlertManager.shared.showAlert(title: "Error".localized(), message: "User name can not be blank!".localized(), cancelAction: "Cancel".localized())
+            }
+        }
+    }
+    
     private func setupInputBar() {
         messageInputBar.delegate = self
         messageInputBar.inputTextView.delegate = self
@@ -105,12 +130,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         attachButton.setImage(image, for: .normal)
         attachButton.onTouchUpInside { [weak self]_ in
             guard let self = self else {return}
-            if self.sender.displayName == "unknown user" || self.sender.displayName ==  "Anonymous user" || self.sender.displayName == "Анонимный пользователь" {
-                AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), continueAction: "Go to Settings".localized(), continueCompletion: { [weak self] action in
-                    guard let self = self, let email = userEmail else {return}
-                    let settingsVC = SettingsTableViewController(email: email )
-                    navigationController?.pushViewController(settingsVC, animated: true)
-                }, cancelAction: "Ok")
+            if self.userName == "unknown user" || self.userName ==  "Anonymous user" || self.userName == "Анонимный пользователь" {
+                self.changeUserName()
             } else {
                 self.presentInputOptions()
             }
@@ -351,99 +372,91 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     private func postComment(text: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
-        if senderName == "unknown_user" || senderName ==  "Anonymous_user" || senderName == "Анонимный_пользователь" {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
-        } else {
-            print (sender.displayName)
-            let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
-            guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else {
-                print ("no user image data")
-                return }
-            let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: "")
-            //this will show new post immediately, without waitind for database update
-            self.commentsArray.append(newComment)
-            self.messagesCollectionView.reloadData()
-            
-            if let workout = self.workout {
-                DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-                    guard let self = self else {return}
-                    if success {
-                        self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
-                            if success {
-                                self.onCommentPosted?()
-                                DispatchQueue.main.async {
-                                    self.messagesCollectionView.scrollToLastItem()
-                                }
+        print (sender.displayName)
+        let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
+        guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else {
+            print ("no user image data")
+            return }
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .text(text), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: "")
+        //this will show new post immediately, without waitind for database update
+        self.commentsArray.append(newComment)
+        self.messagesCollectionView.reloadData()
+        
+        if let workout = self.workout {
+            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
+                        if success {
+                            self.onCommentPosted?()
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
                             }
                         }
-                    } else {
-                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                     }
+                } else {
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
-                messageInputBar.inputTextView.text = nil
-            } else if let post = self.blogPost {
-                DatabaseManager.shared.postBlogComment(comment: newComment, post: post) { [weak self] success in
-                    guard let self = self else {return}
-                    if success {
-                        self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
-                            if success {
-                                self.onCommentPosted?()
-                                DispatchQueue.main.async {
-                                    self.messagesCollectionView.scrollToLastItem()
-                                }
-                            }
-                        }
-                    } else {
-                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
-                    }
-                }
-                messageInputBar.inputTextView.text = nil
             }
+            messageInputBar.inputTextView.text = nil
+        } else if let post = self.blogPost {
+            DatabaseManager.shared.postBlogComment(comment: newComment, post: post) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
+                        if success {
+                            self.onCommentPosted?()
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
+                            }
+                        }
+                    }
+                } else {
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
+                }
+            }
+            messageInputBar.inputTextView.text = nil
         }
     }
     
     private func postPhotoComment(photoUrl: URL, photoRef: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
-        if senderName == "unknown_user" || senderName ==  "Anonymous_user" || senderName == "Анонимный_пользователь" {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
-        } else {
-            let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
-            guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else { return }
-            
-            guard let placeholder = UIImage(systemName: "photo") else {return}
-            let media = Media(url: photoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
-            let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: photoRef)
-            
-            if let workout = self.workout {
-                DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
-                    guard let self = self else {return}
-                    if success {
-                        self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
-                            if success {
-                                self.onCommentPosted?()
-                                DispatchQueue.main.async {
-                                    self.messagesCollectionView.scrollToLastItem()                            }
-                            }
+        let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
+        guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else { return }
+        
+        guard let placeholder = UIImage(systemName: "photo") else {return}
+        let media = Media(url: photoUrl, image: placeholder, placeholderImage: placeholder, size: .zero)
+        let newComment = Comment(sender: sender, messageId: messageId, sentDate: Date(), kind: .photo(media), userImage: imageData, workoutId: workout?.id, programId: workout?.programID, mediaRef: photoRef)
+        
+        if let workout = self.workout {
+            DatabaseManager.shared.postComment(comment: newComment) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
+                        if success {
+                            self.onCommentPosted?()
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()                            }
                         }
-                    } else {
-                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                     }
+                } else {
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
-            } else if let post = self.blogPost {
-                DatabaseManager.shared.postBlogComment(comment: newComment, post: post) { [weak self] success in
-                    guard let self = self else {return}
-                    if success {
-                        self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
-                            if success {
-                                self.onCommentPosted?()
-                                DispatchQueue.main.async {
-                                    self.messagesCollectionView.scrollToLastItem()
-                                }
+            }
+        } else if let post = self.blogPost {
+            DatabaseManager.shared.postBlogComment(comment: newComment, post: post) { [weak self] success in
+                guard let self = self else {return}
+                if success {
+                    self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
+                        if success {
+                            self.onCommentPosted?()
+                            DispatchQueue.main.async {
+                                self.messagesCollectionView.scrollToLastItem()
                             }
                         }
-                    } else {
-                        AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                     }
+                } else {
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
                 }
             }
         }
@@ -451,9 +464,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     private func postVideoComment(videoUrl: URL, videoRef: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
-        if senderName == "unknown_user" || senderName ==  "Anonymous_user" || senderName == "Анонимный_пользователь" {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
-        } else {
             let messageId = "\(senderName)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
             guard let imageData = userImage?.jpegData(compressionQuality: 0.5) else { return }
             
@@ -491,7 +501,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         }
                     } else {
                         AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to post comment".localized(), cancelAction: "Cancel".localized())
-                    }
                 }
             }
         }
@@ -870,8 +879,10 @@ extension CommentsViewController: MessageCellDelegate {
 extension CommentsViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         inputBar.inputTextView.resignFirstResponder()
-        if sender.displayName == "unknown user" || sender.displayName ==  "Anonymous user" || sender.displayName == "Анонимный пользователь" {
-            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
+        print (self.userName)
+        if self.userName == "unknown user" || self.userName ==  "Anonymous user" || self.userName == "Анонимный пользователь" {
+            changeUserName()
+            
         } else {
             postComment(text: text)
         }

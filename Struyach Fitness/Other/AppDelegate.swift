@@ -53,10 +53,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         #if Client
-        Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey)
-            .with(usesStoreKit2IfAvailable: false)
-            .build())
-        Purchases.shared.delegate = self
+        Purchases.logLevel = .debug
+         Purchases.configure(withAPIKey: apiKey, appUserID: nil)
         #endif
         
         // setting up application language

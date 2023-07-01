@@ -154,7 +154,7 @@
 "The secret code is wrong, you can not be registered as an admin!" = "Секретный код не верный, вы не можете зарегистрироваться как администратор!";
 "You are not authorized to sign in as an admin!" = "У вас нет прав доступа к этому приложению!";
 
-"You can't post comments as an Anonymous user, please change your display name in Settings" = "Вы не можете оставлять комментарии как анонимный пользователь. Пожалуйста, измените имя пользователя в Настройках";
+"You can't post comments as an Anonymous user, please change your display name. You can do it right now or later in Settings tab" = "Вы не можете оставлять комментарии как анонимный пользователь. Пожалуйста, измените имя пользователя. Можете сделать это здесь или позднее в Настройках";
 "Go to Settings" = "Перейти в настройки";
 "Unable to open app rating page" = "Не удалось открыть страницу приложения";
 "You are not allowed to make purchases" = "ВЫ не можете совершать покупки";
