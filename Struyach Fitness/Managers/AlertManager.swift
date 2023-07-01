@@ -24,6 +24,19 @@ final class AlertManager {
         topViewController.present(alert, animated: true, completion: nil)
     }
     
+    func showAlert(title: String, message: String, continueAction: String, continueCompletion: ((UIAlertAction) -> Void)?,  cancelAction: String, completion: ((UIAlertAction) -> Void)? = nil) {
+        guard let topViewController = UIApplication.shared.topViewController else {return}
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let continueAction = UIAlertAction(title: continueAction, style: .default, handler: continueCompletion)
+        let cancelAction = UIAlertAction(title: cancelAction, style: .cancel, handler: completion)
+        alert.addAction(continueAction)
+        alert.addAction(cancelAction)
+        alert.view.tintColor = .contrastGreen
+
+        topViewController.present(alert, animated: true, completion: nil)
+    }
+    
     func showAlert(title: String, message: String?, placeholderText: String, cancelAction: String, cancelCompletion: ((UIAlertAction) -> Void)? = nil, confirmActionTitle: String, confirmActionHandler: @escaping ((Bool, String?) -> Void)) {
         guard let topViewController = UIApplication.shared.topViewController else {return}
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)

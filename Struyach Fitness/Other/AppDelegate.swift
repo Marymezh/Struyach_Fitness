@@ -54,7 +54,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         #if Client
         Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey)
-            .with(usesStoreKit2IfAvailable: true)
+            .with(usesStoreKit2IfAvailable: false)
             .build())
         Purchases.shared.delegate = self
         #endif

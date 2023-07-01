@@ -58,7 +58,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         super.viewDidLoad()
         self.view.backgroundColor = .customDarkComments
         setupMessageCollectionView()
-        setupInputBar()
+  //      setupInputBar()
         setupSubviews()
      
         if let workout = self.workout {
@@ -73,10 +73,9 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         getUserImage()
+        setupInputBar()
+        print("userName: \(userName!)")
         self.navigationController?.navigationBar.prefersLargeTitles = false
-//        if sender.displayName == "unknown user" || sender.displayName ==  "Anonymous user" || sender.displayName == "Анонимный пользователь" {
-//            AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
-//        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -107,7 +106,11 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         attachButton.onTouchUpInside { [weak self]_ in
             guard let self = self else {return}
             if self.sender.displayName == "unknown user" || self.sender.displayName ==  "Anonymous user" || self.sender.displayName == "Анонимный пользователь" {
-                AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), cancelAction: "Ok")
+                AlertManager.shared.showAlert(title: "Warning".localized(), message: "You can't post comments as an Anonymous user, please change your display name in Settings".localized(), continueAction: "Go to Settings".localized(), continueCompletion: { [weak self] action in
+                    guard let self = self, let email = userEmail else {return}
+                    let settingsVC = SettingsTableViewController(email: email )
+                    navigationController?.pushViewController(settingsVC, animated: true)
+                }, cancelAction: "Ok")
             } else {
                 self.presentInputOptions()
             }
