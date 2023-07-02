@@ -280,47 +280,51 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             self.askForPermission(type: .video)
             self.onFinishPicking = {  [weak self] info in
                 guard let videoUrl = info[.mediaURL] as? URL,
-                let self = self else {
+                      let self = self else {
                     AlertManager.shared.showAlert(title: "Warning".localized(), message: "Couldn't get media URL from image picker".localized(), cancelAction: "Cancel".localized())
                     return
                 }
-                let videoData = try! Data(contentsOf: videoUrl)
-                if let workout = self.workout {
-                    let videoId = "comments_workout_video:\(workout.programID)_\(workout.id)_\(dateString).mov"
-                    StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
-                        guard let self = self else {return}
-                        self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
-                    })  { [weak self] ref in
-                        guard let self = self else { return }
-                        if let safeRef = ref {
-                            StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                guard let safeUrl = url else {return}
-                                self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
+                do {
+                    let videoData = try Data(contentsOf: videoUrl)
+                    if let workout = self.workout {
+                        let videoId = "comments_workout_video:\(workout.programID)_\(workout.id)_\(dateString).mov"
+                        StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
+                            guard let self = self else {return}
+                            self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
+                        })  { [weak self] ref in
+                            guard let self = self else { return }
+                            if let safeRef = ref {
+                                StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                    guard let safeUrl = url else {return}
+                                    self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
+                                }
+                            } else {
+                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading video".localized(), cancelAction: "Cancel".localized())
                             }
-                        } else {
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading video".localized(), cancelAction: "Cancel".localized())
+                            self.progressView.hide()
+                            self.activityView.showActivityIndicator()
                         }
-                        self.progressView.hide()
-                        self.activityView.showActivityIndicator()
-                    }
-                } else if let post = self.blogPost {
-                    let videoId = "comments_blog_post_video:\(post.id)_\(dateString).mov"
-                    StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
-                        guard let self = self else {return}
-                        self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
-                    })  { [weak self] ref in
-                        guard let self = self else { return }
-                        if let safeRef = ref {
-                            StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                guard let safeUrl = url else {return}
-                                self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
+                    } else if let post = self.blogPost {
+                        let videoId = "comments_blog_post_video:\(post.id)_\(dateString).mov"
+                        StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
+                            guard let self = self else {return}
+                            self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
+                        })  { [weak self] ref in
+                            guard let self = self else { return }
+                            if let safeRef = ref {
+                                StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                    guard let safeUrl = url else {return}
+                                    self.postVideoComment(videoUrl: safeUrl, videoRef: safeRef)
+                                }
+                            } else {
+                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading video".localized(), cancelAction: "Cancel".localized())
                             }
-                        } else {
-                            AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error uploading video".localized(), cancelAction: "Cancel".localized())
+                            self.progressView.hide()
+                            self.activityView.showActivityIndicator()
                         }
-                        self.progressView.hide()
-                        self.activityView.showActivityIndicator()
                     }
+                } catch {
+                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error creating video data".localized(), cancelAction: "Cancel".localized())
                 }
             }
         }
@@ -654,55 +658,59 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         self.askForPermission(type: .video)
                         self.onFinishPicking = { [weak self] info in
                             guard let self = self, let videoUrl = info[.mediaURL] as? URL else {return}
-                            let videoData = try! Data(contentsOf: videoUrl)
-                            if let workout = self.workout {
-                                if let messageMediaRef = selectedMessage.mediaRef {
-                                    StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
-                                }
-                                let videoId = "comments_workout_video:\(workout.programID)_\(workout.id)_\(dateString).mov"
-                                StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
-                                    guard let self = self else {return}
-                                    self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
-                                })  { [weak self] ref in
-                                    guard let self = self, let safeRef = ref else {return}
-                                    StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                        guard let safeUrl = url else { print("unable to get safeURL")
-                                            return}
-                                        let mediaUrl = safeUrl.absoluteString
-                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl, newMediaRef: mediaUrl) { success in
-                                            if success {
-                                                self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
-                                            } else {
-                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized(), cancelAction: "Cancel".localized())
+                            do {
+                                let videoData = try Data(contentsOf: videoUrl)
+                                if let workout = self.workout {
+                                    if let messageMediaRef = selectedMessage.mediaRef {
+                                        StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
+                                    }
+                                    let videoId = "comments_workout_video:\(workout.programID)_\(workout.id)_\(dateString).mov"
+                                    StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
+                                        guard let self = self else {return}
+                                        self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
+                                    })  { [weak self] ref in
+                                        guard let self = self, let safeRef = ref else {return}
+                                        StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                            guard let safeUrl = url else { print("unable to get safeURL")
+                                                return}
+                                            let mediaUrl = safeUrl.absoluteString
+                                            DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl, newMediaRef: mediaUrl) { success in
+                                                if success {
+                                                    self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
+                                                } else {
+                                                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized(), cancelAction: "Cancel".localized())
+                                                }
+                                                self.progressView.hide()
                                             }
-                                            self.progressView.hide()
+                                        }
+                                    }
+                                } else if let post = self.blogPost {
+                                    if let messageMediaRef = selectedMessage.mediaRef {
+                                        StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
+                                    }
+                                    let videoId = "comments_blog_post_video:\(post.id)_\(dateString).mov"
+                                    StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
+                                        guard let self = self else {return}
+                                        self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
+                                    })  { [weak self] ref in
+                                        guard let self = self, let safeRef = ref else {return}
+                                        StorageManager.shared.downloadUrl(path: safeRef) { url in
+                                            guard let safeUrl = url else { print("unable to get safeURL")
+                                                return}
+                                            let mediaUrl = safeUrl.absoluteString
+                                            DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl, newMediaRef: mediaUrl) { success in
+                                                if success {
+                                                    self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
+                                                } else {
+                                                    AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized(), cancelAction: "Cancel".localized())
+                                                }
+                                                self.progressView.hide()
+                                            }
                                         }
                                     }
                                 }
-                            } else if let post = self.blogPost {
-                                if let messageMediaRef = selectedMessage.mediaRef {
-                                    StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
-                                }
-                                let videoId = "comments_blog_post_video:\(post.id)_\(dateString).mov"
-                                StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
-                                    guard let self = self else {return}
-                                    self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
-                                })  { [weak self] ref in
-                                    guard let self = self, let safeRef = ref else {return}
-                                    StorageManager.shared.downloadUrl(path: safeRef) { url in
-                                        guard let safeUrl = url else { print("unable to get safeURL")
-                                            return}
-                                        let mediaUrl = safeUrl.absoluteString
-                                        DatabaseManager.shared.updateComment(comment: selectedMessage, newDescription: mediaUrl, newMediaRef: mediaUrl) { success in
-                                            if success {
-                                                self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
-                                            } else {
-                                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Unable to update selected video comment".localized(), cancelAction: "Cancel".localized())
-                                            }
-                                            self.progressView.hide()
-                                        }
-                                    }
-                                }
+                            } catch {
+                                AlertManager.shared.showAlert(title: "Warning".localized(), message: "Error creating video data".localized(), cancelAction: "Cancel".localized())
                             }
                         }
                     default: break
@@ -869,19 +877,33 @@ extension CommentsViewController: MessageCellDelegate {
     }
 
     func didTapMessage(in cell: MessageCollectionViewCell) {
-        self.messageInputBar.becomeFirstResponder()
-        self.messageInputBar.inputTextView.becomeFirstResponder()
-        guard let indexPath = messagesCollectionView.indexPath(for: cell) else {return}
+        guard let indexPath = messagesCollectionView.indexPath(for: cell) else { return }
         let comment = commentsArray[indexPath.section]
-        guard comment.sender.senderId != userEmail else {return}
-        let sender = comment.sender.displayName
         switch comment.kind {
         case .text(let text):
-            self.replyTo(sender: sender, message: text)
-        default: break
+            // Check if the tapped message contains a URL
+            if let url = extractURL(from: text) {
+                openURL(url)
+
+            }
+        default:
+            break
         }
     }
-    
+
+    private func extractURL(from text: String) -> URL? {
+        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let matches = detector?.matches(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count))
+        
+        guard let url = matches?.first?.url else { return nil }
+        return url
+    }
+
+    private func openURL(_ url: URL) {
+        // Handle the URL tap event, such as opening a web browser
+        UIApplication.shared.open(url)
+    }
+
     func replyTo(sender: String, message: String?) {
         let replyTo = "Reply to".localized()
         if let message = message {

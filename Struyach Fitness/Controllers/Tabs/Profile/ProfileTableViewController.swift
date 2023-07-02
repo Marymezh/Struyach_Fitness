@@ -139,49 +139,87 @@ final class ProfileTableViewController: UITableViewController {
                   let self = self else {
                 return
             }
-            dispatchGroup.enter()
             
             if let weightliftingRef = user.weightliftingRecords {
+                dispatchGroup.enter()
                 StorageManager.shared.downloadUrl(path: weightliftingRef) { url in
                     guard let url = url else {
                         dispatchGroup.leave()
                         return
                     }
-                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-                        guard let data = data else {
+                    
+                    let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+                        if let error = error {
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch user records".localized(), cancelAction: "Cancel".localized())
+                            print("Error fetching data: \(error)")
                             dispatchGroup.leave()
                             return
                         }
-                        self.weights = try! JSONDecoder().decode([String].self, from: data)
+                        
+                        guard let data = data else {
+                            // Handle the case when data is nil.
+                            print("Data is nil.")
+                            dispatchGroup.leave()
+                            return
+                        }
+                        
+                        do {
+                            let weights = try JSONDecoder().decode([String].self, from: data)
+                            
+                            DispatchQueue.main.async {
+                                self?.weights = weights
+                            }
+                        } catch {
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find user records".localized(), cancelAction: "Cancel".localized())
+                        }
+                        
                         dispatchGroup.leave()
                     }
                     
                     task.resume()
                 }
-            } else {
-                dispatchGroup.leave()
             }
-            dispatchGroup.enter()
             
             if let gymnasticRef = user.gymnasticRecords {
+                dispatchGroup.enter()
                 StorageManager.shared.downloadUrl(path: gymnasticRef) { url in
                     guard let url = url else {
                         dispatchGroup.leave()
                         return
                     }
-                    let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-                        guard let data = data else {
+                    
+                    let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+                        if let error = error {
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch user records".localized(), cancelAction: "Cancel".localized())
+                            print("Error fetching data: \(error)")
                             dispatchGroup.leave()
                             return
                         }
-                        self.reps = try! JSONDecoder().decode([String].self, from: data)
+                        
+                        guard let data = data else {
+                            // Handle the case when data is nil.
+                            print("Data is nil.")
+                            dispatchGroup.leave()
+                            return
+                        }
+                        
+                        do {
+                            let reps = try JSONDecoder().decode([String].self, from: data)
+                            
+                            DispatchQueue.main.async {
+                                self?.reps = reps
+                            }
+                        } catch {
+                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find user records".localized(), cancelAction: "Cancel".localized())
+                        }
+                        
                         dispatchGroup.leave()
                     }
+                    
                     task.resume()
                 }
-            } else {
-                dispatchGroup.leave()
             }
+            
             dispatchGroup.notify(queue: .main) {
                 self.tableView.reloadData()
             }

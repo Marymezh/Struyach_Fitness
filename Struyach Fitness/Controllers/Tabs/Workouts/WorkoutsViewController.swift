@@ -341,22 +341,39 @@ final class WorkoutsViewController: UIViewController {
         return self.likedWorkouts.contains(workout.id)
     }
     
-    //functions to upload and fetch liked posts
     private func fetchLikedWorkouts() {
-        guard let email = currentUserEmail else {return}
+        print ("fetching liked workouts")
+        guard let email = currentUserEmail else { return }
+        
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user,
                   let self = self,
-                  let ref = user.likedWorkouts else {return}
+                  let ref = user.likedWorkouts else { return }
+            
             StorageManager.shared.downloadUrl(path: ref) { url in
-                guard let url = url else {return}
+                guard let url = url else { return }
                 
-                let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-                    guard let data = data else {return}
-                    self.likedWorkouts = try! JSONDecoder().decode([String].self, from: data)
-                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
-                    DispatchQueue.main.async {
-                        self.workoutsCollection.reloadData()
+                let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+                    if let error = error {
+                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch liked workouts".localized(), cancelAction: "Cancel".localized())
+                        print (error.localizedDescription)
+                        return
+                    }
+                    
+                    guard let data = data else {
+                        print("Data is nil.")
+                        return
+                    }
+                    
+                    do {
+                        let likedWorkouts = try JSONDecoder().decode([String].self, from: data)
+                        DispatchQueue.main.async {
+                            self?.likedWorkouts = likedWorkouts
+                            UserDefaults.standard.set(likedWorkouts, forKey: "likedWorkouts")
+                            self?.workoutsCollection.reloadData()
+                        }
+                    } catch {
+                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find the list of workouts liked by you".localized(), cancelAction: "Cancel".localized())
                     }
                 }
                 task.resume()
@@ -411,7 +428,6 @@ final class WorkoutsViewController: UIViewController {
                 self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
                 if let index = self.likedWorkouts.firstIndex(of: selectedWorkout.id) {
                     self.likedWorkouts.remove(at: index)
-//                    UserDefaults.standard.set(self.likedWorkouts, forKey: "likedWorkouts")
                     self.uploadLikedWorkouts()
                 }
             }
@@ -564,13 +580,15 @@ extension WorkoutsViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         print ("executing method \(#function)")
         searchBar.text = nil
-        filteredWorkouts = listOfWorkouts
-        selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout?.description
-        workoutsCollection.reloadData()
-        let indexPath = IndexPath(row: 0, section: 0)
-        self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
-        self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
-        searchBar.resignFirstResponder()
+        if !listOfWorkouts.isEmpty {
+            filteredWorkouts = listOfWorkouts
+            selectedWorkoutView.workoutDescriptionTextView.text = selectedWorkout?.description
+            workoutsCollection.reloadData()
+            let indexPath = IndexPath(row: 0, section: 0)
+            self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
+            self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
+            searchBar.resignFirstResponder()
+        }
     }
 }
 

@@ -156,7 +156,6 @@ final class BlogViewController: UIViewController {
                 self.blogPosts.append(contentsOf: posts)
             }
             self.lastDocumentSnapshot = lastDocumentSnapshot
-        //    self.tableView.reloadData()
             self.isFetching = false
         }
     }
@@ -206,22 +205,42 @@ final class BlogViewController: UIViewController {
         }
     }
     
-    //functions to upload and fetch liked posts
+    //functions to upload and fetch liked posts    
     private func fetchLikedPosts() {
-        guard let email = currentUserEmail else {return}
+        print ("fetching liked posts")
+        guard let email = currentUserEmail else { return }
+        
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let user = user,
                   let self = self,
-                  let ref = user.likedPosts else {return}
+                  let ref = user.likedPosts else { return }
+            
             StorageManager.shared.downloadUrl(path: ref) { url in
-                guard let url = url else {return}
+                guard let url = url else { return }
                 
-                let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-                    guard let data = data else {return}
-                    self.likedPosts = try! JSONDecoder().decode([String].self, from: data)
-                    UserDefaults.standard.set(self.likedPosts, forKey: "likedPosts")
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
+                let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+                    if let error = error {
+                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch liked posts".localized(), cancelAction: "Cancel".localized())
+                        print (error.localizedDescription)
+                        return
+                    }
+                    
+                    guard let data = data else {
+                        print("Data is nil.")
+                        return
+                    }
+                    
+                    do {
+                        let likedPosts = try JSONDecoder().decode([String].self, from: data)
+                        
+                        // Update the instance variable and user defaults on the main queue.
+                        DispatchQueue.main.async {
+                            self?.likedPosts = likedPosts
+                            UserDefaults.standard.set(likedPosts, forKey: "likedPosts")
+                            self?.tableView.reloadData()
+                        }
+                    } catch {
+                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find the list of posts liked by you".localized(), cancelAction: "Cancel".localized())
                     }
                 }
                 task.resume()
@@ -280,7 +299,6 @@ final class BlogViewController: UIViewController {
         DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
             DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak cell] blogPost in
                 guard let cell = cell else {return}
-                print ("in cell for row method number of blog post comments is \(blogPost.comments)")
                     switch blogPost.comments {
                     case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
                     case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()

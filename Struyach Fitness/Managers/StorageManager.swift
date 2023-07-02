@@ -100,72 +100,93 @@ final class StorageManager {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
- 
-        let data = try! JSONEncoder().encode(weights)
         
-        container
-            .reference(withPath: "users/\(path)/weightlifting_records.json")
-            .putData(data, metadata: nil) { metadata, error in
-                guard metadata != nil, error == nil else {
-                    completion(false)
-                    return
+        do {
+            let data = try JSONEncoder().encode(weights)
+            
+            container
+                .reference(withPath: "users/\(path)/weightlifting_records.json")
+                .putData(data, metadata: nil) { metadata, error in
+                    guard metadata != nil, error == nil else {
+                        AlertManager.shared.showAlert(title: "Error", message: "Unable to upload new records".localized(), cancelAction: "Cancel".localized())
+                        completion(false)
+                        return
+                    }
+                    completion(true)
                 }
-                completion(true)
-            }
+        } catch {
+            AlertManager.shared.showAlert(title: "Error", message: "Unable to upload new records".localized(), cancelAction: "Cancel".localized())
+            completion(false)
+        }
     }
     
     public func uploadUserGymnasticRecords(email: String, reps: [String]?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
- 
-        let data = try! JSONEncoder().encode(reps)
-        
-        container
-            .reference(withPath: "users/\(path)/gymnastic_records.json")
-            .putData(data, metadata: nil) { metadata, error in
-                guard metadata != nil, error == nil else {
-                    completion(false)
-                    return
+        do {
+            let data = try JSONEncoder().encode(reps)
+            
+            container
+                .reference(withPath: "users/\(path)/gymnastic_records.json")
+                .putData(data, metadata: nil) { metadata, error in
+                    guard metadata != nil, error == nil else {
+                        AlertManager.shared.showAlert(title: "Error", message: "Unable to upload new records".localized(), cancelAction: "Cancel".localized())
+                        completion(false)
+                        return
+                    }
+                    completion(true)
                 }
-                completion(true)
-            }
+        } catch {
+            AlertManager.shared.showAlert(title: "Error", message: "Unable to upload new records".localized(), cancelAction: "Cancel".localized())
+            completion(false)
+        }
     }
     
     public func uploadLikedPosts(email: String, likedPosts: [String]?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
-        
-        let data = try! JSONEncoder().encode(likedPosts)
-        
-        container
-            .reference(withPath: "users/\(path)/liked_posts.json")
-            .putData(data, metadata: nil) { metadata, error in
-                guard metadata != nil, error == nil else {
-                    completion(false)
-                    return
+        do {
+            let data = try JSONEncoder().encode(likedPosts)
+            
+            container
+                .reference(withPath: "users/\(path)/liked_posts.json")
+                .putData(data, metadata: nil) { metadata, error in
+                    guard metadata != nil, error == nil else {
+                        AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked posts".localized(), cancelAction: "Cancel".localized())
+                        completion(false)
+                        return
+                    }
+                    completion(true)
                 }
-                completion(true)
-            }
+        } catch {
+            AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked posts".localized(), cancelAction: "Cancel".localized())
+            completion(false)
+        }
     }
     
     public func uploadLikedWorkouts(email: String, likedWorkouts: [String]?, completion: @escaping (Bool)->()) {
         let path = email
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "@", with: "_")
- 
-        let data = try! JSONEncoder().encode(likedWorkouts)
-        
-        container
-            .reference(withPath: "users/\(path)/liked_workouts.json")
-            .putData(data, metadata: nil) { metadata, error in
-                guard metadata != nil, error == nil else {
-                    completion(false)
-                    return
+        do {
+            let data = try JSONEncoder().encode(likedWorkouts)
+            
+            container
+                .reference(withPath: "users/\(path)/liked_workouts.json")
+                .putData(data, metadata: nil) { metadata, error in
+                    guard metadata != nil, error == nil else {
+                        AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked workouts".localized(), cancelAction: "Cancel".localized())
+                        completion(false)
+                        return
+                    }
+                    completion(true)
                 }
-                completion(true)
-            }
+        } catch {
+            AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked workouts".localized(), cancelAction: "Cancel".localized())
+            completion(false)
+        }
     }
     
     public func downloadUrl(path: String, completion: @escaping (URL?)->()){

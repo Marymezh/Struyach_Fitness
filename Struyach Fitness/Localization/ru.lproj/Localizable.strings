@@ -63,7 +63,12 @@
 "1 comment" = "1 комментарий";
 "%d comments" = "Всего комментариев: %d";
 " Write a comment..." = " Оставьте свой комментарий...";
-
+"Unable to fetch liked workouts" = "Не удалось загрузить список понравившихся тренировок";
+"Unable to fetch liked posts" = "Не удалось загрузить список понравившихся постов";
+"Unable to fetch user records" = "Не удалось загрузить рекорды пользователя";
+"Unable to find user records" = "Мы не смогли найти рекорды пользователя";
+"Unable to find the list of workouts liked by you" = "Мы не смогли найти список понравившихся вам тренировок";
+"Unable to find the list of posts liked by you" = "Мы не смогли найти список понравившихся вам постов";
 //MARK: - WORKOUTS AND POSTS
 "SAVE" = "Сохранить";
 "Add new workout" = "Новая тренировка";
@@ -80,6 +85,9 @@
 "Search for workouts" = "Что будем искать?";
 "Ooops! No workouts were found! Change your query and try again." = "Ой! По вашему запросу ничего не нашлось! Измените запрос и попробуйте снова!";
 "Select workout from search results" = "Выберите тренировку из результатов поиска";
+"Unable to upload liked posts" = "Не удалось сохранить список понравившихся постов на сервер";
+"Unable to upload liked workouts" = "Не удалось сохранить список понравившихся тренировок на сервер";
+
 
 
 //MARK: - COMMENTS
@@ -132,6 +140,7 @@
 "A user with this email already exists" = "Пользователь с этим адресом уже существует";
 "Password is too short. Use at least 6 symbols" = "Пароль должен содержать минимум 6 символов";
 "Passwords don't match!" = "Пароли не совпадают!";
+"Error creating video data" = "Не удалось загрузить видео";
 "Unable to post new workout" = "Не удалось добавить новую тренировку";
 "Unable to delete this workout" = "Не удалось удалить выбранную тренировку";
 "All workouts have been loaded" = "Все тренировки загружены";
@@ -153,7 +162,6 @@
 "Unable to complete in-app purchase: %@" = "Невозможно завершить покупку: %@";
 "The secret code is wrong, you can not be registered as an admin!" = "Секретный код не верный, вы не можете зарегистрироваться как администратор!";
 "You are not authorized to sign in as an admin!" = "У вас нет прав доступа к этому приложению!";
-
 "You can't post comments as an Anonymous user, please change your display name. You can do it right now or later in Settings tab" = "Вы не можете оставлять комментарии как анонимный пользователь. Пожалуйста, измените имя пользователя. Можете сделать это здесь или позднее в Настройках";
 "Go to Settings" = "Перейти в настройки";
 "Unable to open app rating page" = "Не удалось открыть страницу приложения";
@@ -218,6 +226,8 @@
 "Ring muscle-ups" = "Выход на кольцах";
 "Toes-to-bars" = "Носки к перекладине";
 "Double-unders" = "Двойные прыжки";
+
+"Unable to upload new records" = "Не удалось отправтиь новые рекорды на сервер";
 
 //MARK: - Settings
 

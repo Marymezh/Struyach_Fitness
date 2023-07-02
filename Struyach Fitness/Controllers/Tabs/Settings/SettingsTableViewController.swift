@@ -510,7 +510,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 self.activityView.hide()
             }, confirmActionTitle: "Confirm".localized()) { [weak self] success, text in
                 guard let self = self else {return}
-                if let text = text, text == "Confirm" {
+                if let text = text?.trimmingCharacters(in: .whitespacesAndNewlines), text == "Confirm" {
                     StorageManager.shared.deleteUserData(email: self.email) { [weak self] storageSuccess, storageError in
                         guard let self = self else {return}
                         guard storageSuccess else {
