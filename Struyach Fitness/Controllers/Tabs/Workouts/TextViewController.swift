@@ -202,14 +202,14 @@ final class TextViewController: UIViewController, UITextViewDelegate {
             if selectedDate != nil {
                 let timestamp = selectedDate!.timeIntervalSince1970
                 self.onWorkoutSave?(text, timestamp)
+                self.navigationController?.popViewController(animated: true)
             } else {
                 AlertManager.shared.showAlert(title: "Warning".localized(), message: "Please select a date.".localized(), cancelAction: "Cancel".localized())
             }
         } else {
             self.onWorkoutSave?(text, nil)
+            self.navigationController?.popViewController(animated: true)
         }
-        
-        self.navigationController?.popViewController(animated: true)
     }
     
     @objc private func cancel() {

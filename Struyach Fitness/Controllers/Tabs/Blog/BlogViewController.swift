@@ -34,17 +34,18 @@ final class BlogViewController: UIViewController {
         setupAdminFunctionality()
 #endif
         loadBlogPostsWithPagination(pageSize: pageSize)
-        fetchLikedPosts()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupNavAndTabBar()
         DatabaseManager.shared.allPostsLoaded = false
+        fetchLikedPosts()
         postUpdatesListener = DatabaseManager.shared.addBlogPostsListener { [weak self] updatedPosts in
+            print("blog updates listener is on duty")
             guard let self = self else {return}
             self.blogPosts = updatedPosts
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.tableView.reloadData()
             }
         }
@@ -121,12 +122,12 @@ final class BlogViewController: UIViewController {
         navigationController?.pushViewController(newPostVC, animated: true)
         newPostVC.onWorkoutSave = {[weak self] text, selectedDate in
             guard let selectedDate = selectedDate else {return}
-            let timestamp = Date().timeIntervalSince1970
+            let timestamp = selectedDate
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
-            formatter.dateFormat = "dd.MM.yyyy"
+            formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
             let dateString = formatter.string(from: date)
-            let postID = dateString + (UUID().uuidString)
+            let postID = dateString
             let newPost = Post(id: postID, description: text, timestamp: selectedDate, likes: 0, comments: 0)
             DatabaseManager.shared.saveBlogPost(with: newPost) {[weak self] success in
                 print("Executing function: \(#function)")
@@ -220,8 +221,8 @@ final class BlogViewController: UIViewController {
                 
                 let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                     if let error = error {
-                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch liked posts".localized(), cancelAction: "Cancel".localized())
-                        print (error.localizedDescription)
+                //        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch liked posts".localized(), cancelAction: "Cancel".localized())
+                        print ("Unable to fetch liked posts \(error.localizedDescription)")
                         return
                     }
                     
@@ -240,7 +241,8 @@ final class BlogViewController: UIViewController {
                             self?.tableView.reloadData()
                         }
                     } catch {
-                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find the list of posts liked by you".localized(), cancelAction: "Cancel".localized())
+                        print ("error decoding list of liked posts")
+                 //       AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find the list of posts liked by you".localized(), cancelAction: "Cancel".localized())
                     }
                 }
                 task.resume()
@@ -253,11 +255,9 @@ final class BlogViewController: UIViewController {
         guard let email = currentUserEmail else {return}
         StorageManager.shared.uploadLikedPosts(email: email, likedPosts: likedPosts) { success in
             if success {
-                DatabaseManager.shared.updateLikedPosts(email: email) { [weak self] success in
+                DatabaseManager.shared.updateLikedPosts(email: email) { success in
                     guard success else {return}
-                    guard let self = self else {return}
                     print ("liked posts are updated")
-                    self.fetchLikedPosts()
                 }
             }
         }
@@ -296,15 +296,10 @@ final class BlogViewController: UIViewController {
         cell.postDateLabel.text = dateString
         cell.likesAndCommentsView.likesLabel.text = "\(post.likes)"
         cell.postDescriptionTextView.text = post.description
-        DatabaseManager.shared.getBlogCommentsCount(blogPost: post) { numberOfComments in
-            DatabaseManager.shared.updateBlogCommentsCount(blogPost: post, commentsCount: numberOfComments) { [weak cell] blogPost in
-                guard let cell = cell else {return}
-                    switch blogPost.comments {
-                    case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
-                    case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
-                    default: cell.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), post.comments)
-                }
-            }
+        switch post.comments {
+        case 0: cell.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
+        case 1: cell.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
+        default: cell.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), post.comments)
         }
         
         if likedPosts.contains(post.id) {

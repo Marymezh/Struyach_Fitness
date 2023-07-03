@@ -180,7 +180,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                       let imageData = image.jpegData(compressionQuality: 0.2),
                       let self = self else { return }
                 if let workout = self.workout {
-                    let imageId =  "comments_workout_photo:\(workout.programID)_\(workout.id)_\(dateString)"
+                    let imageId =  "comments_workout_photo:\(workout.id)_\(dateString)"
                     StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId,progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText:
@@ -231,7 +231,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                       let imageData = image.jpegData(compressionQuality: 0.6),
                       let self = self else { return }
                 if let workout = self.workout {
-                    let imageId =  "comments_workout_photo:\(workout.programID)_\(workout.id)_\(dateString)"
+                    let imageId =  "comments_workout_photo:\(workout.id)_\(dateString)"
                     StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -287,7 +287,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 do {
                     let videoData = try Data(contentsOf: videoUrl)
                     if let workout = self.workout {
-                        let videoId = "comments_workout_video:\(workout.programID)_\(workout.id)_\(dateString).mov"
+                        let videoId = "comments_workout_video:\(workout.id)_\(dateString).mov"
                         StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
                             guard let self = self else {return}
                             self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)

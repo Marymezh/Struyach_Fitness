@@ -64,15 +64,11 @@ final class WorkoutsViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         DatabaseManager.shared.allWorkoutsLoaded = false
         fetchLikedWorkouts()
-        if let selectedWorkout = selectedWorkout {
-            self.updateUI(workout: selectedWorkout)
-        }
         workoutsListener = DatabaseManager.shared.addWorkoutsListener(for: programName) { [weak self] updatedWorkouts in
+            print("workout listener is on duty")
             guard let self = self else {return}
             self.listOfWorkouts = updatedWorkouts
             self.filteredWorkouts = self.listOfWorkouts
-            self.workoutsCollection.reloadData()
-            print ("workouts updated, total number of workouts: \(updatedWorkouts.count)")
             if self.selectedWorkout != nil {
                 for updatedWorkout in updatedWorkouts {
                     if updatedWorkout.id == self.selectedWorkout!.id {
@@ -80,7 +76,7 @@ final class WorkoutsViewController: UIViewController {
                         DispatchQueue.main.async {
                             self.updateUI(workout: self.selectedWorkout!)
                             self.workoutsCollection.reloadData()
-                            print ("selected workout updated")
+                            print ("selected workout updated by listener")
                         }
                         break
                     }
@@ -177,6 +173,7 @@ final class WorkoutsViewController: UIViewController {
     }
     
     private func updateUI(workout: Workout) {
+        print("updating UI")
         DatabaseManager.shared.getCommentsCount(workout: workout) { numberOfComments in
             DatabaseManager.shared.updateWorkoutCommentsCount(workout: workout, commentsCount: numberOfComments) { [weak self] workout in
                 guard let self = self else {return}
@@ -185,12 +182,20 @@ final class WorkoutsViewController: UIViewController {
                     self.filteredWorkouts[index] = workout
                     self.selectedWorkoutView.workoutDescriptionTextView.text = workout.description
                     self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
+                    if self.likedWorkouts.contains(workout.id) {
+                        print ("this workout is liked by user, button is red")
+                        self.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+                        likesAndCommentsView.likeButton.tintColor = .systemRed
+                    } else {
+                        print ("this workout is not liked by user, button is white")
+                        self.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
+                        likesAndCommentsView.likeButton.tintColor = .white
+                    }
                     switch workout.comments {
                     case 0: self.likesAndCommentsView.commentsLabel.text = "No comments posted yet".localized()
                     case 1: self.likesAndCommentsView.commentsLabel.text = "1 comment".localized()
                     default: self.likesAndCommentsView.commentsLabel.text = String(format: "%d comments".localized(), workout.comments)
                     }
-                    self.workoutsCollection.reloadData()
                 }
             }
         }
@@ -209,12 +214,12 @@ final class WorkoutsViewController: UIViewController {
                 return
             }
 
-            let timestamp = Date().timeIntervalSince1970
+            let timestamp = selectedDate
             let date = Date(timeIntervalSince1970: timestamp)
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
             let dateString = formatter.string(from: date)
-            let workoutID = "\(self.programName)_\(dateString.replacingOccurrences(of: " ", with: "_"))"
+            let workoutID = "\(self.programName)_\(dateString)"
             let newWorkout = Workout(id: workoutID, programID: self.programName, description: text, timestamp: selectedDate, likes: 0)
             DatabaseManager.shared.postWorkout(with: newWorkout) {[weak self] success in
                 print("Executing function: \(#function)")
@@ -337,9 +342,6 @@ final class WorkoutsViewController: UIViewController {
     }
     
     //MARK: - Methods to handle likes and toggle search bar
-    private func hasUserLikedWorkout(workout: Workout) -> Bool {
-        return self.likedWorkouts.contains(workout.id)
-    }
     
     private func fetchLikedWorkouts() {
         print ("fetching liked workouts")
@@ -355,7 +357,8 @@ final class WorkoutsViewController: UIViewController {
                 
                 let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                     if let error = error {
-                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch liked workouts".localized(), cancelAction: "Cancel".localized())
+                        print ("Unable to fetch liked workouts")
+        //                AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch liked workouts".localized(), cancelAction: "Cancel".localized())
                         print (error.localizedDescription)
                         return
                     }
@@ -369,11 +372,13 @@ final class WorkoutsViewController: UIViewController {
                         let likedWorkouts = try JSONDecoder().decode([String].self, from: data)
                         DispatchQueue.main.async {
                             self?.likedWorkouts = likedWorkouts
+                            print (likedWorkouts.count)
                             UserDefaults.standard.set(likedWorkouts, forKey: "likedWorkouts")
                             self?.workoutsCollection.reloadData()
                         }
                     } catch {
-                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find the list of workouts liked by you".localized(), cancelAction: "Cancel".localized())
+                        print ("error decoding list of workouts liked by current user")
+//                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find the list of workouts liked by you".localized(), cancelAction: "Cancel".localized())
                     }
                 }
                 task.resume()
@@ -386,53 +391,41 @@ final class WorkoutsViewController: UIViewController {
         guard let email = currentUserEmail else {return}
         StorageManager.shared.uploadLikedWorkouts(email: email, likedWorkouts: likedWorkouts) { success in
             if success {
-                DatabaseManager.shared.updateLikedWorkouts(email: email) { [weak self] success in
+                DatabaseManager.shared.updateLikedWorkouts(email: email) { success in
                     guard success else {return}
-                    guard let self = self else {return}
-                    print ("liked posts are updated")
-                    self.fetchLikedWorkouts()
+                    print ("liked workouts are updated")
                 }
             }
         }
     }
     
     @objc private func addLikeToWorkout() {
-        likesAndCommentsView.likeButton.isSelected = !likesAndCommentsView.likeButton.isSelected
-        guard var selectedWorkout = selectedWorkout,
-              let index = listOfWorkouts.firstIndex(where: {$0 == selectedWorkout}) else {return}
-        
-        if likesAndCommentsView.likeButton.isSelected {
+        guard var selectedWorkout = selectedWorkout else {
+            print ("workout is not selected")
+            return}
+        if !likedWorkouts.contains(selectedWorkout.id) {
             likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likesAndCommentsView.likeButton.tintColor = .systemRed
             selectedWorkout.likes += 1
-            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] workout in
+            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] success in
                 guard let self = self else {return}
                 print ("likes increase by 1")
-                self.listOfWorkouts[index] = workout
-                self.filteredWorkouts = self.listOfWorkouts
-                self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
-                if !self.likedWorkouts.contains(selectedWorkout.id) {
                     self.likedWorkouts.append(selectedWorkout.id)
                     self.uploadLikedWorkouts()
-                }
             }
         } else {
             likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
             likesAndCommentsView.likeButton.tintColor = .white
             selectedWorkout.likes -= 1
-            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] workout in
+            DatabaseManager.shared.updateLikes(workout: selectedWorkout, likesCount: selectedWorkout.likes) {[weak self] success in
                 guard let self = self else {return}
                 print ("likes decrease by 1")
-                self.listOfWorkouts[index] = workout
-                self.filteredWorkouts = self.listOfWorkouts
-                self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
                 if let index = self.likedWorkouts.firstIndex(of: selectedWorkout.id) {
                     self.likedWorkouts.remove(at: index)
                     self.uploadLikedWorkouts()
                 }
             }
         }
-        self.workoutsCollection.reloadData()
     }
     
     @objc private func toggleSearchBar() {
@@ -483,16 +476,6 @@ extension WorkoutsViewController: UICollectionViewDataSource, UICollectionViewDe
         self.selectedWorkout = selectedWorkout
         selectedWorkoutView.randomizeBackgroungImages()
         updateUI(workout: selectedWorkout)
-        
-        if hasUserLikedWorkout(workout: selectedWorkout) == true {
-            self.likesAndCommentsView.likeButton.isSelected = true
-            likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likesAndCommentsView.likeButton.tintColor = .systemRed
-        } else {
-            self.likesAndCommentsView.likeButton.isSelected = false
-            likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
-            likesAndCommentsView.likeButton.tintColor = .white
-        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
@@ -568,6 +551,7 @@ extension WorkoutsViewController: UISearchBarDelegate {
             }
         }
     }
+    
     private func setupSearchBarCancelButton() {
         if let cancelButton = searchBarView.searchBar.value(forKey: "cancelButton") as? UIButton {
             cancelButton.backgroundColor = .clear

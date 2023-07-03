@@ -87,7 +87,7 @@ final class DatabaseManager {
             
             if documents.count < pageSize {
                 self.allWorkoutsLoaded = true
-                print ("all posts have been loaded from Firestore")
+                print ("all workouts have been loaded from Firestore")
             }
             
             completion(workouts, lastDocumentSnapshot)
@@ -95,9 +95,7 @@ final class DatabaseManager {
         }
     }
     
-    public func searchWorkoutsByDescription(program: String, searchText: String, completion: @escaping([Workout])->()){
-        print("Executing function: \(#function)")
-        
+    public func searchWorkoutsByDescription(program: String, searchText: String, completion: @escaping ([Workout]) -> Void) {
         let documentID = program
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: " ", with: "_")
@@ -106,30 +104,40 @@ final class DatabaseManager {
             .collection("programs")
             .document(documentID)
             .collection("workouts")
-            
-        let query = workoutsRef
-            .whereField("description", isGreaterThanOrEqualTo: searchText)
-            .whereField("description", isLessThanOrEqualTo: searchText + "\u{f8ff}")
-
-            query.getDocuments { snapshot, error in
-                guard let documents = snapshot?.documents else {
-                    print("Error fetching documents: \(error!)")
-                    return
-                }
-
-                let workouts: [Workout] = documents.compactMap { document in
-                    do {
-                        let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
-                        print("workouts decoded from database")
-                        return workout
-                    } catch {
-                        print("Error decoding workout: \(error)")
-                        return nil
-                    }
-                }
-                completion(workouts)
+        
+        let query = workoutsRef.order(by: "description")
+        
+        query.getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching documents: \(error)")
+                return
             }
+            
+            guard let documents = snapshot?.documents else {
+                print("No documents found")
+                return
+            }
+            
+            let workouts: [Workout] = documents.compactMap { document in
+                do {
+                    let workout = try Firestore.Decoder().decode(Workout.self, from: document.data())
+                    print("Workout decoded from database")
+                    return workout
+                } catch {
+                    print("Error decoding workout: \(error)")
+                    return nil
+                }
+            }
+            
+            let filteredWorkouts = workouts.filter { workout in
+                let description = workout.description.lowercased()
+                return NSPredicate(format: "SELF CONTAINS[c] %@", searchText.lowercased()).evaluate(with: description)
+            }
+            
+            completion(filteredWorkouts)
+        }
     }
+
     
     public func updateWorkout(workout: Workout, newDescription: String, completion: @escaping (Workout)->()){
         print("Executing function: \(#function)")
@@ -203,7 +211,7 @@ final class DatabaseManager {
         }
     }
     
-    public func updateLikes(workout: Workout, likesCount: Int, completion: @escaping (Workout)->()){
+    public func updateLikes(workout: Workout, likesCount: Int, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         let documentID = workout.programID
             .replacingOccurrences(of: "/", with: "_")
@@ -219,7 +227,7 @@ final class DatabaseManager {
             if error == nil {
                 var updatedWorkout = workout
                 updatedWorkout.likes = likesCount
-                completion(updatedWorkout)
+                completion(true)
             }
         }
     }

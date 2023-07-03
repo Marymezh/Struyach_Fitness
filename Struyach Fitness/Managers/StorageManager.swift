@@ -154,14 +154,16 @@ final class StorageManager {
                 .reference(withPath: "users/\(path)/liked_posts.json")
                 .putData(data, metadata: nil) { metadata, error in
                     guard metadata != nil, error == nil else {
-                        AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked posts".localized(), cancelAction: "Cancel".localized())
+                   //     AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked posts".localized(), cancelAction: "Cancel".localized())
+                        print ("error uploading liked posts")
                         completion(false)
                         return
                     }
                     completion(true)
                 }
         } catch {
-            AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked posts".localized(), cancelAction: "Cancel".localized())
+        //    AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked posts".localized(), cancelAction: "Cancel".localized())
+            print ("error encoding liked posts")
             completion(false)
         }
     }
@@ -177,14 +179,16 @@ final class StorageManager {
                 .reference(withPath: "users/\(path)/liked_workouts.json")
                 .putData(data, metadata: nil) { metadata, error in
                     guard metadata != nil, error == nil else {
-                        AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked workouts".localized(), cancelAction: "Cancel".localized())
+                        print ("error uploading liked workouts")
+//                        AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked workouts".localized(), cancelAction: "Cancel".localized())
                         completion(false)
                         return
                     }
                     completion(true)
                 }
         } catch {
-            AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked workouts".localized(), cancelAction: "Cancel".localized())
+      //      AlertManager.shared.showAlert(title: "Error", message: "Unable to upload liked workouts".localized(), cancelAction: "Cancel".localized())
+            print ("error encoding json with liked workouts")
             completion(false)
         }
     }
