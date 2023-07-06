@@ -2,14 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Please, allow access to your Photo Library to choose a photo</string>
+	<string>Please, allow access to your Photo Library to set your profile image and post photo comments.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Please, allow app to save a photo to your Photo Library</string>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Please, allow access to your Media Library to upload photo or video</string>
+	<string>Please, allow app to save new photos made by you to your Photo Library.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Please, allow access to your camera to take a photo</string>
+	<string>Please, allow access to your camera to take photos and post them in comments.</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>
