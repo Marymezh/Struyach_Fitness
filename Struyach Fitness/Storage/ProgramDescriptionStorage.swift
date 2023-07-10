@@ -9,15 +9,15 @@ import Foundation
 
 struct ProgramDescriptionStorage {
   static let programArray = [
-    ProgramDescription(programName: K.bodyweight,
+    ProgramDescription(programEngID: K.bodyweight,
                        cellImage: "bodyweight"),
-    ProgramDescription(programName: K.ecd,
+    ProgramDescription(programEngID: K.ecd,
                        cellImage: "camp1"),
-    ProgramDescription(programName: K.struyach,
+    ProgramDescription(programEngID: K.struyach,
                        cellImage: "struyach"),
-    ProgramDescription(programName: K.pelvicPower,
+    ProgramDescription(programEngID: K.pelvicPower,
                        cellImage: "pistols"),
-    ProgramDescription(programName: K.bellyBurner,
+    ProgramDescription(programEngID: K.bellyBurner,
                        cellImage: "hardpress")
    ]
 }

@@ -15,6 +15,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     private var messageColors = [UIColor]()
     private var subscriptionStatus = [false, false, false, false]
     private let programsArray = [K.ecd, K.struyach, K.pelvicPower, K.bellyBurner]
+    
     private let activityView = ActivityView()
     private var tableView = UITableView(frame: .zero, style: .grouped)
     
@@ -306,11 +307,11 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             }
             
             if messages.isEmpty {
-                cell.titleLabel.text = "Fetching subscription status..."
+                cell.titleLabel.text = "Fetching subscription status...".localized()
                 cell.colorLabel.backgroundColor = .yellow
                 cell.termsLabel.text = ""
             } else {
-                cell.titleLabel.text = programsArray[indexPath.row]
+                cell.titleLabel.text = programsArray[indexPath.row].localized()
                 cell.colorLabel.backgroundColor = messageColors[indexPath.row]
                 cell.termsLabel.text = messages[indexPath.row]
             }
@@ -440,12 +441,16 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     // MARK: - Private methods
     
     private func restorePurchases() {
-        IAPManager.shared.restorePurchases { result in
+        activityView.showActivityIndicator()
+        IAPManager.shared.restorePurchases { [weak self] result in
+            guard let self = self else {return}
             switch result {
             case .failure(let error):
+                self.activityView.hide()
                 let message = String(format: "Unable to restore purchases: %@".localized(), error.localizedDescription)
                 AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok")
             case .success(_):
+                self.activityView.hide()
                 AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok")
             }
         }

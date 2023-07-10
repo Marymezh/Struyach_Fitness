@@ -87,9 +87,11 @@ final class ProfileTableViewController: UITableViewController {
                 UserDefaults.standard.set(user.name, forKey: "userName")
             }
             guard let imageRef = user.profilePictureRef, !imageRef.isEmpty else {
+//                self.headerView.userPhotoImage.image = UIImage(systemName: "person.circle")
                 self.headerView.userNameLabel.text = user.name
                 self.headerView.userEmailLabel.text = user.email
                 self.headerView.userEmailLabel.isHidden = user.emailIsHidden ? true : false
+                completion(true)
                 return}
             StorageManager.shared.downloadUrl(path: imageRef) { url in
                 guard let url = url else { return }
@@ -150,7 +152,6 @@ final class ProfileTableViewController: UITableViewController {
                     
                     let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                         if let error = error {
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch user records".localized(), cancelAction: "Cancel".localized())
                             print("Error fetching data: \(error)")
                             dispatchGroup.leave()
                             return
@@ -170,7 +171,7 @@ final class ProfileTableViewController: UITableViewController {
                                 self?.weights = weights
                             }
                         } catch {
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find user records".localized(), cancelAction: "Cancel".localized())
+                            print("Error fetching user records")
                         }
                         
                         dispatchGroup.leave()
@@ -190,7 +191,6 @@ final class ProfileTableViewController: UITableViewController {
                     
                     let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                         if let error = error {
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch user records".localized(), cancelAction: "Cancel".localized())
                             print("Error fetching data: \(error)")
                             dispatchGroup.leave()
                             return
@@ -210,7 +210,7 @@ final class ProfileTableViewController: UITableViewController {
                                 self?.reps = reps
                             }
                         } catch {
-                            AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find user records".localized(), cancelAction: "Cancel".localized())
+                            print("Error fetching user records")
                         }
                         
                         dispatchGroup.leave()

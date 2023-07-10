@@ -75,7 +75,7 @@ final class NotificationTableViewCell: UITableViewCell {
         let areNotificationsEnabled = NotificationsManager.shared.checkNotificationPermissions()
         let isNotificationOn = areNotificationsEnabled && isSubscribed
         
-        notificationLabel.text = title
+        notificationLabel.text = title.localized()
         programName = title
         notificationSwitch.isEnabled = isNotificationOn
        

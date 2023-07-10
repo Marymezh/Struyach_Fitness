@@ -54,7 +54,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         #if Client
         Purchases.logLevel = .debug
-         Purchases.configure(withAPIKey: apiKey, appUserID: nil)
+        Purchases.configure(withAPIKey: apiKey, appUserID: nil)
+        Purchases.shared.delegate = self
         #endif
         
         // setting up application language

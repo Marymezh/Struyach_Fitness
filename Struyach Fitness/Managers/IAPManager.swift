@@ -33,7 +33,6 @@ final class IAPManager {
             } else {
                 if customer?.entitlements[program]?.isActive == true {
                     completion(true)
-                    
                 } else {
                     completion(false)
                 }
@@ -134,10 +133,12 @@ final class IAPManager {
         Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
             if let error = error {
                 completion(.failure(error))
+                print("error - failed to complete the purchase")
             } else {
                 if customerInfo?.entitlements[program]?.isActive == true {
                     completion(.success(true))
                 } else {
+                    print ("Purchase succeeded but program is not active")
                     let error = NSError(domain: "com.example.purchase", code: 0, userInfo: [NSLocalizedDescriptionKey: "Purchase succeeded but program is not active"])
                     completion(.failure(error))
                 }
@@ -172,8 +173,10 @@ final class IAPManager {
         Purchases.shared.restorePurchases { info, error in
             if let error = error {
                 completion (.failure(error))
+                print("purchases are not restored")
             } else {
                 completion (.success(true))
+                print("purchases are restored successfully")
             }
         }
     }

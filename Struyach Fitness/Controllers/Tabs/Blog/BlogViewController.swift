@@ -221,7 +221,6 @@ final class BlogViewController: UIViewController {
                 
                 let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                     if let error = error {
-                //        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch liked posts".localized(), cancelAction: "Cancel".localized())
                         print ("Unable to fetch liked posts \(error.localizedDescription)")
                         return
                     }
@@ -242,7 +241,6 @@ final class BlogViewController: UIViewController {
                         }
                     } catch {
                         print ("error decoding list of liked posts")
-                 //       AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find the list of posts liked by you".localized(), cancelAction: "Cancel".localized())
                     }
                 }
                 task.resume()

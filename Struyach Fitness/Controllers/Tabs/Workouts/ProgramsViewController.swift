@@ -14,7 +14,6 @@ final class ProgramsViewController: UITableViewController {
     //MARK: - Properties
     
     private let programsArray = ProgramDescriptionStorage.programArray
- //   private let programsDescriptionArray = K.shortPlanDescriptions
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
 
     //MARK: - Lifecycle
@@ -76,7 +75,8 @@ final class ProgramsViewController: UITableViewController {
         #if Admin
         cell.backgroundColor = .customDarkGray
         #else
-        if let programName = cell.programNameLabel.text {
+        if let program = cell.program {
+            let programName = program.programEngID
             if programName == K.bodyweight {
                 cell.backgroundColor = .customDarkGray
             } else {
@@ -113,33 +113,34 @@ final class ProgramsViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let program = programsArray[indexPath.section]
-        let programName = program.programName
+        let programDisplayName = program.programEngID.localized()
+        let programEngID = program.programEngID
 
         #if Admin
         // Allow full access to WorkoutsVC for the Admin user
         let programVC = WorkoutsViewController()
-        programVC.title = programName
+        programVC.title = programDisplayName
         navigationController?.pushViewController(programVC, animated: true)
 
         #else
         // Check if the user is subscribed to the program
-        if programName == K.bodyweight {
+        if programDisplayName == K.bodyweight.localized() {
             //Push WorkoutsVC for the free program
             let programVC = WorkoutsViewController()
-            programVC.title = programName
+            programVC.title = programDisplayName
             self.navigationController?.pushViewController(programVC, animated: true)
         } else {
             //cheching customer subscriptions on Revenue cat
-            IAPManager.shared.checkCustomerStatus(program: programName) {[weak self] success in
+            IAPManager.shared.checkCustomerStatus(program: programEngID) {[weak self] success in
                 guard let self = self else {return}
                 if success {
                     //Push WorkoutsVC if entitlement is active
                     let programVC = WorkoutsViewController()
-                    programVC.title = programName
+                    programVC.title = programDisplayName
                     self.navigationController?.pushViewController(programVC, animated: true)
                 } else {
                     // Present PaywallViewController if entitlement is not active
-                    let paywallVC = PaywallViewController(programName: programName)
+                    let paywallVC = PaywallViewController(programName: programEngID)
                     paywallVC.modalPresentationStyle = .automatic
                     self.navigationController?.present(paywallVC, animated: true, completion: nil)
                     paywallVC.onPaywallClose = {[weak self] in

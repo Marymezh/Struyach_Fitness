@@ -8,7 +8,6 @@
 import Foundation
 
 struct ProgramDescription {
-    let programName: String
-//    var programDetail: String
+    let programEngID: String
     let cellImage: String
 }

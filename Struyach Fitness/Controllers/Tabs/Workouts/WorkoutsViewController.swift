@@ -33,11 +33,11 @@ final class WorkoutsViewController: UIViewController {
     private let plusButtonView = PlusButtonView()
     private lazy var programName: String = {
         switch title {
-        case K.bodyweight: return "Bodyweight"
-        case K.ecd: return "ECD Plan"
-        case K.struyach: return "Struyach Plan"
-        case K.bellyBurner: return "Belly Burner Plan"
-        case K.pelvicPower: return "Pelvic Power Plan"
+        case K.bodyweight.localized(): return "Bodyweight"
+        case K.ecd.localized(): return "ECD Plan"
+        case K.struyach.localized(): return "Struyach Plan"
+        case K.bellyBurner.localized(): return "Belly Burner Plan"
+        case K.pelvicPower.localized(): return "Pelvic Power Plan"
         default: return "Unknown Program"
         }
     }()
@@ -358,7 +358,6 @@ final class WorkoutsViewController: UIViewController {
                 let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
                     if let error = error {
                         print ("Unable to fetch liked workouts")
-        //                AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to fetch liked workouts".localized(), cancelAction: "Cancel".localized())
                         print (error.localizedDescription)
                         return
                     }
@@ -378,7 +377,6 @@ final class WorkoutsViewController: UIViewController {
                         }
                     } catch {
                         print ("error decoding list of workouts liked by current user")
-//                        AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to find the list of workouts liked by you".localized(), cancelAction: "Cancel".localized())
                     }
                 }
                 task.resume()

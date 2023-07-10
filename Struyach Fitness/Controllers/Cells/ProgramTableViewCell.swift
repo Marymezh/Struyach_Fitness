@@ -11,7 +11,7 @@ final class ProgramTableViewCell: UITableViewCell {
     
     var program: ProgramDescription? {
         didSet {
-            programNameLabel.text = program?.programName
+            programNameLabel.text = program?.programEngID.localized()
             self.backgroundView = UIImageView(image: UIImage(named: program?.cellImage ?? "No Image"))
         }
     }

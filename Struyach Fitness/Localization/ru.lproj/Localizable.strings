@@ -164,6 +164,8 @@
 "You are not authorized to sign in as an admin!" = "У вас нет прав доступа к этому приложению!";
 "You can't post comments as an Anonymous user, please change your display name. You can do it right now or later in Settings tab" = "Вы не можете оставлять комментарии как анонимный пользователь. Пожалуйста, измените имя пользователя. Можете сделать это здесь или позднее в Настройках";
 "Go to Settings" = "Перейти в настройки";
+"Unable to open other user profile" = "Не удалось открыть профиль пользователя";
+"Fetching subscription status..." = "Загружаем статус подписки...";
 "Unable to open app rating page" = "Не удалось открыть страницу приложения";
 "You are not allowed to make purchases" = "ВЫ не можете совершать покупки";
 
@@ -323,4 +325,4 @@
 "Permission Denied" = "Доступ запрещен";
 "Please allow access to the photo library in Phone Settings to choose an avatar." = "Чтобы поменять фото профиля необходимо разрешить доступ к фото библиотеке в Настройках телефона";
 "Please allow access to the camera in Phone Settings to take photos." = "Чтобы сделать фото необходимо разрешить доступ к камере в Настройках телефона";
-"Please allow access to the media library in Phone Settings to upload photos and videos." = "Чтобы загрузить фото или видео необходимо разрешить доступ к медиа библиотеке в Настройках телефона";
+"Please allow access to your Photo Library in Phone Settings to upload photos and videos." = "Чтобы загрузить фото или видео необходимо разрешить доступ к фото библиотеке в Настройках телефона";

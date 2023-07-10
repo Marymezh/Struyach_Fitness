@@ -847,6 +847,9 @@ extension CommentsViewController: MessageCellDelegate {
             if success {
                 self.activityView.hide()
                 self.navigationController?.present(profileVC, animated: true)
+            } else {
+                self.activityView.hide()
+                AlertManager.shared.showAlert(title: "Error".localized(), message: "Unable to open other user profile".localized(), cancelAction: "Cancel".localized())
             }
         }
     }
@@ -952,7 +955,7 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
                case .denied:
                    AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the media library in Phone Settings to upload photos and videos.".localized(), cancelAction: "Cancel".localized())
                case .notDetermined:
-                   requestMediaLibraryPermission(type)
+                   requestPhotoLibraryPermission(type)
                default:
                    AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the media library in Phone Settings to upload photos and videos.".localized(), cancelAction: "Cancel".localized())
                }
@@ -972,14 +975,14 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
            }
        }
 
-       private func requestMediaLibraryPermission(_ type: ImagePickerType) {
+       private func requestPhotoLibraryPermission(_ type: ImagePickerType) {
            PHPhotoLibrary.requestAuthorization { [weak self] status in
                guard let self = self else {return}
                DispatchQueue.main.async {
                    if status == .authorized {
                        self.presentImagePicker(type: type)
                    } else {
-                       AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to the media library in Phone Settings to upload photos and videos.".localized(), cancelAction: "Cancel".localized())
+                       AlertManager.shared.showAlert(title: "Permission Denied".localized(), message: "Please allow access to your Photo Library in Phone Settings to upload photos and videos.".localized(), cancelAction: "Cancel".localized())
                    }
                }
            }
