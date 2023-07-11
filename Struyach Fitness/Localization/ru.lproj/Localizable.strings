@@ -140,6 +140,11 @@
 "A user with this email already exists" = "Пользователь с этим адресом уже существует";
 "Password is too short. Use at least 6 symbols" = "Пароль должен содержать минимум 6 символов";
 "Passwords don't match!" = "Пароли не совпадают!";
+
+"Update Available" = "Доступно обновление";
+"A new version of the app is available! Tap \"Update\" to find out more on our app's page." = "Появилась новая версия приложения! Нажмите \"Обновить\", чтобы перейти на страницу приложения в App Store и узнать больше.";
+"Update" = "Обновить";
+
 "Error creating video data" = "Не удалось загрузить видео";
 "Unable to post new workout" = "Не удалось добавить новую тренировку";
 "Unable to delete this workout" = "Не удалось удалить выбранную тренировку";

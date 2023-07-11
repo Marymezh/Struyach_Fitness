@@ -48,7 +48,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             navVC.navigationBar.prefersLargeTitles = false
             vc = navVC
         }
-        
         window.rootViewController = vc
         window.makeKeyAndVisible()
         self.window = window
@@ -57,6 +56,63 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.disabledToolbarClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.toolbarTintColor = .contrastGreen
+        
+        print ("lastCheckedDate: \(UserDefaults.standard.value(forKey: "lastCheckedDate") ?? "No date")")
+        checkAppVersion()
+        
+    }
+    
+    func checkAppVersion() {
+        let cacheExpirationInterval: TimeInterval = 7 * 24 * 60 * 60
+
+        if let lastCheckedDate = UserDefaults.standard.object(forKey: "lastCheckedDate") as? Date {
+              if Date().timeIntervalSince(lastCheckedDate) < cacheExpirationInterval {
+                  return
+              }
+          }
+
+          if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+              print("Current app version: \(appVersion)")
+#if Admin
+               let appId = "6449380820"
+#else
+               let appId = "6448619309"
+#endif
+               let iTunesLookupURL = URL(string: "https://itunes.apple.com/lookup?id=\(appId)")!
+               URLSession.shared.dataTask(with: iTunesLookupURL) { [weak self] (data, response, error) in
+                   guard let self = self else {return}
+                   if let data = data {
+                                  do {
+                                      let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                                      if let results = json?["results"] as? [[String: Any]], let latestVersion = results.first?["version"] as? String {
+                                          print("Latest version: \(latestVersion)")
+                                          if appVersion < latestVersion {
+                                              self.showUpdateAlert()
+                                          } else {
+                                              print("App version is up to date")
+                                          }
+                                          let currentDate = Date()
+                                          UserDefaults.standard.set(currentDate, forKey: "lastCheckedDate")
+                                      }
+                                  } catch {
+                                      print("Error parsing JSON response: \(error)")
+                                  }
+                              }
+                          }.resume()
+                      }
+                  }
+    
+    func showUpdateAlert() {
+        AlertManager.shared.showAlert(title: "Update Available".localized(), message: "A new version of the app is available! Tap \"Update\" to find out more on our app's page.".localized(), continueAction: "Update".localized(), continueCompletion: { _ in
+            #if Admin
+            let urlString = "itms-apps://itunes.apple.com/app/id6449380820"
+            #else
+            let urlString = "itms-apps://itunes.apple.com/app/id6448619309"
+            #endif
+            if let appStoreURL = URL(string: urlString) {
+                UIApplication.shared.open(appStoreURL, options: [:], completionHandler: nil)
+            }
+        }, cancelAction: "Cancel".localized())
     }
 }
 
