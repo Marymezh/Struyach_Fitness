@@ -14,6 +14,33 @@ final class NotificationsManager {
     static let shared = NotificationsManager()
     private let messaging = Messaging.messaging()
     
+    public var coachToken: String {
+      get {
+        guard let filePath = Bundle.main.path(forResource: "Admin-Info", ofType: "plist") else {
+          fatalError("Couldn't find file 'Admin-Info.plist'.")
+        }
+        let plist = NSDictionary(contentsOfFile: filePath)
+        guard let value = plist?.object(forKey: "CoachToken") as? String else {
+          fatalError("Couldn't find key 'CoachToken' in 'Admin-Info.plist'.")
+        }
+        return value
+      }
+    }
+    
+    private var pushAuthKey: String {
+        get {
+          guard let filePath = Bundle.main.path(forResource: "Admin-Info", ofType: "plist") else {
+            fatalError("Couldn't find file 'Admin-Info.plist'.")
+          }
+          let plist = NSDictionary(contentsOfFile: filePath)
+          guard let value = plist?.object(forKey: "pushAuthKey") as? String else {
+            fatalError("Couldn't find key 'pushAuthKey' in 'Admin-Info.plist'.")
+          }
+          return value
+        }
+      }
+    
+    
     private init() {}
     
     public func subscribe(to topic: String) {
@@ -37,7 +64,7 @@ final class NotificationsManager {
         }
     }
     
-    func checkNotificationPermissions() -> Bool {
+   public func checkNotificationPermissions() -> Bool {
         let semaphore = DispatchSemaphore(value: 0)
         var isAllowed = false
 
@@ -50,7 +77,7 @@ final class NotificationsManager {
         return isAllowed
     }
     
-   func sendPush(with token: String, push: UserPush, completion: @escaping (Bool) -> Void) {
+  public func sendPush(with token: String, push: UserPush, completion: @escaping (Bool) -> Void) {
             guard let url = URL(string: "https://fcm.googleapis.com/fcm/send") else { return }
             
             let json: [String:Any] = [
@@ -65,7 +92,7 @@ final class NotificationsManager {
             request.httpMethod = "POST"
             request.httpBody = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.setValue("key=\(K.pushAuthKey)", forHTTPHeaderField: "Authorization")
+            request.setValue("key=\(pushAuthKey)", forHTTPHeaderField: "Authorization")
             
             let session = URLSession(configuration: .default)
             session.dataTask(with: request, completionHandler: { _, _, error in

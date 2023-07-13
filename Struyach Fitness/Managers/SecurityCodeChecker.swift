@@ -25,6 +25,19 @@ final class SecurityCodeChecker {
       }
     }
     
+    public var pushAuthToken: String {
+          get {
+            guard let filePath = Bundle.main.path(forResource: "Admin-Info", ofType: "plist") else {
+              fatalError("Couldn't find file 'Admin-Info.plist'.")
+            }
+            let plist = NSDictionary(contentsOfFile: filePath)
+            guard let value = plist?.object(forKey: "pushAuthKey") as? String else {
+              fatalError("Couldn't find key 'pushAuthKey' in 'Admin-Info.plist'.")
+            }
+            return value
+          }
+    }
+    
     private init() {}
     
     public func check(enteredCode: String, completion: @escaping (Bool) -> ()) {

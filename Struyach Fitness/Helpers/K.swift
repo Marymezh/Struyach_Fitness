@@ -16,9 +16,6 @@ struct K {
     static let pelvicPower = "Pelvic Power Plan"
     static let bellyBurner = "Belly Burner Plan"
     
-    static let pushAuthKey = "AAAAmzmbzHs:APA91bFuotbDPhwb_M2H0rrrR2Dk7eopTIK1MmD4Gc6pm7XivoAwJMUjze9uHT2dFDCLWqV7WrEcbVcIBHlqZ-RIVMdzFsZFHjTJEH5sTHNCPexkaIxRqpF9sMJOlkOEGZiMqB94KmIc"
-    
-    static let coachToken = "dJYmkUg_FkvDvWB9pooLRR:APA91bGn48Hxmsm0JtAcSsyYIr_Amu9hN74P7EzQ0H78JFn-qZNL1XI9b0mvA2fShNGGabDgG3P-mLhGmfju2_xfZ9MJkguXvjSMuiMA20xh8mX8bt1x_wAb1mpPTiztTGWiT8-t6DBV"
     static var ecdDescription = "Transform your body with our ECD Plan - designed for gym or CrossFit box training. \n\nJoin today and start your fitness journey with us!"
     static var struyachDescription = "Take your training to the next level with our Struyach Plan - designed specifically for experienced athletes \n\nSubscribing to Struyach Plan also gives you a free access to the ECD Plan! Join now!"
     static var pelvicDescription = "Tone and strengthen your pelvic muscles with our 10 high-intensity workouts. \n\nJoin today for a stronger, healthier you!"

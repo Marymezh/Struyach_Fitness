@@ -112,7 +112,7 @@
 "Unable to update selected video comment" = "Не удалось отредактировать видео";
 "Reply to" = "Ответить";
 "New message" = "Новое сообщение";
-"New comment posted for %1$@ from %2$@: %3$@" = "Новый комментарий к тренировке %1$@ от %2$@: %3$@";
+"New comment posted for %1$@ from %2$@: %3$@" = "Новый комментарий к %1$@ от %2$@: %3$@";
 
 
 //MARK: - ALERT CONTROLLERS
