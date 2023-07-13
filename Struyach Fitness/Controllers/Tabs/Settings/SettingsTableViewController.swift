@@ -449,9 +449,13 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 self.activityView.hide()
                 let message = String(format: "Unable to restore purchases: %@".localized(), error.localizedDescription)
                 AlertManager.shared.showAlert(title: "Failed".localized(), message: message, cancelAction: "Ok")
-            case .success(_):
-                self.activityView.hide()
-                AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok")
+            case .success(true):
+                    self.activityView.hide()
+                    AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok")
+            case .success(false): 
+                    self.activityView.hide()
+                    AlertManager.shared.showAlert(title: "No purchases detected".localized(), message: "You haven't purchased anything yet".localized(), cancelAction: "Ok")
+               
             }
         }
     }

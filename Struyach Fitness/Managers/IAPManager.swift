@@ -169,17 +169,37 @@ final class IAPManager {
     }
 
     //method to restore purchases if app accessed from a different device
+//    public func restorePurchases(completion: @escaping (Result<Bool, Error>) -> ()) {
+//        Purchases.shared.restorePurchases { info, error in
+//            if let error = error {
+//                completion (.failure(error))
+//                print("purchases are not restored")
+//            } else {
+//                completion (.success(true))
+//                print("purchases are restored successfully")
+//            }
+//        }
+//    }
     public func restorePurchases(completion: @escaping (Result<Bool, Error>) -> ()) {
         Purchases.shared.restorePurchases { info, error in
             if let error = error {
-                completion (.failure(error))
-                print("purchases are not restored")
-            } else {
-                completion (.success(true))
-                print("purchases are restored successfully")
+                completion(.failure(error))
+                print("Purchases are not restored")
+            } else if let info = info {
+                if info.activeSubscriptions.isEmpty {
+                    // User doesn't have any purchases
+                    print("User doesn't have any purchases")
+                    // You can handle this case differently if needed
+                    completion(.success(false))
+                } else {
+                    // Purchases are restored successfully
+                    print("Purchases are restored successfully")
+                    completion(.success(true))
+                }
             }
         }
     }
+
    
     //method to syncronize purchases, not working on simulator
     public func syncPurchases(completion: @escaping (Result<Bool, Error>) -> ()) {

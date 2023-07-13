@@ -312,7 +312,8 @@
 
 "Unable to restore purchases: %@" = "Не удалось восстановить покупки: %@";
 "Your purchases are successfully restored!" = "Ваши покупки успешно восстановлены!";
-
+"No purchases detected" = "Покупки не обнаружены";
+"You haven't purchased anything yet" = "Вы еще не совершили ни одной покупки";
 "Unable to syncronize purchases: %@" = "Не удалось синхронизировать покупки: %@";
 
 "This field can not be empty!" = "Вы не ввели код!";
