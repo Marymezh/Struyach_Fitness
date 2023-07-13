@@ -781,7 +781,6 @@ final class DatabaseManager {
                     print("Error getting documents: \(error)")
                 } else {
                     numberOfComments = querySnapshot?.count ?? 0
-                    print("found \(numberOfComments) comments for selected workout")
                 }
                 completion(numberOfComments)
             }

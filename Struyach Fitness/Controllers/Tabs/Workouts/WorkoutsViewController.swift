@@ -183,11 +183,9 @@ final class WorkoutsViewController: UIViewController {
                     self.selectedWorkoutView.workoutDescriptionTextView.text = workout.description
                     self.likesAndCommentsView.likesLabel.text = "\(workout.likes)"
                     if self.likedWorkouts.contains(workout.id) {
-                        print ("this workout is liked by user, button is red")
                         self.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
                         likesAndCommentsView.likeButton.tintColor = .systemRed
                     } else {
-                        print ("this workout is not liked by user, button is white")
                         self.likesAndCommentsView.likeButton.setImage(UIImage(systemName: "heart", withConfiguration: UIImage.SymbolConfiguration(pointSize: 25, weight: .medium)), for: .normal)
                         likesAndCommentsView.likeButton.tintColor = .white
                     }

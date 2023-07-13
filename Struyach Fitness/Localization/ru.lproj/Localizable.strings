@@ -114,6 +114,8 @@
 "New message" = "Новое сообщение";
 "New comment posted for workout %1$@ from %2$@: %3$@" = "Новый комментарий к тренировке %1$@ от %2$@: %3$@";
 "New comment posted for blog post %1$@ from %2$@: %3$@" = "Новый комментарий к посту %1$@ от %2$@: %3$@";
+"You have a new reply to your comment for the blog post %1$@ from %2$@: %3$@" = "Новый ответ на ваш комментарий к посту %1$@ от %2$@: %3$@";
+"You have a new reply to your comment for the workout %1$@ from %2$@: %3$@" = "Новый ответ на ваш комментарий к тренировке %1$@ от %2$@: %3$@";
 
 //MARK: - ALERT CONTROLLERS
 "Error" = "Ошибка";

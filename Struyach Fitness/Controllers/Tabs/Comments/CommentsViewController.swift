@@ -34,6 +34,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
     private let currentDate = Date()
     private let dateFormatter = DateFormatter()
+    private var recipientToken: String?
     
     //MARK: - Lifecycle
     
@@ -373,6 +374,35 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         }
     }
     
+    private func getUserFCMToken(email: String) {
+        DatabaseManager.shared.getUser(email: email) { [weak self] user in
+            guard let self = self, let user = user else { return }
+            guard let fcmToken = user.fcmToken, !fcmToken.isEmpty else {return}
+            self.recipientToken = fcmToken
+            print ("recipient token is: \(recipientToken ?? "empty")")
+        }
+    }
+    
+    private func sendNotificationToCoach(message: String) {
+        NotificationsManager.shared.sendPush(with: NotificationsManager.shared.coachToken, push: UserPush(title: "New message".localized(), body: message)) { success in
+            if success {
+                print ("notification sent successfully")
+            } else {
+                print ("error sending notification")
+            }
+        }
+    }
+    
+    private func sendReplyNotification(fcmToken: String, message: String) {
+        NotificationsManager.shared.sendPush(with: fcmToken, push: UserPush(title: "New message".localized(), body: message)) { success in
+            if success {
+                print ("REPLY NOTIFICATION SENT")
+            } else {
+                print ("error sending notification")
+            }
+        }
+    }
+    
     private func postComment(text: String) {
         let senderName = sender.displayName.replacingOccurrences(of: " ", with: "_")
         print (sender.displayName)
@@ -393,12 +423,12 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         if success {
                             self.onCommentPosted?()
                             let message = String(format: "New comment posted for workout %1$@ from %2$@: %3$@".localized(), workout.id, senderName, text)
-                            NotificationsManager.shared.sendPush(with: NotificationsManager.shared.coachToken, push: UserPush(title: "New message".localized(), body: message)) { success in
-                                if success {
-                                    print ("notification sent successfully")
-                                } else {
-                                    print ("error sending notification")
-                                }
+                            self.sendNotificationToCoach(message: message)
+                            if self.recipientToken != nil, self.recipientToken != "" {
+                                let message = String(format: "You have a new reply to your comment for the workout %1$@ from %2$@: %3$@".localized(), workout.id, senderName, text)
+                                self.sendReplyNotification(fcmToken: self.recipientToken!, message: message)
+                                self.recipientToken = ""
+                                print ("recipient token is: \(self.recipientToken ?? "empty")")
                             }
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
@@ -418,12 +448,12 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         if success {
                             self.onCommentPosted?()
                             let message = String(format: "New comment posted for blog post %1$@ from %2$@: %3$@".localized(), post.id, senderName, text)
-                            NotificationsManager.shared.sendPush(with: NotificationsManager.shared.coachToken, push: UserPush(title: "New message".localized(), body: message)) { success in
-                                if success {
-                                    print ("notification sent successfully")
-                                } else {
-                                    print ("error sending notification")
-                                }
+                            self.sendNotificationToCoach(message: message)
+                            if self.recipientToken != nil, self.recipientToken != "" {
+                                let message = String(format: "You have a new reply to your comment for the blog post %1$@ from %2$@: %3$@".localized(), post.id, senderName, text)
+                                self.sendReplyNotification(fcmToken: self.recipientToken!, message: message)
+                                self.recipientToken = ""
+                                print ("recipient token is: \(self.recipientToken ?? "empty")")
                             }
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
@@ -529,7 +559,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         loadCommentsClosure(object) { [weak self] comments in
             guard let self = self else { return }
             self.commentsArray = comments
-            print("loaded \(self.commentsArray.count) comments")
             DispatchQueue.main.async {
                 self.messagesCollectionView.reloadData()
             }
@@ -743,11 +772,11 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 self.messageInputBar.inputTextView.becomeFirstResponder()
                 switch selectedMessage.kind {
                 case .text(let text):
-                    self.replyTo(sender: selectedMessage.sender.displayName, message: text)
+                    self.replyTo(sender: selectedMessage.sender.displayName, senderEmail: selectedMessage.sender.senderId, message: text)
                 case .photo(_):
-                    self.replyTo(sender: selectedMessage.sender.displayName, message: nil)
+                    self.replyTo(sender: selectedMessage.sender.displayName, senderEmail: selectedMessage.sender.senderId, message: nil)
                 case .video(_):
-                    self.replyTo(sender: selectedMessage.sender.displayName, message: nil)
+                    self.replyTo(sender: selectedMessage.sender.displayName, senderEmail: selectedMessage.sender.senderId, message: nil)
                 default: break
                 }
             }
@@ -921,8 +950,9 @@ extension CommentsViewController: MessageCellDelegate {
         UIApplication.shared.open(url)
     }
 
-    func replyTo(sender: String, message: String?) {
+    func replyTo(sender: String, senderEmail: String, message: String?) {
         let replyTo = "Reply to".localized()
+        getUserFCMToken(email: senderEmail)
         if let message = message {
             let modifiedText = "\(replyTo) \(sender): \n\"\(message)\"\n\n"
             self.messageInputBar.inputTextView.text = modifiedText
