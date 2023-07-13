@@ -35,6 +35,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private let currentDate = Date()
     private let dateFormatter = DateFormatter()
     
+    private let token = K.coachToken
+    
     
     //MARK: - Lifecycle
     
@@ -393,6 +395,15 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
                         if success {
                             self.onCommentPosted?()
+//                            let message = String(format: "New comment posted for \(workout.id) from \(senderName): \(text)".localized(),  )
+                            let message = String(format: "New comment posted for %1$@ from %2$@: %3$@".localized(), workout.id, senderName, text)
+                            NotificationsManager.shared.sendPush(with: self.token, push: UserPush(title: "New message".localized(), body: message)) { success in
+                                if success {
+                                    print ("notification sent successfully")
+                                } else {
+                                    print ("error sending notification")
+                                }
+                            }
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
                             }
@@ -887,7 +898,6 @@ extension CommentsViewController: MessageCellDelegate {
             // Check if the tapped message contains a URL
             if let url = extractURL(from: text) {
                 openURL(url)
-
             }
         default:
             break

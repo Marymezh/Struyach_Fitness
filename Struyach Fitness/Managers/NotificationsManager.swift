@@ -49,4 +49,27 @@ final class NotificationsManager {
         semaphore.wait()
         return isAllowed
     }
+    
+   func sendPush(with token: String, push: UserPush, completion: @escaping (Bool) -> Void) {
+            guard let url = URL(string: "https://fcm.googleapis.com/fcm/send") else { return }
+            
+            let json: [String:Any] = [
+                "to": token,
+                "notification": [
+                    "title": "\(push.title)",
+                    "body": "\(push.body)"
+                ]
+            ]
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.httpBody = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("key=\(K.pushAuthKey)", forHTTPHeaderField: "Authorization")
+            
+            let session = URLSession(configuration: .default)
+            session.dataTask(with: request, completionHandler: { _, _, error in
+                completion(error == nil)
+            }).resume()
+        }
 }
