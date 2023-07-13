@@ -24,6 +24,7 @@ final class BlogViewController: UIViewController {
     private var tableView = UITableView(frame: .zero, style: .grouped)
     
     private let plusButtonView = PlusButtonView()
+    private let activityView = ActivityView()
     
     //MARK: - Lifecycle
     
@@ -81,7 +82,8 @@ final class BlogViewController: UIViewController {
         tableView.separatorStyle = .none
         plusButtonView.toAutoLayout()
         plusButtonView.plusButton.addTarget(self, action: #selector(addNewPost), for: .touchUpInside)
-        view.addSubviews(tableView, plusButtonView)
+        activityView.toAutoLayout()
+        view.addSubviews(tableView, plusButtonView, activityView)
         let constraints = [
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -91,7 +93,13 @@ final class BlogViewController: UIViewController {
             plusButtonView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -5),
             plusButtonView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             plusButtonView.widthAnchor.constraint(equalToConstant: 60),
-            plusButtonView.heightAnchor.constraint(equalTo: plusButtonView.widthAnchor)
+            plusButtonView.heightAnchor.constraint(equalTo: plusButtonView.widthAnchor),
+            
+            activityView.topAnchor.constraint(equalTo: view.topAnchor),
+            activityView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            activityView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            activityView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
         ]
         
         NSLayoutConstraint.activate(constraints)
@@ -146,6 +154,7 @@ final class BlogViewController: UIViewController {
     //MARK: - Methods to fetch, edit and delete blog posts
     
     private func loadBlogPostsWithPagination(pageSize: Int) {
+        activityView.showActivityIndicator()
         print ("executing function \(#function)")
         guard !isFetching else { return }
         isFetching = true
@@ -153,8 +162,10 @@ final class BlogViewController: UIViewController {
             guard let self = self else { return }
             if self.lastDocumentSnapshot == nil {
                 self.blogPosts = posts
+                self.activityView.hide()
             } else {
                 self.blogPosts.append(contentsOf: posts)
+                self.activityView.hide()
             }
             self.lastDocumentSnapshot = lastDocumentSnapshot
             self.isFetching = false
