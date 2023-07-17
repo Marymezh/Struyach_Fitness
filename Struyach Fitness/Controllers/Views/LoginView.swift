@@ -117,14 +117,6 @@ final class LoginView: UIView {
         return button
     }()
     
-//    let appleSignInButton: ASAuthorizationAppleIDButton = {
-//        let button = ASAuthorizationAppleIDButton(authorizationButtonType: .continue, authorizationButtonStyle: .whiteOutline)
-//        button.layer.cornerRadius = 10
-//        button.clipsToBounds = true
-//        button.toAutoLayout()
-//        return button
-//    }()
-    
     let appleSignInButton: UIButton = {
         let button = UIButton()
         button.layer.cornerRadius = 10

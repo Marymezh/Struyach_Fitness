@@ -143,10 +143,10 @@ final class CreateAccountViewController: UIViewController {
                     print(error.localizedDescription)
                 }
                 #endif
-                
+                let currentLanguage = LanguageManager.shared.getCurrentLanguage().rawValue
                 StorageManager.shared.setUserProfilePicture(email: email, image: imageData) {imageRef in
                     guard let imageRef = imageRef else {return}
-                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, weightliftingRecords: nil, gymnasticRecords: nil, isAdmin: isAdmin, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
+                    let newUser = User(name: name, email: email, profilePictureRef: imageRef, weightliftingRecords: nil, gymnasticRecords: nil, isAdmin: isAdmin, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil, userLanguage: currentLanguage)
                     DatabaseManager.shared.insertUser(user: newUser) { [weak self] success, error in
                         guard let self = self else {return}
                         print ("inserting new user in the Firestore Database")

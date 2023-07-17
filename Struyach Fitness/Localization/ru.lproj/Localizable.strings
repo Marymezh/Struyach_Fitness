@@ -112,10 +112,20 @@
 "Unable to update selected video comment" = "Не удалось отредактировать видео";
 "Reply to" = "Ответить";
 "New message" = "Новое сообщение";
-"New comment posted for workout %1$@ from %2$@: %3$@" = "Новый комментарий к тренировке %1$@ от %2$@: %3$@";
+"New reply" = "Вам ответили!";
+"New comment posted for workout %1$@ from %2$@" = "Новый комментарий к тренировке %1$@ от %2$@";
 "New comment posted for blog post %1$@ from %2$@: %3$@" = "Новый комментарий к посту %1$@ от %2$@: %3$@";
-"You have a new reply to your comment for the blog post %1$@ from %2$@: %3$@" = "Новый ответ на ваш комментарий к посту %1$@ от %2$@: %3$@";
-"You have a new reply to your comment for the workout %1$@ from %2$@: %3$@" = "Новый ответ на ваш комментарий к тренировке %1$@ от %2$@: %3$@";
+"%1$@ replied to your comment for the blog post %2$@" = "Новый ответ от %1$@ на ваш комментарий к посту %2$@";
+"%1$@ replied to your comment for the workout in  %2$@" = "Ответ от %1$@ на ваш комментарий к тренировке в разделе %2$@";
+
+"New photo posted for workout %1$@ from %2$@" = "Новое фото к тренировке %1$@ от %2$@";
+"New photo posted for blog post %1$@ from %2$@" = "Новое фото к посту %1$@ от %2$@";
+"New video posted for workout %1$@ from %2$@" = "Новое видео к тренировке %1$@ от %2$@";
+"New video posted for blog post %1$@ from %2$@" = "Новое видео к посту %1$@ от %2$@";
+
+"New workout posted!" = "Новая тренировка!";
+"Check the %@ to see a new workout." = "В разделе %@ появилась новая тренировка, заходи!";
+
 
 //MARK: - ALERT CONTROLLERS
 "Error" = "Ошибка";

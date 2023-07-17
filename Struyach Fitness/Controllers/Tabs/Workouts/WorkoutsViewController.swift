@@ -199,6 +199,10 @@ final class WorkoutsViewController: UIViewController {
         }
     }
     
+//    private func sendPush(toTopic topic: String) {
+//
+//    }
+    
     // MARK: - Adding new workout and loading list of workouts
     // only Admin user can add new workout
     @objc private func addNewWorkout() {
@@ -210,6 +214,16 @@ final class WorkoutsViewController: UIViewController {
             guard let self = self else {return}
             guard let selectedDate = selectedDate else {
                 return
+            }
+            
+            let topic = self.programName.replacingOccurrences(of: " ", with: "_")
+            let message = UserPush(title: "New workout posted!".localized(), body: String(format: "Check the %@ to see a new workout.".localized(), self.programName.localized()))
+            NotificationsManager.shared.sendPush(toTopic: topic, push: message) { success in
+                if success {
+                    print ("notification for \(self.programName) is sent")
+                } else {
+                    print ("failed to send notification")
+                }
             }
 
             let timestamp = selectedDate
@@ -224,7 +238,6 @@ final class WorkoutsViewController: UIViewController {
                 guard let self = self else {return}
                 if success {
                     self.workoutsCollection.reloadData()
-                    
                     let indexPath = IndexPath(row: 0, section: 0)
                     self.workoutsCollection.selectItem(at: indexPath, animated: true, scrollPosition: .right)
                     self.workoutsCollection.delegate?.collectionView?(self.workoutsCollection, didSelectItemAt: indexPath)
@@ -274,10 +287,14 @@ final class WorkoutsViewController: UIViewController {
     // MARK: - Long press setup for admin to delete and update workouts
     private func setupGuestureRecognizer() {
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
+        longPress.minimumPressDuration = 0.5
         workoutsCollection.addGestureRecognizer(longPress)
     }
     
     @objc func handleLongPress(sender: UILongPressGestureRecognizer) {
+        guard sender.state == .began else {
+             return
+         }
         print("Executing function: \(#function)")
         let location = sender.location(in: workoutsCollection)
         if let indexPath = workoutsCollection.indexPathForItem(at: location) {

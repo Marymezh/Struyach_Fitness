@@ -18,4 +18,14 @@ extension String {
                                  value: self,
                                  comment: self)
     }
+    
+    func localized(withLanguage language: String) -> String {
+        let path = Bundle.main.path(forResource: language, ofType: "lproj")
+        let bundle = Bundle(path: path!)
+        return NSLocalizedString(self,
+                                 tableName: "Localizable",
+                                 bundle: bundle!,
+                                 value: self,
+                                 comment: self)
+    }
 }

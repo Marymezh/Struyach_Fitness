@@ -35,6 +35,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private let currentDate = Date()
     private let dateFormatter = DateFormatter()
     private var recipientToken: String?
+    private var recipientLanguage: String?
     
     //MARK: - Lifecycle
     
@@ -378,23 +379,26 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         DatabaseManager.shared.getUser(email: email) { [weak self] user in
             guard let self = self, let user = user else { return }
             guard let fcmToken = user.fcmToken, !fcmToken.isEmpty else {return}
+            let userLanguage = user.userLanguage ?? "ru"
             self.recipientToken = fcmToken
+            self.recipientLanguage = userLanguage
             print ("recipient token is: \(recipientToken ?? "empty")")
+            print ("recipient language is: \(recipientLanguage ?? "not set")")
         }
     }
     
     private func sendNotificationToCoach(message: String) {
-        NotificationsManager.shared.sendPush(with: NotificationsManager.shared.coachToken, push: UserPush(title: "New message".localized(), body: message)) { success in
+        NotificationsManager.shared.sendPush(withToken: NotificationsManager.shared.coachToken, push: UserPush(title: "New message".localized(), body: message)) { success in
             if success {
-                print ("notification sent successfully")
+                print ("successfully sent notificaton to the coach")
             } else {
-                print ("error sending notification")
+                print ("error sending notification to the coach")
             }
         }
     }
     
     private func sendReplyNotification(fcmToken: String, message: String) {
-        NotificationsManager.shared.sendPush(with: fcmToken, push: UserPush(title: "New message".localized(), body: message)) { success in
+        NotificationsManager.shared.sendPush(withToken: fcmToken, push: UserPush(title: "New reply".localized(withLanguage: self.recipientLanguage ?? "ru"), body: message)) { success in
             if success {
                 print ("REPLY NOTIFICATION SENT")
             } else {
@@ -422,13 +426,15 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
                         if success {
                             self.onCommentPosted?()
-                            let message = String(format: "New comment posted for workout %1$@ from %2$@: %3$@".localized(), workout.id, senderName, text)
-                            self.sendNotificationToCoach(message: message)
-                            if self.recipientToken != nil, self.recipientToken != "" {
-                                let message = String(format: "You have a new reply to your comment for the workout %1$@ from %2$@: %3$@".localized(), workout.id, senderName, text)
+                            if self.recipientToken != nil, self.recipientToken != "", self.recipientToken != NotificationsManager.shared.coachToken {
+                                let message = String(format: "%1$@ replied to your comment for the workout in  %2$@".localized(withLanguage: self.recipientLanguage ?? "ru"), senderName,  workout.programID.replacingOccurrences(of: "_", with: " ").localized(withLanguage: self.recipientLanguage ?? "ru"))
                                 self.sendReplyNotification(fcmToken: self.recipientToken!, message: message)
                                 self.recipientToken = ""
+                                self.recipientLanguage = ""
                                 print ("recipient token is: \(self.recipientToken ?? "empty")")
+                            } else {
+                                let message = String(format: "New comment posted for workout %1$@ from %2$@: %3$@".localized(), workout.id, senderName, text)
+                                self.sendNotificationToCoach(message: message)
                             }
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
@@ -447,13 +453,15 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
                         if success {
                             self.onCommentPosted?()
-                            let message = String(format: "New comment posted for blog post %1$@ from %2$@: %3$@".localized(), post.id, senderName, text)
-                            self.sendNotificationToCoach(message: message)
-                            if self.recipientToken != nil, self.recipientToken != "" {
-                                let message = String(format: "You have a new reply to your comment for the blog post %1$@ from %2$@: %3$@".localized(), post.id, senderName, text)
+                            if self.recipientToken != nil, self.recipientToken != "", self.recipientToken != NotificationsManager.shared.coachToken {
+                                let message = String(format: "%1$@ replied to your comment for the blog post %2$@".localized(withLanguage: self.recipientLanguage ?? "ru"), senderName, post.id)
                                 self.sendReplyNotification(fcmToken: self.recipientToken!, message: message)
                                 self.recipientToken = ""
+                                self.recipientLanguage = ""
                                 print ("recipient token is: \(self.recipientToken ?? "empty")")
+                            } else {
+                                let message = String(format: "New comment posted for blog post %1$@ from %2$@: %3$@".localized(), post.id, senderName, text)
+                                self.sendNotificationToCoach(message: message)
                             }
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
@@ -484,6 +492,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
                         if success {
                             self.onCommentPosted?()
+                            let message = String(format: "New photo posted for workout %1$@ from %2$@".localized(), workout.id, senderName)
+                            self.sendNotificationToCoach(message: message)
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()                            }
                         }
@@ -499,6 +509,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                     self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
                         if success {
                             self.onCommentPosted?()
+                            let message = String(format: "New photo posted for blog post %1$@ from %2$@".localized(), post.id, senderName)
+                            self.sendNotificationToCoach(message: message)
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
                             }
@@ -527,6 +539,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         self.loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments) { success in
                             if success {
                                 self.onCommentPosted?()
+                                let message = String(format: "New video posted for workout %1$@ from %2$@".localized(), workout.id, senderName)
+                                self.sendNotificationToCoach(message: message)
                                 DispatchQueue.main.async {
                                     self.messagesCollectionView.scrollToLastItem()
                                 }
@@ -543,6 +557,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         self.loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments) { success in
                             if success {
                                 self.onCommentPosted?()
+                                let message = String(format: "New video posted for blog post %1$@ from %2$@".localized(), post.id, senderName)
+                                self.sendNotificationToCoach(message: message)
                                 DispatchQueue.main.async {
                                     self.messagesCollectionView.scrollToLastItem()
                                 }
@@ -570,10 +586,14 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     private func setupGestureRecognizer() {
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
+        longPress.minimumPressDuration = 0.5
         messagesCollectionView.addGestureRecognizer(longPress)
     }
     
     @objc func handleLongPress(sender: UILongPressGestureRecognizer) {
+        guard sender.state == .began else {
+             return
+         }
         print("Executing function: \(#function)")
         let location = sender.location(in: messagesCollectionView)
         if let indexPath = messagesCollectionView.indexPathForItem(at: location) {

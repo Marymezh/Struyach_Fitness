@@ -311,7 +311,8 @@ extension LoginViewController: AuthManagerDelegate {
                     self.activityView.hide()
                     AlertManager.shared.showAlert(title: "Error".localized(), message: "Can't register user for in-app purchases".localized(), cancelAction: "Cancel".localized())
                 }
-                let newUser = User(name: name, email: email, profilePictureRef: nil, weightliftingRecords: nil, gymnasticRecords: nil, isAdmin: false, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil)
+                let currentLanguage = LanguageManager.shared.getCurrentLanguage().rawValue
+                let newUser = User(name: name, email: email, profilePictureRef: nil, weightliftingRecords: nil, gymnasticRecords: nil, isAdmin: false, fcmToken: nil, emailIsHidden: false, likedWorkouts: nil, likedPosts: nil, userLanguage: currentLanguage)
                 DatabaseManager.shared.insertUser(user: newUser) { [weak self] success, error in
                     guard let self = self else {return}
                     print ("inserting new user in the Firestore Database")

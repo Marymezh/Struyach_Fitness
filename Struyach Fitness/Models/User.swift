@@ -18,4 +18,5 @@ struct User: Codable {
     let emailIsHidden: Bool
     let likedWorkouts: String?
     let likedPosts: String?
+    let userLanguage: String?
 }

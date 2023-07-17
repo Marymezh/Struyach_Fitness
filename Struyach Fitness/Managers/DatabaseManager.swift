@@ -991,7 +991,8 @@ final class DatabaseManager {
             "name": user.name,
             "profile_photo": user.profilePictureRef ?? "",
             "isAdmin": user.isAdmin,
-            "hideEmail": user.emailIsHidden
+            "hideEmail": user.emailIsHidden,
+            "user_language": user.userLanguage ?? "ru"
         ]
         
         database
@@ -1025,7 +1026,8 @@ final class DatabaseManager {
                 let imageRef = data["profile_photo"] as? String
                 let likedWorkouts = data["liked_workouts"] as? String
                 let likedPosts = data["liked_posts"] as? String
-                let user = User(name: name, email: email, profilePictureRef: imageRef, weightliftingRecords: weightliftingRecords, gymnasticRecords: gymnasticRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail, likedWorkouts: likedWorkouts, likedPosts: likedPosts)
+                let language = data["user_language"] as? String
+                let user = User(name: name, email: email, profilePictureRef: imageRef, weightliftingRecords: weightliftingRecords, gymnasticRecords: gymnasticRecords, isAdmin: isAdmin, fcmToken: token, emailIsHidden: hideEmail, likedWorkouts: likedWorkouts, likedPosts: likedPosts, userLanguage: language)
                         completion(user)
                     }
                 }
@@ -1065,6 +1067,28 @@ final class DatabaseManager {
         dbRef.getDocument { snapshot, error in
             guard var data = snapshot?.data(), error == nil else {return}
             data["name"] = newUserName
+            dbRef.setData(data) { error in
+                if error == nil {
+                    completion(true)
+                }
+            }
+        }
+    }
+    
+    public func updateUserLanguage(email: String, language: Language,
+                               completion: @escaping(Bool)->()
+    ){
+        let documentID = email
+            .replacingOccurrences(of: ".", with: "_")
+            .replacingOccurrences(of: "@", with: "_")
+        
+        let dbRef = database
+            .collection("users")
+            .document(documentID)
+        
+        dbRef.getDocument { snapshot, error in
+            guard var data = snapshot?.data(), error == nil else {return}
+            data["user_language"] = language.rawValue
             dbRef.setData(data) { error in
                 if error == nil {
                     completion(true)

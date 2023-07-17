@@ -47,12 +47,11 @@ final class TabBarController: UITabBarController {
         guard let currentUserEmail = UserDefaults.standard.string(forKey: "email") else {return}
         print (currentUserEmail)
         updateUserToken(email: currentUserEmail)
+        updateUserLanguage(email: currentUserEmail)
         let programsVC = ProgramsViewController()
         programsVC.title = "Training Plans".localized()
-        
         let blogVC = BlogViewController()
         blogVC.title = "Coach Blog".localized()
-        
         let profileVC = ProfileTableViewController(email: currentUserEmail)
         profileVC.title = "Profile".localized()
         profileVC.navigationItem.largeTitleDisplayMode = .always
@@ -98,6 +97,14 @@ final class TabBarController: UITabBarController {
         DatabaseManager.shared.updateFCMToken(email: email, newToken: token) { success in
             if success {
                 print ("FCM token is updated for current user")
+            }
+        }
+    }
+    private func updateUserLanguage(email: String) {
+        let currentLanguage = LanguageManager.shared.getCurrentLanguage()
+        DatabaseManager.shared.updateUserLanguage(email: email, language: currentLanguage) { success in
+            if success {
+                print ("set current user language to \(currentLanguage)")
             }
         }
     }

@@ -77,7 +77,7 @@ final class NotificationsManager {
         return isAllowed
     }
     
-  public func sendPush(with token: String, push: UserPush, completion: @escaping (Bool) -> Void) {
+  public func sendPush(withToken token: String, push: UserPush, completion: @escaping (Bool) -> Void) {
             guard let url = URL(string: "https://fcm.googleapis.com/fcm/send") else { return }
             
             let json: [String:Any] = [
@@ -99,4 +99,29 @@ final class NotificationsManager {
                 completion(error == nil)
             }).resume()
         }
+    
+    public func sendPush(toTopic topic: String, push: UserPush, completion: @escaping (Bool) -> Void) {
+        print("sending push to topic")
+        guard let url = URL(string: "https://fcm.googleapis.com/fcm/send") else { return }
+        
+        let json: [String:Any] = [
+            "to": "/topics/\(topic)",
+            "notification": [
+                "title": "\(push.title)",
+                "body": "\(push.body)"
+            ]
+        ]
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("key=\(pushAuthKey)", forHTTPHeaderField: "Authorization")
+        
+        let session = URLSession(configuration: .default)
+        session.dataTask(with: request, completionHandler: { _, _, error in
+            completion(error == nil)
+        }).resume()
+    }
+    
 }

@@ -111,7 +111,8 @@ final class BlogViewController: UIViewController {
     }
     
     private func setupGestureRecognizer() {
-        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
+        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
+        longPressRecognizer.minimumPressDuration = 0.5
         tableView.addGestureRecognizer(longPressRecognizer)
     }
     
@@ -172,8 +173,11 @@ final class BlogViewController: UIViewController {
         }
     }
     
-    @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
-        let touchPoint = gestureRecognizer.location(in: tableView)
+    @objc func handleLongPress(sender: UILongPressGestureRecognizer) {
+        guard sender.state == .began else {
+             return
+         }
+        let touchPoint = sender.location(in: tableView)
         if let indexPath = tableView.indexPathForRow(at: touchPoint) {
             let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
             
