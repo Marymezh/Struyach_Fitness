@@ -7,7 +7,10 @@
 
 import Foundation
 
-struct UserPush {
+struct UserPush: Codable {
     let title: String
     let body: String
+    let type: String
+    let destination: String
+    let collectionId: String?
 }

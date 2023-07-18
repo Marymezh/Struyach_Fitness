@@ -159,6 +159,34 @@ final class DatabaseManager {
         }
     }
     
+    public func fetchWorkout(programId: String, workoutId: String, completion: @escaping (Workout?) ->()) {
+        let documentID = programId
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        let dbRef = database
+            .collection("programs")
+            .document(documentID)
+            .collection("workouts")
+            .document(workoutId)
+        dbRef.getDocument { document, error in
+            if let document = document, document.exists {
+                guard let workoutData = document.data() else {
+                    completion(nil)
+                    return
+                }
+                do {
+                    let workout = try Firestore.Decoder().decode(Workout.self, from: workoutData)
+                    print("Workout decoded from database")
+                    completion(workout)
+                } catch {
+                    print("Error decoding workout: \(error)")
+                    completion(nil)
+                }
+            }
+        }
+    }
+    
     public func deleteWorkout(workout: Workout, completion: @escaping (Bool)->()){
         print("Executing function: \(#function)")
         
@@ -330,6 +358,30 @@ final class DatabaseManager {
                 var updatedPost = blogPost
                 updatedPost.description = newDescription
                 completion(updatedPost)
+            }
+        }
+    }
+    
+    public func fetchBlogPost(postId: String, completion: @escaping(Post?)->()) {
+        let dbRef = database
+            .collection("blogPosts")
+            .document(postId)
+        
+        dbRef.getDocument { document, error in
+            
+            if let document = document, document.exists {
+                guard let postData = document.data() else {
+                    completion(nil)
+                    return
+                }
+                do {
+                    let post = try Firestore.Decoder().decode(Post.self, from: postData)
+                    print("Post decoded from database")
+                    completion(post)
+                } catch {
+                    print("Error decoding post: \(error)")
+                    completion(nil)
+                }
             }
         }
     }

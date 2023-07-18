@@ -217,7 +217,10 @@ final class WorkoutsViewController: UIViewController {
             }
             
             let topic = self.programName.replacingOccurrences(of: " ", with: "_")
-            let message = UserPush(title: "New workout posted!".localized(), body: String(format: "Check the %@ to see a new workout.".localized(), self.programName.localized()))
+            let message = UserPush(
+                title: "New workout posted!".localized(),
+                body: String(format: "Check the %@ to see a new workout.".localized(), self.programName.localized()), type: "newWorkout",
+                destination: self.programName, collectionId: nil)
             NotificationsManager.shared.sendPush(toTopic: topic, push: message) { success in
                 if success {
                     print ("notification for \(self.programName) is sent")

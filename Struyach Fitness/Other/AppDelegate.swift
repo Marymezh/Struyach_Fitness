@@ -25,6 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         AppCheck.setAppCheckProviderFactory(providerFactory)
 
         FirebaseApp.configure()
+     //   FirebaseConfiguration.shared.setLoggerLevel(.debug)
         
         UNUserNotificationCenter.current().delegate = self
 
@@ -36,6 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         application.registerForRemoteNotifications()
+
         Messaging.messaging().delegate = self
         
  //       setting up Revenue Cat "Purchases"
@@ -99,10 +101,53 @@ extension AppDelegate: PurchasesDelegate {
 }
     
     extension AppDelegate: UNUserNotificationCenterDelegate {
+        
+//        func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+//            print( "responding notification tap")
+//               // Handle the notification response here
+//            let notificationInfo = response.notification.request.content.userInfo
+            
+//            if let pushType = notificationInfo["notificationType"] as? String {
+//                print(pushType)
+//                  switch pushType {
+//                       case "postComment":
+//                           if let postId = notificationInfo["destination"] as? String {
+//                           DatabaseManager.shared.fetchBlogPost(postId: postId) { post in
+//                               if let post = post {
+//                                   let commentsVC = CommentsViewController(blogPost: post)
+//                                   navVC.pushViewController(commentsVC, animated: true)
+//                               }
+//                           }
+//                       }
+//                       case "workoutComment":
+//                           if let workoutId = notificationInfo["destination"] as? String,
+//                              let programId = notificationInfo["collectionId"] as? String {
+//                               DatabaseManager.shared.fetchWorkout(programId: programId, workoutId: workoutId) { workout in
+//                                   if let workout = workout {
+//                                       let commentsVC = CommentsViewController(workout: workout)
+//                                       navVC.pushViewController(commentsVC, animated: true)
+//                               }
+//                           }
+//
+//                       }
+//                       default:
+//                           if let programName = notificationInfo["destination"] as? String {
+//                               let selectedProgramVC = WorkoutsViewController()
+//                               selectedProgramVC.title = programName
+//                               navVC.pushViewController(selectedProgramVC, animated: true)
+//                           }
+//                       }
+//                   } else {
+//                       print ("error receiving notification type")
+//                   }
+//               completionHandler()
+//           }
+   
+        
         func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
                Messaging.messaging().apnsToken = deviceToken
            }
-
+       
 }
 
 // MARK: Messaging Delegate methods

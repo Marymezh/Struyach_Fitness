@@ -387,8 +387,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         }
     }
     
-    private func sendNotificationToCoach(message: String) {
-        NotificationsManager.shared.sendPush(withToken: NotificationsManager.shared.coachToken, push: UserPush(title: "New message".localized(), body: message)) { success in
+    private func sendNotificationToCoach(message: String, destination: String, collectionId: String?, notificationType: String) {
+        NotificationsManager.shared.sendPush(withToken: NotificationsManager.shared.coachToken, push: UserPush(title: "New message".localized(), body: message, type: notificationType, destination: destination, collectionId: collectionId)) { success in
             if success {
                 print ("successfully sent notificaton to the coach")
             } else {
@@ -397,8 +397,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         }
     }
     
-    private func sendReplyNotification(fcmToken: String, message: String) {
-        NotificationsManager.shared.sendPush(withToken: fcmToken, push: UserPush(title: "New reply".localized(withLanguage: self.recipientLanguage ?? "ru"), body: message)) { success in
+    private func sendReplyNotification(fcmToken: String, message: String, destination: String, collectionId: String?, notificationType: String) {
+        NotificationsManager.shared.sendPush(withToken: fcmToken, push: UserPush(title: "New reply".localized(withLanguage: self.recipientLanguage ?? "ru"), body: message, type: notificationType, destination: destination, collectionId: collectionId)) { success in
             if success {
                 print ("REPLY NOTIFICATION SENT")
             } else {
@@ -428,13 +428,13 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                             self.onCommentPosted?()
                             if self.recipientToken != nil, self.recipientToken != "", self.recipientToken != NotificationsManager.shared.coachToken {
                                 let message = String(format: "%1$@ replied to your comment for the workout in  %2$@".localized(withLanguage: self.recipientLanguage ?? "ru"), senderName,  workout.programID.replacingOccurrences(of: "_", with: " ").localized(withLanguage: self.recipientLanguage ?? "ru"))
-                                self.sendReplyNotification(fcmToken: self.recipientToken!, message: message)
+                                self.sendReplyNotification(fcmToken: self.recipientToken!, message: message, destination: workout.id, collectionId: workout.programID, notificationType: "workoutComment")
                                 self.recipientToken = ""
                                 self.recipientLanguage = ""
                                 print ("recipient token is: \(self.recipientToken ?? "empty")")
                             } else {
                                 let message = String(format: "New comment posted for workout %1$@ from %2$@: %3$@".localized(), workout.id, senderName, text)
-                                self.sendNotificationToCoach(message: message)
+                                self.sendNotificationToCoach(message: message, destination: workout.id, collectionId: workout.programID, notificationType: "workoutComment")
                             }
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
@@ -455,13 +455,13 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                             self.onCommentPosted?()
                             if self.recipientToken != nil, self.recipientToken != "", self.recipientToken != NotificationsManager.shared.coachToken {
                                 let message = String(format: "%1$@ replied to your comment for the blog post %2$@".localized(withLanguage: self.recipientLanguage ?? "ru"), senderName, post.id)
-                                self.sendReplyNotification(fcmToken: self.recipientToken!, message: message)
+                                self.sendReplyNotification(fcmToken: self.recipientToken!, message: message, destination: post.id, collectionId: nil, notificationType: "postComment")
                                 self.recipientToken = ""
                                 self.recipientLanguage = ""
                                 print ("recipient token is: \(self.recipientToken ?? "empty")")
                             } else {
                                 let message = String(format: "New comment posted for blog post %1$@ from %2$@: %3$@".localized(), post.id, senderName, text)
-                                self.sendNotificationToCoach(message: message)
+                                self.sendNotificationToCoach(message: message, destination: post.id, collectionId: nil, notificationType: "postComment")
                             }
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
@@ -493,7 +493,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         if success {
                             self.onCommentPosted?()
                             let message = String(format: "New photo posted for workout %1$@ from %2$@".localized(), workout.id, senderName)
-                            self.sendNotificationToCoach(message: message)
+                            self.sendNotificationToCoach(message: message, destination: workout.id, collectionId: workout.programID, notificationType: "workoutComment")
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()                            }
                         }
@@ -510,7 +510,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         if success {
                             self.onCommentPosted?()
                             let message = String(format: "New photo posted for blog post %1$@ from %2$@".localized(), post.id, senderName)
-                            self.sendNotificationToCoach(message: message)
+                            self.sendNotificationToCoach(message: message, destination: post.id, collectionId: nil, notificationType: "postComment")
                             DispatchQueue.main.async {
                                 self.messagesCollectionView.scrollToLastItem()
                             }
@@ -540,7 +540,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                             if success {
                                 self.onCommentPosted?()
                                 let message = String(format: "New video posted for workout %1$@ from %2$@".localized(), workout.id, senderName)
-                                self.sendNotificationToCoach(message: message)
+                                self.sendNotificationToCoach(message: message, destination: workout.id, collectionId: workout.programID, notificationType: "workoutComment")
                                 DispatchQueue.main.async {
                                     self.messagesCollectionView.scrollToLastItem()
                                 }
@@ -558,7 +558,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                             if success {
                                 self.onCommentPosted?()
                                 let message = String(format: "New video posted for blog post %1$@ from %2$@".localized(), post.id, senderName)
-                                self.sendNotificationToCoach(message: message)
+                                self.sendNotificationToCoach(message: message, destination: post.id, collectionId: nil, notificationType: "postComment")
                                 DispatchQueue.main.async {
                                     self.messagesCollectionView.scrollToLastItem()
                                 }

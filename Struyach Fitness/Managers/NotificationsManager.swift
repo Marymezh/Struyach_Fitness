@@ -8,6 +8,7 @@
 import Foundation
 import UserNotifications
 import FirebaseMessaging
+import UIKit
 
 final class NotificationsManager {
     
@@ -85,6 +86,11 @@ final class NotificationsManager {
                 "notification": [
                     "title": "\(push.title)",
                     "body": "\(push.body)"
+                ],
+                "data": [
+                    "notificationType": "\(push.type)",
+                    "destination": "\(push.destination)",
+                    "collectionId": "\(push.collectionId ?? "no id")"
                 ]
             ]
             
@@ -109,6 +115,11 @@ final class NotificationsManager {
             "notification": [
                 "title": "\(push.title)",
                 "body": "\(push.body)"
+            ],
+            "data": [
+                "notificationType": "\(push.type)",
+                "destination": "\(push.destination)",
+                "collectionId": "\(push.collectionId ?? "no id")"
             ]
         ]
         
@@ -123,5 +134,4 @@ final class NotificationsManager {
             completion(error == nil)
         }).resume()
     }
-    
 }

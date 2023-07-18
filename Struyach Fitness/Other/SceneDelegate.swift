@@ -8,7 +8,6 @@
 import UIKit
 import IQKeyboardManagerSwift
 
-
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
@@ -20,7 +19,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         var vc: UIViewController?
         let hasAgreedToPrivacyPolicy = UserDefaults.standard.bool(forKey: "HasAgreedToPrivacyPolicy")
         
+        UNUserNotificationCenter.current().delegate = self
+        
         if AuthManager.shared.isSignedIn  && hasAgreedToPrivacyPolicy {
+           
             let userEmail = UserDefaults.standard.string(forKey: "email")
             if let email = userEmail, !email.isEmpty {
                 print ("there is a current user with data")
@@ -28,7 +30,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             } else {
                 // user is signed in but there is no user data for him or her, need to logout user and present loginVC
                 print ("user is signed in but there is no user data for him or her, need to logout user and present loginVC")
-                AuthManager.shared.signOut { success in
+                AuthManager.shared.signOut { [weak self] success in
+                    guard let self = self else {return}
                     if success {
                         let signInVC = LoginViewController()
                         signInVC.navigationItem.largeTitleDisplayMode = .never
@@ -114,5 +117,49 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             }
         }, cancelAction: "Cancel".localized())
     }
+}
+
+extension SceneDelegate: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        print ("responding to notification tap")
+        let notificationInfo = response.notification.request.content.userInfo
+
+            let navVC = UINavigationController()
+
+            if let pushType = notificationInfo["notificationType"] as? String {
+                print(pushType)
+                switch pushType {
+                case "postComment":
+                    if let postId = notificationInfo["destination"] as? String {
+                        DatabaseManager.shared.fetchBlogPost(postId: postId) { post in
+                            if let post = post {
+                                let commentsVC = CommentsViewController(blogPost: post)
+                                navVC.pushViewController(commentsVC, animated: true)
+                            }
+                        }
+                    }
+                case "workoutComment":
+                    if let workoutId = notificationInfo["destination"] as? String,
+                       let programId = notificationInfo["collectionId"] as? String {
+                        DatabaseManager.shared.fetchWorkout(programId: programId, workoutId: workoutId) { workout in
+                            if let workout = workout {
+                                let commentsVC = CommentsViewController(workout: workout)
+                                navVC.pushViewController(commentsVC, animated: true)
+                            }
+                        }
+                    }
+                default:
+                    if let programName = notificationInfo["destination"] as? String {
+                        let selectedProgramVC = WorkoutsViewController()
+                        selectedProgramVC.title = programName
+                        navVC.pushViewController(selectedProgramVC, animated: true)
+                    }
+                }
+            } else {
+                print("Error receiving notification type")
+            }
+
+            window?.rootViewController = navVC
+        }
 }
 
