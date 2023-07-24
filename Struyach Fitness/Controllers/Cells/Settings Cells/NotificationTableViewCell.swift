@@ -78,8 +78,6 @@ final class NotificationTableViewCell: UITableViewCell {
         notificationLabel.text = title.localized()
         programName = title
         notificationSwitch.isEnabled = isNotificationOn
-       
-        
         // Update the switch state based on notification permission and subscription status
         notificationSwitch.isOn = isNotificationOn && UserDefaults.standard.bool(forKey: program)
     }

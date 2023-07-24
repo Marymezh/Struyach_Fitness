@@ -169,9 +169,12 @@ extension SceneDelegate: UNUserNotificationCenterDelegate {
                 }
             default:
                 if let programName = notificationInfo["destination"] as? String {
-                    let selectedProgramVC = WorkoutsViewController()
-                    selectedProgramVC.title = programName
-                    navVC.pushViewController(selectedProgramVC, animated: true)
+                    tabBarController.selectedIndex = 0
+                   if let programsVC = tabBarController.selectedViewController as? UINavigationController{
+                        let workoutVC = WorkoutsViewController()
+                        workoutVC.title = programName.localized()
+                        programsVC.pushViewController(workoutVC, animated: true)
+                    }
                 }
             }
         } else {

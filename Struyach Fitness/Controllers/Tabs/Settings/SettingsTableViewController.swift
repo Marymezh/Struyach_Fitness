@@ -42,6 +42,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
         super.viewWillAppear(animated)
         #if Client
         updateSubscriptionStatus()
+//        tableView.reloadData()
         #endif
     }
     
@@ -272,18 +273,15 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                    switch indexPath.row {
                    case 0:
                        programName = K.bodyweight
-                       isSubscribed = true // Assume all users are subscribed to Bodyweight plan
+                       isSubscribed = true
                    case 1:
                        programName = K.ecd
                        isSubscribed = subscriptionStatus[0]
-                   case 2:
+                   default:
                        programName = K.struyach
                        isSubscribed = subscriptionStatus[1]
-                   default:
-                       programName = ""
-                       isSubscribed = false
                    }
-                   
+       
             cell.configure(with: programName, isSubscribed: isSubscribed)
             cell.notificationSwitch.programName = cell.programName
             cell.notificationSwitch.addTarget(self, action: #selector(notificationSwitchChanged(_:)), for: .valueChanged)
@@ -454,8 +452,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                     AlertManager.shared.showAlert(title: "Success".localized(), message: "Your purchases are successfully restored!".localized(), cancelAction: "Ok")
             case .success(false): 
                     self.activityView.hide()
-                    AlertManager.shared.showAlert(title: "No purchases detected".localized(), message: "You haven't purchased anything yet".localized(), cancelAction: "Ok")
-               
+                    AlertManager.shared.showAlert(title: "No purchases detected".localized(), message: "We coult find any of your purchases".localized(), cancelAction: "Ok")
             }
         }
     }
@@ -631,9 +628,14 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             dispatchGroup.enter()
             
             IAPManager.shared.getSubscriptionStatus(program: program) {isActive, color, message in
+                let topicName = program.replacingOccurrences(of: " ", with: "_")
                 updatedMessages.append(message)
                 updatedColors.append(color)
                 isSubscribed.append(isActive)
+                if isActive == false {
+                    NotificationsManager.shared.unsubscribe(from: topicName)
+                    UserDefaults.standard.set(false, forKey: topicName)
+                }
                 dispatchGroup.leave()
             }
         }
@@ -642,6 +644,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             self.messages = updatedMessages
             self.messageColors = updatedColors
             self.subscriptionStatus = isSubscribed
+            print ("Array of subscriptionStatuses: \(self.subscriptionStatus)")
             self.tableView.reloadData()
         }
     }
