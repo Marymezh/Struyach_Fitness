@@ -552,7 +552,7 @@ final class DatabaseManager {
                         kind = .photo(media)
                     case "video":
                         guard let videoUrl = URL(string: contents),
-                        let placeholder = UIImage(named: "general") else {return nil}
+                        let placeholder = UIImage(named: "image") else {return nil}
                         let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 90, height: 90))
                         kind = .video(media)
                     case "text": kind = .text(contents)
@@ -796,7 +796,7 @@ final class DatabaseManager {
                         kind = .photo(media)
                     case "video":
                         guard let videoUrl = URL(string: contents),
-                        let placeholder = UIImage(named: "general") else {return nil}
+                        let placeholder = UIImage(named: "image") else {return nil}
                         let media = Media(url: videoUrl, image: nil, placeholderImage: placeholder, size: CGSize(width: 90, height: 90))
                         kind = .video(media)
                     case "text": kind = .text(contents)

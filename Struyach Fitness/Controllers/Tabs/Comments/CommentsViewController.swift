@@ -32,8 +32,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private var userName: String?
     private let userEmail = UserDefaults.standard.string(forKey: "email")
     private lazy var sender = Sender(senderId: userEmail ?? "unknown email", displayName: userName ?? "unknown user")
-    private let currentDate = Date()
-    private let dateFormatter = DateFormatter()
     private var recipientToken: String?
     private var recipientLanguage: String?
     
@@ -62,20 +60,18 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         setupInputBar()
         setupSubviews()
         self.userName = UserDefaults.standard.string(forKey: "userName")
-     
-        if let workout = self.workout {
-            loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
-        } else if let post = self.blogPost {
-            loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
-        }
         setupGestureRecognizer()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
     }
   
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         getUserImage()
         self.navigationController?.navigationBar.prefersLargeTitles = false
+        if let workout = self.workout {
+            loadComments(for: workout, loadCommentsClosure: DatabaseManager.shared.getAllComments)
+        } else if let post = self.blogPost {
+            loadComments(for: post, loadCommentsClosure: DatabaseManager.shared.getAllBlogComments)
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -169,7 +165,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     private func presentInputOptions() {
         guard let email = userEmail else {return}
-        let dateString = dateFormatter.string(from: currentDate)
+        
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         actionSheet.view.tintColor = .contrastGreen
         let cameraAction = UIAlertAction(title: "Camera".localized(), style: .default) { [weak self] _ in
@@ -181,7 +177,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                       let imageData = image.jpegData(compressionQuality: 0.2),
                       let self = self else { return }
                 if let workout = self.workout {
-                    let imageId =  "comments_workout_photo:\(workout.id)_\(dateString)"
+                    let imageId =  "comments_workout_photo:\(workout.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
                     StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId,progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText:
@@ -200,7 +196,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         self.progressView.hide()
                     }
                 } else if let post = self.blogPost {
-                    let imageId =  "comments_blog_post_photo:\(post.id)_\(dateString)"
+                    let imageId =  "comments_blog_post_photo:\(post.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
                     StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)),
@@ -232,7 +228,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                       let imageData = image.jpegData(compressionQuality: 0.6),
                       let self = self else { return }
                 if let workout = self.workout {
-                    let imageId =  "comments_workout_photo:\(workout.id)_\(dateString)"
+                    let imageId =  "comments_workout_photo:\(workout.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
                     StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -251,7 +247,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                         
                     }
                 } else if let post = self.blogPost {
-                    let imageId =  "comments_blog_post_photo:\(post.id)_\(dateString)"
+                    let imageId =  "comments_blog_post_photo:\(post.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
                     StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                         guard let self = self else {return}
                         self.progressView.showProgress(progressLabelText: String(format: "Uploading photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -288,7 +284,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 do {
                     let videoData = try Data(contentsOf: videoUrl)
                     if let workout = self.workout {
-                        let videoId = "comments_workout_video:\(workout.id)_\(dateString).mov"
+                        let videoId = "comments_workout_video:\(workout.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss")).mov"
                         StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
                             guard let self = self else {return}
                             self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -306,7 +302,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                             self.activityView.showActivityIndicator()
                         }
                     } else if let post = self.blogPost {
-                        let videoId = "comments_blog_post_video:\(post.id)_\(dateString).mov"
+                        let videoId = "comments_blog_post_video:\(post.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss")).mov"
                         StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
                             guard let self = self else {return}
                             self.progressView.showProgress(progressLabelText: String(format: "Uploading video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -495,7 +491,8 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                             let message = String(format: "New photo posted for workout %1$@ from %2$@".localized(), workout.id, senderName)
                             self.sendNotificationToCoach(message: message, destination: workout.id, collectionId: workout.programID, notificationType: "workoutComment")
                             DispatchQueue.main.async {
-                                self.messagesCollectionView.scrollToLastItem()                            }
+                                self.messagesCollectionView.scrollToLastItem()
+                            }
                         }
                     }
                 } else {
@@ -572,11 +569,13 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     }
     
     private func loadComments<T>(for object: T, loadCommentsClosure: @escaping (T, @escaping ([Comment]) -> Void) -> Void, completion: ((Bool) -> Void)? = nil) {
+        self.activityView.showActivityIndicator()
         loadCommentsClosure(object) { [weak self] comments in
             guard let self = self else { return }
             self.commentsArray = comments
             DispatchQueue.main.async {
                 self.messagesCollectionView.reloadData()
+                self.activityView.hide()
             }
             completion?(true)
         }
@@ -600,7 +599,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             let selectedMessage = self.commentsArray[indexPath.section]
             if userEmail == selectedMessage.sender.senderId {
                 guard let email = userEmail else {return}
-                let dateString = dateFormatter.string(from: currentDate)
+                
                 let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
                 let deleteAction = UIAlertAction(title: "Delete".localized(), style: .destructive) { [weak self] action in
                     guard let self = self else {return}
@@ -672,7 +671,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
                                     print(messageMediaRef)
                                 }
-                                let imageId =  "comments_workout_photo:\(workout.programID)_\(workout.id)_\(dateString)"
+                                let imageId =  "comments_workout_photo:\(workout.programID)_\(workout.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
                                 StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -696,7 +695,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                 if let messageMediaRef = selectedMessage.mediaRef {
                                     StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
                                 }
-                                let imageId =  "comments_blog_post_photo:\(post.id)_\(dateString)"
+                                let imageId =  "comments_blog_post_photo:\(post.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss"))"
                                 StorageManager.shared.uploadImageForComment(email: email, image: imageData, imageId: imageId, progressHandler: { [weak self] percentComplete in
                                     guard let self = self else {return}
                                     self.progressView.showProgress(progressLabelText: String(format: "Updating photo (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -728,7 +727,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     if let messageMediaRef = selectedMessage.mediaRef {
                                         StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
                                     }
-                                    let videoId = "comments_workout_video:\(workout.programID)_\(workout.id)_\(dateString).mov"
+                                    let videoId = "comments_workout_video:\(workout.programID)_\(workout.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss")).mov"
                                     StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
                                         guard let self = self else {return}
                                         self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -752,7 +751,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                                     if let messageMediaRef = selectedMessage.mediaRef {
                                         StorageManager.shared.deleteCommentsPhotoAndVideo(mediaRef: messageMediaRef)
                                     }
-                                    let videoId = "comments_blog_post_video:\(post.id)_\(dateString).mov"
+                                    let videoId = "comments_blog_post_video:\(post.id)_\(Date().formattedString(dateFormat: "dd MM YYYY HH:mm:ss")).mov"
                                     StorageManager.shared.uploadVideoURLForComment(email: email, videoID: videoId, videoData: videoData, progressHandler: { [weak self] percentComplete in
                                         guard let self = self else {return}
                                         self.progressView.showProgress(progressLabelText: String(format: "Updating video (%d%%)".localized(), Int(percentComplete * 100)), percentComplete: percentComplete)
@@ -863,37 +862,81 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
     }
     
     func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
-        
         switch message.kind {
-            
         case .photo(let media):
-            guard let imageUrl = media.url else {return}
+            guard let imageUrl = media.url else { return }
             imageView.sd_setImage(with: imageUrl)
             self.activityView.hide()
-            
         case .video(let media):
             guard let videoUrl = media.url else { return }
             let thumbnailCacheKey = "\(videoUrl.absoluteString)_thumbnail"
             if let cachedThumbnailImage = SDImageCache.shared.imageFromCache(forKey: thumbnailCacheKey) {
                 imageView.image = cachedThumbnailImage
-                return
+            } else {
+                // Show a placeholder image here while the thumbnail is being fetched/generated
+                imageView.image = UIImage(named: "image")
+                
+                // Generate the thumbnail image asynchronously
+                DispatchQueue.global().async {
+                    let asset = AVAsset(url: videoUrl)
+                    let imageGenerator = AVAssetImageGenerator(asset: asset)
+                    imageGenerator.appliesPreferredTrackTransform = true
+                    let time = CMTime(seconds: 0.0, preferredTimescale: 1)
+                    guard let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) else {
+                        DispatchQueue.main.async {
+                            // Clear the placeholder image if thumbnail generation fails
+                            imageView.image = UIImage(named: "Struyach_dark")
+                        }
+                        return
+                    }
+                    let thumbnailSize = CGSize(width: 80, height: 80)
+                    let thumbnailImage = UIImage(cgImage: cgImage).sd_resizedImage(with: thumbnailSize, scaleMode: .aspectFill)
+                    
+                    SDImageCache.shared.store(thumbnailImage, forKey: thumbnailCacheKey, completion: nil)
+                    
+                    DispatchQueue.main.async {
+                        imageView.image = thumbnailImage
+                    }
+                }
             }
-            let asset = AVAsset(url: videoUrl)
-            let imageGenerator = AVAssetImageGenerator(asset: asset)
-            imageGenerator.appliesPreferredTrackTransform = true
-            let time = CMTime(seconds: 0.0, preferredTimescale: 1)
-            guard let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) else { return }
-            let thumbnailSize = CGSize(width: 80, height: 80)
-            let thumbnailImage = UIImage(cgImage: cgImage).sd_resizedImage(with: thumbnailSize, scaleMode: .aspectFill)
-            
-            SDImageCache.shared.store(thumbnailImage, forKey: thumbnailCacheKey, completion: nil)
-            
-            imageView.image = thumbnailImage
             self.activityView.hide()
-            
-        default: break
+        default:
+            break
         }
     }
+    
+//    func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+//
+//        switch message.kind {
+//
+//        case .photo(let media):
+//            guard let imageUrl = media.url else {return}
+//            imageView.sd_setImage(with: imageUrl)
+//            self.activityView.hide()
+//
+//        case .video(let media):
+//            guard let videoUrl = media.url else { return }
+//            let thumbnailCacheKey = "\(videoUrl.absoluteString)_thumbnail"
+//            if let cachedThumbnailImage = SDImageCache.shared.imageFromCache(forKey: thumbnailCacheKey) {
+//                imageView.image = cachedThumbnailImage
+//                return
+//            }
+//            let asset = AVAsset(url: videoUrl)
+//            let imageGenerator = AVAssetImageGenerator(asset: asset)
+//            imageGenerator.appliesPreferredTrackTransform = true
+//            let time = CMTime(seconds: 0.0, preferredTimescale: 1)
+//            guard let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) else { return }
+//            let thumbnailSize = CGSize(width: 80, height: 80)
+//            let thumbnailImage = UIImage(cgImage: cgImage).sd_resizedImage(with: thumbnailSize, scaleMode: .aspectFill)
+//
+//            SDImageCache.shared.store(thumbnailImage, forKey: thumbnailCacheKey, completion: nil)
+//
+//            imageView.image = thumbnailImage
+//            self.activityView.hide()
+//
+//        default: break
+//        }
+//    }
 }
 
 extension CommentsViewController: MessageCellDelegate {
