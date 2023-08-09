@@ -199,10 +199,6 @@ final class WorkoutsViewController: UIViewController {
         }
     }
     
-//    private func sendPush(toTopic topic: String) {
-//
-//    }
-    
     // MARK: - Adding new workout and loading list of workouts
     // only Admin user can add new workout
     @objc private func addNewWorkout() {

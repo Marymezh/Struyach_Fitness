@@ -14,22 +14,9 @@ final class DetailsView: UIView {
     let containerView: UIView = {
         let view = UIView()
         view.toAutoLayout()
-        view.backgroundColor = .customDarkComments
-        return view
-    }()
-    
-    let secondContainerView: UIView = {
-        let view = UIView()
-        view.toAutoLayout()
         view.backgroundColor = .systemGray6
-        view.layer.borderWidth = 0.5
-        view.layer.borderColor = UIColor.black.cgColor
         view.layer.cornerRadius = 10
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowRadius = 10
-        view.layer.shadowOffset = CGSize(width: 5, height: 5)
-        view.layer.shadowOpacity = 0.7
-        view.alpha = 0.8
+        view.clipsToBounds = true
         return view
     }()
     
@@ -40,7 +27,6 @@ final class DetailsView: UIView {
         textView.isUserInteractionEnabled = true
         textView.isEditable = false
         textView.font = UIFont.systemFont(ofSize: 16)
-        textView.layer.cornerRadius = 10
         textView.toAutoLayout()
         return textView
     }()
@@ -58,24 +44,18 @@ final class DetailsView: UIView {
     
     private func setupSubviews() {
         self.addSubview(containerView)
-        containerView.addSubview(secondContainerView)
-        secondContainerView.addSubview(textView)
+        containerView.addSubview(textView)
         
         let constraints = [
             containerView.topAnchor.constraint(equalTo: self.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10),
-            containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -10),
+            containerView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            containerView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             
-            secondContainerView.topAnchor.constraint(equalTo: containerView.topAnchor),
-            secondContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            secondContainerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            secondContainerView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
-            
-            textView.topAnchor.constraint(equalTo: secondContainerView.topAnchor, constant: 10),
-            textView.leadingAnchor.constraint(equalTo: secondContainerView.leadingAnchor, constant: 10),
-            textView.trailingAnchor.constraint(equalTo: secondContainerView.trailingAnchor, constant: -10),
-            textView.heightAnchor.constraint(equalToConstant: 150),
-            textView.bottomAnchor.constraint(equalTo: secondContainerView.bottomAnchor, constant: -10)
+            textView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
+            textView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
+            textView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
+            textView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10)
         ]
         
         NSLayoutConstraint.activate(constraints)

@@ -18,8 +18,6 @@ class CommentsMessagesViewController: MessagesViewController {
         
         messagesCollectionView.toAutoLayout()
         messagesCollectionView.backgroundColor = .customDarkComments
-        messagesCollectionView.contentInset.top = 20
-        messagesCollectionView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         
         let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
         layout?.setMessageOutgoingAvatarSize(CGSize(width: 40, height: 40))

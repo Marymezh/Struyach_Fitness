@@ -25,6 +25,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     private var progressView = ProgressView()
     private var activityView = ActivityView()
+    private var detailsView = DetailsView()
 
     var onFinishPicking:(([UIImagePickerController.InfoKey : Any])-> Void)?
     var onCommentPosted: (() -> ())?
@@ -57,8 +58,10 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         super.viewDidLoad()
         self.view.backgroundColor = .customDarkComments
         setupMessageCollectionView()
+        setupNavBar()
         setupInputBar()
         setupSubviews()
+        setupDetailsView()
         self.userName = UserDefaults.standard.string(forKey: "userName")
         setupGestureRecognizer()
     }
@@ -82,6 +85,23 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     deinit {
            print ("comments vc is deallocated")
        }
+    
+    private func setupNavBar() {
+        let infoIconImage = UIImage(systemName: "info.circle")
+        let infoButton = UIBarButtonItem(image: infoIconImage, style: .plain, target: self, action: #selector(toggleDetailsView))
+        infoButton.tintColor = .systemGreen
+        navigationItem.rightBarButtonItem = infoButton
+    }
+    
+    @objc private func toggleDetailsView() {
+        detailsView.isHidden = !detailsView.isHidden
+
+        if detailsView.isHidden {
+            messagesCollectionView.alpha = 1
+        } else {
+            messagesCollectionView.alpha = 0.5
+        }
+    }
     
     //MARK: - Message Collection View and InputBarView setup
     
@@ -159,6 +179,25 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         ]
         
         NSLayoutConstraint.activate(constraints)
+    }
+    
+    private func setupDetailsView() {
+        detailsView.isHidden = true
+        if let workout = workout {
+            detailsView.textView.text = workout.description
+        } else if let post = blogPost {
+            detailsView.textView.text = post.description
+        }
+        detailsView.toAutoLayout()
+        view.addSubview(detailsView)
+
+        let constraints = [
+            detailsView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            detailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+            detailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
+                    detailsView.heightAnchor.constraint(equalToConstant: 300)
+                ]
+                NSLayoutConstraint.activate(constraints)
     }
     
     //MARK: - Input options for InputBarAttachButton
@@ -904,39 +943,6 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
             break
         }
     }
-    
-//    func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
-//
-//        switch message.kind {
-//
-//        case .photo(let media):
-//            guard let imageUrl = media.url else {return}
-//            imageView.sd_setImage(with: imageUrl)
-//            self.activityView.hide()
-//
-//        case .video(let media):
-//            guard let videoUrl = media.url else { return }
-//            let thumbnailCacheKey = "\(videoUrl.absoluteString)_thumbnail"
-//            if let cachedThumbnailImage = SDImageCache.shared.imageFromCache(forKey: thumbnailCacheKey) {
-//                imageView.image = cachedThumbnailImage
-//                return
-//            }
-//            let asset = AVAsset(url: videoUrl)
-//            let imageGenerator = AVAssetImageGenerator(asset: asset)
-//            imageGenerator.appliesPreferredTrackTransform = true
-//            let time = CMTime(seconds: 0.0, preferredTimescale: 1)
-//            guard let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) else { return }
-//            let thumbnailSize = CGSize(width: 80, height: 80)
-//            let thumbnailImage = UIImage(cgImage: cgImage).sd_resizedImage(with: thumbnailSize, scaleMode: .aspectFill)
-//
-//            SDImageCache.shared.store(thumbnailImage, forKey: thumbnailCacheKey, completion: nil)
-//
-//            imageView.image = thumbnailImage
-//            self.activityView.hide()
-//
-//        default: break
-//        }
-//    }
 }
 
 extension CommentsViewController: MessageCellDelegate {

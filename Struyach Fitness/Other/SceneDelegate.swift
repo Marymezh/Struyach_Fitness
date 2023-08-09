@@ -128,7 +128,7 @@ extension SceneDelegate: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         print ("responding to notification tap")
         let notificationInfo = response.notification.request.content.userInfo
-        let navVC = UINavigationController()
+  //      let navVC = UINavigationController()
         let tabBarController = TabBarController()
         window?.rootViewController = tabBarController
         if let pushType = notificationInfo["notificationType"] as? String {
