@@ -31,8 +31,8 @@ final class SelectedWorkoutView: UIView, UITextViewDelegate {
         return view
     }()
     
-    let workoutDescriptionTextView: UITextView = {
-        let textView = UITextView()
+    let workoutDescriptionTextView: MyTextView = {
+        let textView = MyTextView()
         textView.sizeToFit()
         textView.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         textView.textColor = .black

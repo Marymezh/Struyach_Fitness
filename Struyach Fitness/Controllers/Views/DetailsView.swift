@@ -20,8 +20,8 @@ final class DetailsView: UIView {
         return view
     }()
     
-    let textView: UITextView = {
-        let textView = UITextView()
+    let textView: MyTextView = {
+        let textView = MyTextView()
         textView.backgroundColor = .systemGray6
         textView.isScrollEnabled = true
         textView.isUserInteractionEnabled = true
