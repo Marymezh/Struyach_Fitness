@@ -64,6 +64,9 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         setupDetailsView()
         self.userName = UserDefaults.standard.string(forKey: "userName")
         setupGestureRecognizer()
+        #if Client
+        detailsView.textView.makeSecure()
+        #endif
     }
   
     override func viewWillAppear(_ animated: Bool) {

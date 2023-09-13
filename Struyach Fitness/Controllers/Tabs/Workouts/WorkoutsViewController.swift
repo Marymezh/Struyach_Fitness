@@ -15,7 +15,6 @@ final class WorkoutsViewController: UIViewController {
     private var listOfWorkouts: [Workout] = []
     private var filteredWorkouts: [Workout] = []
     private let currentUserEmail = UserDefaults.standard.string(forKey: "email")
-    private let selectedWorkoutView = SelectedWorkoutView()
     private let workoutsCollection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var selectedIndexPath: IndexPath?
     private var baseInset: CGFloat { return 15 }
@@ -27,7 +26,8 @@ final class WorkoutsViewController: UIViewController {
     private var isFetching = false
     private var shouldLoadMorePosts = true
     private var workoutsListener: ListenerRegistration?
-   
+    
+    private var selectedWorkoutView = SelectedWorkoutView()
     private let likesAndCommentsView = LikesAndCommentsView()
     private let searchBarView = SearchBarView()
     private let plusButtonView = PlusButtonView()
@@ -53,6 +53,9 @@ final class WorkoutsViewController: UIViewController {
         setupSubviews()
 #if Admin
         setupAdminFunctionality()
+#else
+        selectedWorkoutView.workoutDescriptionTextView.makeSecure()
+        NotificationCenter.default.addObserver(self, selector: #selector(screenshotDetected), name: UIApplication.userDidTakeScreenshotNotification, object: nil)
 #endif
         setupSearchBarCancelButton()
         self.loadWorkoutsWithPagination(program: programName, pageSize: self.pageSize)
@@ -89,12 +92,21 @@ final class WorkoutsViewController: UIViewController {
         super.viewWillDisappear(animated)
         print("Executing function: \(#function)")
         workoutsListener?.remove()
+#if Client
+        NotificationCenter.default.removeObserver(self)
+#endif
     }
     
     deinit {
+
            print ("workouts vc is deallocated")
        }
     
+    //MARK: - Method to prevent the content from copying, making screenshots or screen recording
+    
+    @objc private func screenshotDetected() {
+        AlertManager.shared.showAlert(title: "Screenshot Detected".localized(), message: "It is not allowed to make screenshots of workouts due to content copyright. Please, respect our intellectual property.".localized(), cancelAction: "Ok")
+    }
     
     //MARK: - Methods to setup Navigation Bar, TableView and subviews
     

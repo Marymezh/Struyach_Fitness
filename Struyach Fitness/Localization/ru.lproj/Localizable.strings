@@ -160,6 +160,9 @@
 "A new version of the app is available! Tap \"Update\" to find out more on our app's page." = "Появилась новая версия приложения! Нажмите \"Обновить\", чтобы перейти на страницу приложения в App Store и узнать больше.";
 "Update" = "Обновить";
 
+"Screenshot Detected" = "Попытка сделать фото экрана";
+"It is not allowed to make screenshots of workouts due to content copyright. Please, respect our intellectual property." = "Мы ограничили возможность делать скриншоты наших тренировок. Пожалуйста, отнеситесь с пониманием и уважением к нашей интеллектуальной собственности.";
+
 "Error creating video data" = "Не удалось загрузить видео";
 "Unable to post new workout" = "Не удалось добавить новую тренировку";
 "Unable to delete this workout" = "Не удалось удалить выбранную тренировку";

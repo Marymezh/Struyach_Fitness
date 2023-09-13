@@ -8,21 +8,28 @@
 import Foundation
 import UIKit
 
-
-//extension UITextView {
-//    open override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-//        if action == #selector(UIResponderStandardEditActions.copy(_:)) {
-//            return false
-//        }
-//        return super.canPerformAction(action, withSender: sender)
-//    }
-//}
-
 class MyTextView: UITextView {
-    override open func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        if action == #selector(UIResponderStandardEditActions.copy(_:)) {
-            return false
-        }
-        return super.canPerformAction(action, withSender: sender)
+    override var canBecomeFirstResponder: Bool {
+        return false
     }
+    
+    func makeSecure() {
+           DispatchQueue.main.async {
+               let field = UITextField()
+               field.isSecureTextEntry = true
+               self.addSubview(field)
+               field.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+               field.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
+               self.layer.superlayer?.addSublayer(field.layer)
+               field.layer.sublayers?.first?.addSublayer(self.layer)
+           }
+       }
 }
+
+
+
+
+
+
+
+
