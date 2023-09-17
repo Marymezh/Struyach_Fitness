@@ -60,14 +60,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
         
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleColorChange(_:)), name: Notification.Name("AppColorChanged"), object: nil)
+        
         IQKeyboardManager.shared.enable = true
         IQKeyboardManager.shared.disabledDistanceHandlingClasses.append(CommentsViewController.self)
         IQKeyboardManager.shared.disabledToolbarClasses.append(CommentsViewController.self)
-        IQKeyboardManager.shared.toolbarTintColor = .contrastGreen
+        IQKeyboardManager.shared.toolbarTintColor = ColorManager.shared.appColor
         
         print ("lastCheckedDate: \(UserDefaults.standard.value(forKey: "lastCheckedDate") ?? "No date")")
         checkAppVersion()
-        
+    }
+    
+    @objc func handleColorChange(_ notification: Notification) {
+        print ("changing tint color for IQ keyboard")
+        if let color = notification.object as? UIColor {
+            IQKeyboardManager.shared.toolbarTintColor = color
+        }
     }
     
     func checkAppVersion() {
@@ -122,13 +131,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             }
         }, cancelAction: "Cancel".localized())
     }
+    func sceneDidDisconnect(_ scene: UIScene) {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
 extension SceneDelegate: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         print ("responding to notification tap")
         let notificationInfo = response.notification.request.content.userInfo
-  //      let navVC = UINavigationController()
         let tabBarController = TabBarController()
         window?.rootViewController = tabBarController
         if let pushType = notificationInfo["notificationType"] as? String {
@@ -180,10 +191,6 @@ extension SceneDelegate: UNUserNotificationCenterDelegate {
         } else {
             print("Error receiving notification type")
         }
-        
-//        if AuthManager.shared.isSignedIn {
-//            window?.rootViewController = navVC
-//        }
     }
 }
 

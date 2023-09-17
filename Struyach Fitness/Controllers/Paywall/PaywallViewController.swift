@@ -27,6 +27,9 @@ final class PaywallViewController: UIViewController {
         }
     }
     
+    private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    private lazy var appColor = selectedColor ?? .systemGreen
+    
     //MARK: - Lifecycle
     
     init(programName: String) {
@@ -42,6 +45,7 @@ final class PaywallViewController: UIViewController {
         super.viewDidLoad()
         setupSubviews()
         setupPaywallMessageAndPrice()
+        NotificationCenter.default.addObserver(self, selector: #selector(handleColorChange(_:)), name: Notification.Name("AppColorChanged"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -54,11 +58,27 @@ final class PaywallViewController: UIViewController {
          navigationController?.navigationBar.isHidden = false
      }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        print ("paywall is deallocated")
+    }
+    
+    @objc func handleColorChange(_ notification: Notification) {
+        print ("changing paywall VC tint color")
+        if let color = notification.object as? UIColor {
+            self.appColor = color
+        }
+    }
+    
     //MARK: - Setup subviews
     
     private func setupSubviews() {
         paywallView.toAutoLayout()
         activityView.toAutoLayout()
+        activityView.activityIndicator.color = appColor
+        paywallView.titleLabel.textColor = appColor
+        paywallView.payButton.backgroundColor = appColor
+        paywallView.termsLinkLabel.textColor = appColor
         paywallView.payButton.addTarget(self, action: #selector(payButtonPressed), for: .touchUpInside)
         paywallView.closeButton.addTarget(self, action: #selector(closeScreen), for: .touchUpInside)
         view.addSubview(paywallView)

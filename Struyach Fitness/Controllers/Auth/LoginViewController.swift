@@ -30,6 +30,10 @@ final class LoginViewController: UIViewController {
         super.viewWillAppear(animated)
     }
     
+    deinit {
+           print ("login vc is deallocated")
+       }
+    
     //MARK: - Setup methods
     
     private func setupNavBar() {

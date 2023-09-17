@@ -33,7 +33,6 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
         label.font = UIFont.systemFont(ofSize: 12, weight: .bold)
         label.textAlignment = .center
         label.textColor = .white
-        label.backgroundColor = .systemGreen
         label.numberOfLines = 0
         label.layer.cornerRadius = 10
         label.layer.masksToBounds = true
@@ -50,11 +49,6 @@ final class WorkoutsCollectionViewCell: UICollectionViewCell {
         
         setupUI()
     }
-    
-    override func prepareForReuse() {
-          super.prepareForReuse()
-        workoutDateLabel.backgroundColor = .systemGreen
-      }
     
     deinit {
          print ("workout cell is deallocated")

@@ -22,7 +22,7 @@ final class ProgressView: UIView {
     var progressView: UIProgressView = {
         let view = UIProgressView(progressViewStyle: .default)
         view.progress = 0
-        view.progressTintColor = .systemGreen
+        view.progressTintColor = ColorManager.shared.appColor
         view.trackTintColor = .white
         view.layer.cornerRadius = 5
         view.layer.masksToBounds = true

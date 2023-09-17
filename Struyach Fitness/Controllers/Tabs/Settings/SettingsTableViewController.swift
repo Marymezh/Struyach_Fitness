@@ -7,8 +7,8 @@
 
 import UIKit
 
-final class SettingsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
-    
+final class SettingsTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+  
     // MARK: - Properties
     
     private var messages = [String]()
@@ -21,6 +21,9 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     
     let email: String
     let currentUserEmail = UserDefaults.standard.string(forKey: "email")
+    
+    private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    private lazy var appColor = selectedColor ?? .systemGreen
 
     // MARK: - Lifecycle
     
@@ -36,13 +39,13 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSubviews()
+        NotificationCenter.default.addObserver(self, selector: #selector(handleColorChange(_:)), name: Notification.Name("AppColorChanged"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         #if Client
         updateSubscriptionStatus()
-//        tableView.reloadData()
         #endif
     }
     
@@ -52,8 +55,22 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     }
     
     deinit {
+        NotificationCenter.default.removeObserver(self)
            print ("settings vc is deallocated")
        }
+
+    
+    @objc func handleColorChange(_ notification: Notification) {
+        print ("changing settings VC tint color")
+        if let color = notification.object as? UIColor {
+            self.appColor = color
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+                AlertManager.shared.buttonColor = self.appColor
+                self.activityView.activityIndicator.color = self.appColor
+            }
+        }
+    }
     
     private func setupSubviews() {
         tableView.delegate = self
@@ -66,6 +83,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
         tableView.register(ManagementTableViewCell.self, forCellReuseIdentifier: ManagementTableViewCell.reuseIdentifier)
         tableView.register(SubscriptionTableViewCell.self, forCellReuseIdentifier: SubscriptionTableViewCell.reuseIdentifier)
         tableView.register(HideEmailTableViewCell.self, forCellReuseIdentifier: HideEmailTableViewCell.reuseIdentifier)
+        tableView.register(AppColorTableViewCell.self, forCellReuseIdentifier: AppColorTableViewCell.reuseIdentifier)
         
         tableView.backgroundColor = .customDarkGray
         tableView.separatorStyle = .singleLine
@@ -95,9 +113,9 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
     
     func numberOfSections(in tableView: UITableView) -> Int {
         #if Admin
-        return 4
+        return 5
         #else
-        return 6
+        return 7
         #endif
     }
     
@@ -106,7 +124,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
         headerView.backgroundColor = .customDarkGray
         let titleLabel = UILabel(frame: CGRect(x: 15, y: 0, width: headerView.frame.width - 15, height: headerView.frame.height))
         titleLabel.text = self.tableView(tableView, titleForHeaderInSection: section)
-        titleLabel.textColor = UIColor.systemGreen
+        titleLabel.textColor = appColor
         headerView.addSubview(titleLabel)
         
         return headerView
@@ -130,6 +148,8 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
            case 4:
                return "Manage subscriptions".localized()
            case 5:
+               return "Change app color".localized()
+           case 6:
                return "Log out or delete account".localized()
            default:
                return nil
@@ -141,6 +161,8 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
            case 2:
                return "Notifications settings".localized()
            case 3:
+               return "Change app color".localized()
+           case 4:
                return "Log out or delete account".localized()
            default:
                return nil
@@ -166,6 +188,8 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
         case 4:
             return 2
         case 5:
+            return 1
+        case 6:
             return 2
         default:
             return 0
@@ -177,6 +201,8 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
         case 2:
             return 3
         case 3:
+            return 1
+        case 4:
             return 2
         default:
             return 0
@@ -193,6 +219,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 let cell = tableView.dequeueReusableCell(withIdentifier: InfoTableViewCell.reuseIdentifier, for: indexPath) as! InfoTableViewCell
                 cell.titleLabel.text = "About this app".localized()
                 cell.imgView.image = UIImage(systemName: "info.circle")
+                cell.imgView.tintColor = appColor
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
@@ -200,6 +227,8 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             case 1:
                 let cell = tableView.dequeueReusableCell(withIdentifier: EmailTableViewCell.reuseIdentifier, for: indexPath) as! EmailTableViewCell
                 cell.containerView.layer.cornerRadius = 0
+                cell.imgView.tintColor = appColor
+                cell.imgView.image = UIImage(systemName: "envelope")
                 cell.onClose = { result in
                     switch result {
                     case .sent:
@@ -218,12 +247,15 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             case 2:
                 let cell = tableView.dequeueReusableCell(withIdentifier: RateTableViewCell.reuseIdentifier, for: indexPath) as! RateTableViewCell
                 cell.containerView.layer.cornerRadius = 0
+                cell.imgView.tintColor = appColor
+                cell.imgView.image = UIImage(systemName: "star")
                 return cell
             case 3:
                 let cell = tableView.dequeueReusableCell(withIdentifier: InfoTableViewCell.reuseIdentifier, for: indexPath) as! InfoTableViewCell
                 cell.titleLabel.text = "Privacy Policy".localized()
                 cell.imgView.image = UIImage(systemName: "lock.circle")
-                cell.imgView.tintColor = .systemGreen
+                cell.imgView.tintColor = appColor
+                
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
@@ -237,7 +269,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 cell.titleLabel.text = "Change user name".localized()
                 cell.titleLabel.textColor = .white
                 cell.imgView.image = UIImage(systemName: "person")
-                cell.imgView.tintColor = .systemGreen
+                cell.imgView.tintColor = appColor
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
@@ -246,6 +278,8 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
                 cell.containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+                cell.imgView.tintColor = appColor
+                cell.imgView.image = UIImage(systemName: "envelope")
                 cell.hideEmailSwitch.addTarget(self, action: #selector(hideEmailSwitchChanged(_:)), for: .valueChanged)
                 let hideEmail = UserDefaults.standard.bool(forKey: "hideEmail")
                 cell.hideEmailSwitch.isOn = hideEmail
@@ -286,8 +320,14 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             cell.notificationSwitch.programName = cell.programName
             cell.notificationSwitch.addTarget(self, action: #selector(notificationSwitchChanged(_:)), for: .valueChanged)
             return cell
+            #if Admin
+        case 3: let cell = tableView.dequeueReusableCell(withIdentifier: AppColorTableViewCell.reuseIdentifier, for: indexPath) as! AppColorTableViewCell
+            cell.containerView.layer.cornerRadius = 15
+            cell.containerView.layer.masksToBounds = true
+            
+            return cell
            
-            #if Client
+            #else
         case 3:
             // subscription status
             let cell = tableView.dequeueReusableCell(withIdentifier: SubscriptionTableViewCell.reuseIdentifier, for: indexPath) as! SubscriptionTableViewCell
@@ -315,9 +355,8 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             }
             
             return cell
-        case 4: let cell =
             // manage subscriptions
-            tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
+        case 4: let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
             if indexPath.row == 0 {
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
@@ -325,7 +364,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 cell.titleLabel.text = "Restore purchases".localized()
                 cell.titleLabel.textColor = .white
                 cell.imgView.image = UIImage(systemName: "arrow.clockwise")
-                cell.imgView.tintColor = .systemGreen
+                cell.imgView.tintColor = appColor
             } else {
                 cell.containerView.layer.cornerRadius = 15
                 cell.containerView.layer.masksToBounds = true
@@ -333,9 +372,17 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 cell.titleLabel.text = "Request a refund".localized()
                 cell.titleLabel.textColor = .white
                 cell.imgView.image = UIImage(systemName: "dollarsign.circle")
-                cell.imgView.tintColor = .systemGreen
+                cell.imgView.tintColor = appColor
             }
             return cell
+            //change colors
+        case 5: let cell = tableView.dequeueReusableCell(withIdentifier: AppColorTableViewCell.reuseIdentifier, for: indexPath) as! AppColorTableViewCell
+            cell.containerView.layer.cornerRadius = 15
+            cell.containerView.layer.masksToBounds = true
+            cell.isUserInteractionEnabled = true
+            
+            return cell
+            
             #endif
         default:
             let cell = tableView.dequeueReusableCell(withIdentifier: ManagementTableViewCell.reuseIdentifier, for: indexPath) as! ManagementTableViewCell
@@ -373,6 +420,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 let aboutThisAppVC = AboutViewController(text: appDescription)
                 aboutThisAppVC.title = "About this app".localized()
                 aboutThisAppVC.imageView.image = UIImage(named: "coach")
+                navigationController?.navigationBar.tintColor = appColor
                 navigationController?.pushViewController(aboutThisAppVC, animated: true)
             case 1:
                 //    sendEmailToDeveloper
@@ -400,6 +448,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
                 policyVC.title = "Privacy Policy".localized()
                 
                 policyVC.imageView.image = UIImage(named: "IMG_2930")
+                navigationController?.navigationBar.tintColor = appColor
                 navigationController?.pushViewController(policyVC, animated: true)
                 
             default: break
@@ -410,7 +459,7 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             default: break
             }
             #if Admin
-        case 3:
+        case 4:
             switch indexPath.row {
             case 0: signOut()
             default: deleteAccount()
@@ -423,12 +472,11 @@ final class SettingsTableViewController: UIViewController, UITableViewDelegate, 
             case 0: restorePurchases()
             default: requestRefund()
             }
-        case 5:
+        case 6:
             switch indexPath.row {
             case 0: signOut()
             default: deleteAccount()
             }
-
             #endif
        
         default:

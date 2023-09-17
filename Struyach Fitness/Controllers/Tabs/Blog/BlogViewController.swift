@@ -23,18 +23,23 @@ final class BlogViewController: UIViewController {
     private var postUpdatesListener: ListenerRegistration?
     private var tableView = UITableView(frame: .zero, style: .grouped)
     
-    private let plusButtonView = PlusButtonView()
-    private let activityView = ActivityView()
+    let plusButtonView = PlusButtonView()
+    let activityView = ActivityView()
+    
+    private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    lazy var appColor = selectedColor ?? .systemGreen
     
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
+       
 #if Admin
         setupAdminFunctionality()
 #endif
         loadBlogPostsWithPagination(pageSize: pageSize)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleColorChange(_:)), name: Notification.Name("AppColorChanged"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -59,16 +64,24 @@ final class BlogViewController: UIViewController {
     }
     
     deinit {
+        NotificationCenter.default.removeObserver(self)
            print ("blog vc is deallocated")
        }
     
+    @objc func handleColorChange(_ notification: Notification) {
+        print ("changing blog VC tint color")
+        if let color = notification.object as? UIColor {
+            self.appColor = color
+            self.plusButtonView.plusButton.backgroundColor = color
+        }
+    }
     
     //MARK: - Setup methods
     
     private func setupNavAndTabBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
         tabBarController?.tabBar.isHidden = false
-        navigationController?.navigationBar.tintColor = .systemGreen
+        navigationController?.navigationBar.tintColor = appColor
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "arrow.up", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(scrollToTheTop))
     }
     
@@ -83,6 +96,7 @@ final class BlogViewController: UIViewController {
         plusButtonView.toAutoLayout()
         plusButtonView.plusButton.addTarget(self, action: #selector(addNewPost), for: .touchUpInside)
         activityView.toAutoLayout()
+        activityView.activityIndicator.color = appColor
         view.addSubviews(tableView, plusButtonView, activityView)
         let constraints = [
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -216,7 +230,7 @@ final class BlogViewController: UIViewController {
             alertController.addAction(editAction)
             alertController.addAction(deleteAction)
             alertController.addAction(cancelAction)
-            alertController.view.tintColor = .contrastGreen
+            alertController.view.tintColor = appColor
             present(alertController, animated: true)
         }
     }

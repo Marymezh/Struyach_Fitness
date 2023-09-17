@@ -42,6 +42,9 @@ final class WorkoutsViewController: UIViewController {
         }
     }()
     
+    private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    private lazy var appColor = selectedColor ?? .systemGreen
+    
     //MARK: Lifecycle
     
     override func viewDidLoad() {
@@ -59,6 +62,7 @@ final class WorkoutsViewController: UIViewController {
 #endif
         setupSearchBarCancelButton()
         self.loadWorkoutsWithPagination(program: programName, pageSize: self.pageSize)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleColorChange(_:)), name: Notification.Name("AppColorChanged"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -98,9 +102,19 @@ final class WorkoutsViewController: UIViewController {
     }
     
     deinit {
-
+        NotificationCenter.default.removeObserver(self)
            print ("workouts vc is deallocated")
        }
+    
+    @objc func handleColorChange(_ notification: Notification) {
+        print ("changing workouts VC tint color")
+        if let color = notification.object as? UIColor {
+            self.appColor = color
+            DispatchQueue.main.async {
+                self.workoutsCollection.reloadData()
+            }
+        }
+    }
     
     //MARK: - Method to prevent the content from copying, making screenshots or screen recording
     
@@ -111,7 +125,7 @@ final class WorkoutsViewController: UIViewController {
     //MARK: - Methods to setup Navigation Bar, TableView and subviews
     
     private func setupNavigationAndTabBar() {
-        navigationController?.navigationBar.tintColor = .systemGreen
+        navigationController?.navigationBar.tintColor = appColor
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), style: .done, target: self, action: #selector(toggleSearchBar))
         tabBarController?.tabBar.isHidden = true
     }
@@ -124,6 +138,7 @@ final class WorkoutsViewController: UIViewController {
         likesAndCommentsView.likeButton.addTarget(self, action: #selector(addLikeToWorkout), for: .touchUpInside)
         likesAndCommentsView.addCommentButton.addTarget(self, action: #selector(pushCommentsVC), for: .touchUpInside)
         plusButtonView.toAutoLayout()
+        plusButtonView.plusButton.backgroundColor = appColor
         plusButtonView.plusButton.addTarget(self, action: #selector(addNewWorkout), for: .touchUpInside)
         
         view.addSubviews(searchBarView, workoutsCollection, selectedWorkoutView, likesAndCommentsView, plusButtonView)
@@ -348,7 +363,7 @@ final class WorkoutsViewController: UIViewController {
             alertController.addAction(editAction)
             alertController.addAction(deleteAction)
             alertController.addAction(cancelAction)
-            alertController.view.tintColor = .contrastGreen
+            alertController.view.tintColor = ColorManager.shared.appColor
             present(alertController, animated: true)
         }
     }
@@ -549,7 +564,7 @@ extension WorkoutsViewController: UICollectionViewDelegateFlowLayout {
         if isSelected {
             cell.workoutDateLabel.backgroundColor = .customMediumGray
         } else {
-            cell.workoutDateLabel.backgroundColor = .systemGreen
+            cell.workoutDateLabel.backgroundColor = appColor
         }
     }
 }

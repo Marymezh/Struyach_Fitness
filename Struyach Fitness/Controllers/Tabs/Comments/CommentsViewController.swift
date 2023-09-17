@@ -36,6 +36,9 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private var recipientToken: String?
     private var recipientLanguage: String?
     
+    private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    private lazy var appColor = selectedColor ?? .systemGreen
+    
     //MARK: - Lifecycle
     
     init(workout: Workout) {
@@ -92,7 +95,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     private func setupNavBar() {
         let infoIconImage = UIImage(systemName: "info.circle")
         let infoButton = UIBarButtonItem(image: infoIconImage, style: .plain, target: self, action: #selector(toggleDetailsView))
-        infoButton.tintColor = .systemGreen
+        infoButton.tintColor = appColor
         navigationItem.rightBarButtonItem = infoButton
     }
     
@@ -163,7 +166,9 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
     
     private func setupSubviews() {
         progressView.toAutoLayout()
+        progressView.progressView.progressTintColor = appColor
         activityView.toAutoLayout()
+        activityView.activityIndicator.color = appColor
         progressView.isHidden = true
         activityView.isHidden = true
         view.addSubviews(progressView, activityView)
@@ -209,7 +214,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         guard let email = userEmail else {return}
         
         let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        actionSheet.view.tintColor = .contrastGreen
+        actionSheet.view.tintColor = appColor
         let cameraAction = UIAlertAction(title: "Camera".localized(), style: .default) { [weak self] _ in
             guard let self = self else {return}
             self.activityView.showActivityIndicator()
@@ -258,7 +263,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 }
             }
         }
-        let cameraImage = UIImage(systemName: "camera")?.withTintColor(.contrastGreen ?? .green)
+        let cameraImage = UIImage(systemName: "camera")?.withTintColor(appColor)
         cameraAction.setValue(cameraImage, forKey: "image")
         
         let photoAction = UIAlertAction(title: "Photo".localized(), style: .default) { [weak self] _ in
@@ -310,7 +315,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             }
         }
         
-        let photoImage = UIImage(systemName: "photo")?.withTintColor(.contrastGreen ?? .green)
+        let photoImage = UIImage(systemName: "photo")?.withTintColor(appColor)
         photoAction.setValue(photoImage, forKey: "image")
         
         let videoAction = UIAlertAction(title: "Video".localized(), style: .default) { [weak self] _ in
@@ -368,14 +373,14 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
             }
         }
         
-        let videoImage = UIImage(systemName: "tv")?.withTintColor(.contrastGreen ?? .green)
+        let videoImage = UIImage(systemName: "tv")?.withTintColor(appColor)
         videoAction.setValue(videoImage, forKey: "image")
 
         actionSheet.addAction(cameraAction)
         actionSheet.addAction(photoAction)
         actionSheet.addAction(videoAction)
         actionSheet.addAction(UIAlertAction(title: "Cancel".localized(), style: .cancel))
-        actionSheet.view.tintColor = .contrastGreen
+        actionSheet.view.tintColor = appColor
         present(actionSheet, animated: true)
     }
     
@@ -825,7 +830,7 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
                 alertController.addAction(editAction)
                 alertController.addAction(deleteAction)
                 alertController.addAction(cancelAction)
-                alertController.view.tintColor = .contrastGreen
+                alertController.view.tintColor = appColor
                 present(alertController, animated: true)
             } else {
                 print("reply to other user")
@@ -859,6 +864,10 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
         return commentsArray.count
     }
+    
+    func backgroundColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
+        return isFromCurrentSender(message: message) ? appColor : UIColor.systemGray
+        }
     
     func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
         let comment = commentsArray[indexPath.section]
@@ -1105,8 +1114,8 @@ extension CommentsViewController:UIImagePickerControllerDelegate, UINavigationCo
        }
     private func presentImagePicker(type: ImagePickerType) {
        let picker = UIImagePickerController()
-        picker.navigationController?.navigationBar.barTintColor = .systemGreen
-        picker.view.tintColor = .contrastGreen
+        picker.navigationController?.navigationBar.barTintColor = appColor
+        picker.view.tintColor = appColor
             picker.delegate = self
         switch type {
         case .camera:

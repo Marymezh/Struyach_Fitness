@@ -30,7 +30,6 @@ final class InfoTableViewCell: UITableViewCell {
     let imgView: UIImageView = {
         let imageView = UIImageView()
         imageView.toAutoLayout()
-        imageView.tintColor = .systemGreen
         return imageView
     }()
       
@@ -53,7 +52,7 @@ final class InfoTableViewCell: UITableViewCell {
             disclosureIndicator.tintColor = .white
             accessoryView = disclosureIndicator
         
-        self.addSubviews(containerView)
+        contentView.addSubviews(containerView)
         containerView.addSubviews(imgView,titleLabel)
         
         let constraints = [

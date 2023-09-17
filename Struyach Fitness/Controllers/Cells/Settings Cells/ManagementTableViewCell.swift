@@ -51,7 +51,7 @@ class ManagementTableViewCell: UITableViewCell {
         disclosureIndicator.tintColor = .white
         accessoryView = disclosureIndicator
         
-        self.addSubviews(containerView)
+        contentView.addSubviews(containerView)
         containerView.addSubviews(imgView,titleLabel)
         
         let constraints = [

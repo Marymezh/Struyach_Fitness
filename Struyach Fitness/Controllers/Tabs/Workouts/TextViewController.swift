@@ -15,6 +15,9 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     var isCreatingNewPostOrWorkout = false
     var onWorkoutSave: ((String, TimeInterval?) -> Void)?
     
+    private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    private lazy var appColor = selectedColor ?? .systemGreen
+    
     let workoutDescriptionTextView: UITextView = {
         let textView = UITextView()
         textView.font = UIFont.systemFont(ofSize: 16, weight: .regular)
@@ -77,7 +80,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
         datePicker.layer.borderWidth = 0.5
         datePicker.layer.cornerRadius = 10
         datePicker.clipsToBounds = true
-        datePicker.tintColor = .systemGreen
+        datePicker.tintColor = ColorManager.shared.appColor
         datePicker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
         datePicker.toAutoLayout()
         return datePicker
@@ -105,6 +108,7 @@ final class TextViewController: UIViewController, UITextViewDelegate {
         setupTextView()
         setupSubviews()
         toggleDateSelectionViews()
+        NotificationCenter.default.addObserver(self, selector: #selector(handleColorChange(_:)), name: Notification.Name("AppColorChanged"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -118,7 +122,15 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     }
     
     deinit {
+        NotificationCenter.default.removeObserver(self)
         print("text view controller is deallocated")
+    }
+    
+    @objc func handleColorChange(_ notification: Notification) {
+        print ("changing text VC tint color")
+        if let color = notification.object as? UIColor {
+            self.appColor = color
+        }
     }
     
     // MARK: - Setup methods
@@ -218,13 +230,13 @@ final class TextViewController: UIViewController, UITextViewDelegate {
     
     @objc private func todayButtonTapped() {
         setSelectedDate(Date())
-        todayButton.backgroundColor = .systemGreen
+        todayButton.backgroundColor = appColor
         tomorrowButton.backgroundColor = .customTabBar
     }
     
     @objc private func tomorrowButtonTapped() {
         setSelectedDate(Date().addingTimeInterval(24 * 60 * 60)) // Add 1 day (24 hours) to the current date
-        tomorrowButton.backgroundColor = .systemGreen
+        tomorrowButton.backgroundColor = appColor
         todayButton.backgroundColor = .customTabBar
     }
     

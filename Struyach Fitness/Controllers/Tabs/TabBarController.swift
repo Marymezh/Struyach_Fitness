@@ -9,29 +9,47 @@ import UIKit
 
 final class TabBarController: UITabBarController {
     
+   private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    private lazy var appColor = selectedColor ?? .systemGreen
+    
+    private var blogVC = BlogViewController()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupControllers()
         setupTabBarAppearance()
         setupNavBarAppearance()
+        NotificationCenter.default.addObserver(self, selector: #selector(handleColorChange(_:)), name: Notification.Name("AppColorChanged"), object: nil)
     }
     
     deinit {
            print ("tab bar is deallocated")
+        NotificationCenter.default.removeObserver(self)
        }
+    
+    @objc func handleColorChange(_ notification: Notification) {
+        print ("changing tab bar tint color")
+        if let color = notification.object as? UIColor {
+            self.tabBar.tintColor = color
+            self.appColor = color
+            self.blogVC.appColor = color
+            self.blogVC.plusButtonView.plusButton.backgroundColor = color
+            self.blogVC.activityView.activityIndicator.color = color
+        }
+    }
     
     private func setupTabBarAppearance() {
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
         appearance.backgroundColor = .customTabBar
         tabBar.standardAppearance = appearance
-        tabBar.tintColor = .systemGreen
+        tabBar.tintColor = appColor
         tabBar.unselectedItemTintColor = .darkGray
         tabBar.backgroundColor = .customDarkGray
     }
     
     private func setupNavBarAppearance() {
-        UINavigationBar.appearance().tintColor = .systemGreen
+        UINavigationBar.appearance().tintColor = appColor
         UINavigationBar.appearance().barTintColor = .black
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white]
         UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]
@@ -50,7 +68,7 @@ final class TabBarController: UITabBarController {
         updateUserLanguage(email: currentUserEmail)
         let programsVC = ProgramsViewController()
         programsVC.title = "Training Plans".localized()
-        let blogVC = BlogViewController()
+        let blogVC = self.blogVC
         blogVC.title = "Coach Blog".localized()
         let profileVC = ProfileTableViewController(email: currentUserEmail)
         profileVC.title = "Profile".localized()
@@ -69,7 +87,6 @@ final class TabBarController: UITabBarController {
         
         programsVC.navigationItem.largeTitleDisplayMode = .always
         blogVC.navigationItem.largeTitleDisplayMode = .always
-      
         
         let nav1 = UINavigationController(rootViewController: programsVC)
         let nav2 = UINavigationController(rootViewController: blogVC)
@@ -109,3 +126,4 @@ final class TabBarController: UITabBarController {
         }
     }
 }
+

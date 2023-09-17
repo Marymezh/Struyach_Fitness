@@ -19,6 +19,9 @@ final class ProfileTableViewController: UITableViewController {
     private let headerView = ProfileHeaderView()
     private let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     
+    private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    private lazy var appColor = selectedColor ?? .systemGreen
+    
     let email: String
     let currentUserEmail = UserDefaults.standard.string(forKey: "email")
 
@@ -37,6 +40,7 @@ final class ProfileTableViewController: UITableViewController {
         super.viewDidLoad()
         setupTableView()
         setupHeaderView()
+        NotificationCenter.default.addObserver(self, selector: #selector(handleColorChange(_:)), name: Notification.Name("AppColorChanged"), object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -45,8 +49,16 @@ final class ProfileTableViewController: UITableViewController {
     }
     
     deinit {
+        NotificationCenter.default.removeObserver(self)
            print ("profile vc is deallocated")
        }
+    
+    @objc func handleColorChange(_ notification: Notification) {
+        print ("changing profile VC tint color")
+        if let color = notification.object as? UIColor {
+            self.appColor = color
+        }
+    }
     
     //MARK: - Setup methods
     private func setupTableView() {
@@ -87,7 +99,6 @@ final class ProfileTableViewController: UITableViewController {
                 UserDefaults.standard.set(user.name, forKey: "userName")
             }
             guard let imageRef = user.profilePictureRef, !imageRef.isEmpty else {
-//                self.headerView.userPhotoImage.image = UIImage(systemName: "person.circle")
                 self.headerView.userNameLabel.text = user.name
                 self.headerView.userEmailLabel.text = user.email
                 self.headerView.userEmailLabel.isHidden = user.emailIsHidden ? true : false
@@ -400,11 +411,11 @@ extension ProfileTableViewController: UIImagePickerControllerDelegate, UINavigat
         
         private func presentImagePicker() {
             let picker = UIImagePickerController()
-            picker.navigationBar.tintColor = UIColor.systemGreen
+            picker.navigationBar.tintColor = appColor
             picker.allowsEditing = true
             picker.delegate = self
             picker.sourceType = .photoLibrary
-            picker.view.tintColor = .contrastGreen
+            picker.view.tintColor = appColor
             
             navigationItem.backButtonTitle = "Cancel".localized()
             navigationController?.present(picker, animated: true)

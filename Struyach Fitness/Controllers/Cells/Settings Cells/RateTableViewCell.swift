@@ -29,11 +29,9 @@ final class RateTableViewCell: UITableViewCell {
         return label
     }()
     
-    private let imgView: UIImageView = {
+    let imgView: UIImageView = {
         let imageView = UIImageView()
         imageView.toAutoLayout()
-        imageView.image = UIImage(systemName: "star")
-        imageView.tintColor = .systemGreen
         return imageView
     }()
     

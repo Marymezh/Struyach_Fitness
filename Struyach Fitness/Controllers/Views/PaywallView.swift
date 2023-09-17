@@ -36,7 +36,7 @@ final class PaywallView: UIView {
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.systemGreen
+        label.textColor = ColorManager.shared.appColor
         label.font = UIFont.boldSystemFont(ofSize: 26)
         label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
@@ -58,7 +58,7 @@ final class PaywallView: UIView {
     let payButton: UIButton = {
         let button = UIButton(type: .system)
         button.toAutoLayout()
-        button.backgroundColor = UIColor.systemGreen
+        button.backgroundColor = ColorManager.shared.appColor
         button.layer.cornerRadius = 8
         button.layer.shadowColor = UIColor.black.cgColor
         button.layer.shadowRadius = 8
@@ -126,7 +126,7 @@ final class PaywallView: UIView {
     
     let termsLinkLabel: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.systemGreen
+        label.textColor = ColorManager.shared.appColor
         label.font = UIFont.systemFont(ofSize: 16)
         label.textAlignment = .center
         label.isUserInteractionEnabled = true

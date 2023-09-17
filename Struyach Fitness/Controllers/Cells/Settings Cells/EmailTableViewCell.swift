@@ -30,13 +30,14 @@ final class EmailTableViewCell: UITableViewCell {
         return label
     }()
     
-    private let imgView: UIImageView = {
+    let imgView: UIImageView = {
         let imageView = UIImageView()
         imageView.toAutoLayout()
-        imageView.image = UIImage(named: "mail")
-        imageView.tintColor = .systemGreen
         return imageView
     }()
+    
+    private let selectedColor = UserDefaults.standard.colorForKey(key: "SelectedColor")
+    private lazy var appColor = selectedColor ?? .systemGreen
 
     // MARK: - Initialization
     
@@ -60,7 +61,7 @@ final class EmailTableViewCell: UITableViewCell {
         disclosureIndicator.tintColor = .white
         accessoryView = disclosureIndicator
         
-        self.addSubviews(containerView)
+        contentView.addSubviews(containerView)
         containerView.addSubviews(imgView,titleLabel)
         
         let constraints = [
@@ -106,13 +107,6 @@ extension EmailTableViewCell: MFMailComposeViewControllerDelegate {
     
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
         
-//        if let error = error {
-//            let message = String(format: "Error sending email: %@", error.localizedDescription)
-//            controller.dismiss(animated: true) {
-//                self.onClose?(error)
-//            }
-//        }
-        
         switch result {
         case .sent:
             controller.dismiss(animated: true) {
@@ -144,7 +138,7 @@ extension UINavigationBar {
         appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
         appearance.shadowColor = nil
-        self.tintColor = .systemGreen
+        self.tintColor = ColorManager.shared.appColor
         self.standardAppearance = appearance
     }
 }

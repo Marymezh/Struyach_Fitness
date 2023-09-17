@@ -22,7 +22,7 @@ final class ActivityView: UIView {
    let activityIndicator: UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .large)
         indicator.toAutoLayout()
-        indicator.color = .systemGreen
+       indicator.color = ColorManager.shared.appColor
         return indicator
     }()
 

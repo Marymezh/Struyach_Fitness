@@ -21,11 +21,9 @@ final class HideEmailTableViewCell: UITableViewCell {
         return containerView
     }()
     
-    private let imgView: UIImageView = {
+    let imgView: UIImageView = {
         let imageView = UIImageView()
         imageView.toAutoLayout()
-        imageView.image = UIImage(systemName: "envelope")
-        imageView.tintColor = .systemGreen
         return imageView
     }()
     

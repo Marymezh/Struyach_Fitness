@@ -12,7 +12,7 @@ class PlusButtonView: UIView {
     let plusButton: UIButton = {
        let button = UIButton()
         button.setImage(UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 30, weight: .medium)), for: .normal)
-        button.backgroundColor = .systemGreen
+        button.backgroundColor = ColorManager.shared.appColor
         button.tintColor = .white
         button.layer.cornerRadius = 30
         button.layer.shadowColor = UIColor.black.cgColor
