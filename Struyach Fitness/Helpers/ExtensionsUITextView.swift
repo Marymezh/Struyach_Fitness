@@ -12,11 +12,12 @@ class MyTextView: UITextView {
     override var canBecomeFirstResponder: Bool {
         return false
     }
-    
+ 
     func makeSecure() {
            DispatchQueue.main.async {
                let field = UITextField()
                field.isSecureTextEntry = true
+               field.toAutoLayout()
                self.addSubview(field)
                field.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
                field.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true

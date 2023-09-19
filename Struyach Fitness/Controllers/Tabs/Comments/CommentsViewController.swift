@@ -67,9 +67,6 @@ final class CommentsViewController: CommentsMessagesViewController, UITextViewDe
         setupDetailsView()
         self.userName = UserDefaults.standard.string(forKey: "userName")
         setupGestureRecognizer()
-        #if Client
-        detailsView.textView.makeSecure()
-        #endif
     }
   
     override func viewWillAppear(_ animated: Bool) {
@@ -866,7 +863,7 @@ extension CommentsViewController: MessagesDataSource, MessagesDisplayDelegate, M
     }
     
     func backgroundColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
-        return isFromCurrentSender(message: message) ? appColor : UIColor.systemGray
+        return isFromCurrentSender(message: message) ? appColor : UIColor.systemGray2
         }
     
     func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {

@@ -31,6 +31,13 @@ final class DetailsView: UIView {
         return textView
     }()
     
+    let securityTextField: UITextField = {
+        let textField = UITextField()
+        textField.isSecureTextEntry = true
+        textField.toAutoLayout()
+        return textField
+    }()
+    
     //MARK: - Lifecycle
 
     init() {
@@ -45,6 +52,9 @@ final class DetailsView: UIView {
     private func setupSubviews() {
         self.addSubview(containerView)
         containerView.addSubview(textView)
+        textView.addSubview(securityTextField)
+        textView.layer.superlayer?.addSublayer(securityTextField.layer)
+        securityTextField.layer.sublayers?.first?.addSublayer(textView.layer)
         
         let constraints = [
             containerView.topAnchor.constraint(equalTo: self.topAnchor),
@@ -55,7 +65,13 @@ final class DetailsView: UIView {
             textView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
             textView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 10),
             textView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
-            textView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10)
+            textView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+            
+            
+            securityTextField.topAnchor.constraint(equalTo: textView.topAnchor),
+            securityTextField.bottomAnchor.constraint(equalTo: textView.bottomAnchor),
+            securityTextField.leadingAnchor.constraint(equalTo: textView.leadingAnchor),
+            securityTextField.trailingAnchor.constraint(equalTo: textView.trailingAnchor)
         ]
         
         NSLayoutConstraint.activate(constraints)
